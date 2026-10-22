@@ -245,7 +245,15 @@ body:before{display:none}
   .tab{font-size:9px}.tab span:first-child{font-size:19px}.grid2{gap:8px}.itemVisual{height:144px}
 }
 
-  </style>
+  
+/* STYLE OS: prevent title and description overlap in style collection cards */
+.styleCard{display:flex;flex-direction:column;justify-content:flex-end;gap:7px;min-height:245px}
+.styleCard h3,.styleCard p{position:relative;left:auto;right:auto;bottom:auto;top:auto;margin:0;max-width:100%;overflow-wrap:anywhere}
+.styleCard h3{font-family:Helvetica,Arial,sans-serif;font-weight:600;font-size:clamp(19px,5vw,25px);line-height:1.12}
+.styleCard p{font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.4}
+.styleCard .glassTag{position:absolute;top:14px;left:14px}
+@media(max-width:390px){.styleCard{min-height:220px}.styleCard h3{font-size:21px}}
+</style>
 </head>
 <body>
 <div class="app">
