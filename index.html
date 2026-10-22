@@ -253,6 +253,15 @@ body:before{display:none}
 .styleCard p{font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.4}
 .styleCard .glassTag{position:absolute;top:14px;left:14px}
 @media(max-width:390px){.styleCard{min-height:220px}.styleCard h3{font-size:21px}}
+
+/* Product fixes: responsive status counters + exact fallback illustrations */
+.statGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
+.statGrid .statCard{min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:138px;padding:17px 14px}
+.statGrid .helper{min-height:34px;line-height:1.25;overflow-wrap:anywhere}
+.statGrid .statValue{line-height:1;font-variant-numeric:tabular-nums;font-size:34px}
+.itemVisual img{max-width:100%;max-height:100%;object-fit:contain}
+@media(max-width:390px){.statGrid{gap:7px}.statGrid .statCard{padding:12px 9px;min-height:124px}.statGrid .helper{font-size:10px;min-height:42px}.statGrid .statValue{font-size:30px}}
+@media(min-width:900px){.statGrid .statCard{min-height:135px}}
 </style>
 </head>
 <body>
@@ -332,24 +341,19 @@ body:before{display:none}
   function icon(name){ return `<span style="font-size:18px">${name}</span>`; }
   function colorHex(c){ return (COLORS[c]||['','#d9d4cb'])[1]; }
   function clothSVG(item){
-    const fill=colorHex(item.color||'beige');
-    const shadow='rgba(30,35,27,.08)';
+    const c=colorHex(item.color||'beige');
     const type=item.type||'tee';
-    const strokes='#d6d3cb';
-    let shape='';
+    let path='';
     if(['tee','polo','shirt','knit','hoodie','overshirt','blazer','jacket','coat'].includes(type)){
-      shape=`<path d="M50 18 L68 26 L82 16 L97 31 L88 42 L88 106 L12 106 L12 42 L3 31 L18 16 L32 26 Z" fill="${fill}" stroke="${strokes}" stroke-width="2"/>`;
-      if(type==='blazer'||type==='coat'||type==='overshirt'||type==='shirt'){ shape += `<path d="M50 18 L50 106" stroke="rgba(0,0,0,.14)" stroke-width="2"/>`; }
-      if(type==='polo'){ shape += `<path d="M42 32 L50 42 L58 32" stroke="rgba(0,0,0,.16)" stroke-width="2" fill="none"/>`; }
-      if(type==='hoodie'){ shape += `<path d="M38 26 Q50 10 62 26" stroke="rgba(0,0,0,.16)" stroke-width="2" fill="none"/>`; }
-    } else if(['jeans','trousers','chinos','shorts'].includes(type)){
-      shape=`<path d="M26 16 L74 16 L68 106 L52 106 L50 68 L48 106 L32 106 Z" fill="${fill}" stroke="${strokes}" stroke-width="2"/>`;
-      if(type==='shorts'){ shape=`<path d="M26 18 L74 18 L68 62 L54 62 L50 46 L46 62 L32 62 Z" fill="${fill}" stroke="${strokes}" stroke-width="2"/>`; }
-    } else {
-      shape=`<path d="M24 74 Q28 28 50 28 Q72 28 76 74 Q64 98 50 98 Q36 98 24 74 Z" fill="${fill}" stroke="${strokes}" stroke-width="2"/>`;
-      if(type==='boots') shape += `<path d="M24 74 L14 84 L14 96 L84 96 L84 86 L76 74" fill="${fill}" stroke="${strokes}" stroke-width="2"/>`;
+      path='<path d="M36 17L48 23H52L64 17L86 29L95 48L82 55L76 44V107H24V44L18 55L5 48L14 29Z" fill="'+c+'" stroke="#b7b5ae" stroke-width="1.5"/><path d="M36 17Q50 39 64 17" fill="none" stroke="#b7b5ae" stroke-width="1.5"/>';
+      if(['shirt','overshirt','blazer','coat'].includes(type))path+='<path d="M50 33V107" stroke="#a9a9a1" stroke-width="1.5"/>';
+    }else if(['jeans','trousers','chinos','shorts'].includes(type)){
+      const bottom=type==='shorts'?66:110;
+      path='<path d="M26 15H74L69 '+bottom+'H54L50 55L46 '+bottom+'H31Z" fill="'+c+'" stroke="#b7b5ae" stroke-width="1.5"/>';
+    }else{
+      path='<path d="M18 77Q30 71 36 45L50 37L64 45Q72 69 87 78L92 88L83 95H20L10 88Z" fill="'+c+'" stroke="#b7b5ae" stroke-width="1.5"/><path d="M11 88H91" stroke="#b7b5ae" stroke-width="2"/>';
     }
-    return `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect x='8' y='8' width='84' height='104' rx='22' fill='rgba(255,255,255,.55)'/><g filter='drop-shadow(0 12px 12px ${shadow})'>${shape}</g></svg>`)}`;
+    return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120"><rect x="1" y="1" width="98" height="118" rx="16" fill="#f2f1ed"/>'+path+'</svg>');
   }
   function formatPrice(p){ return p ? new Intl.NumberFormat('ru-RU').format(p) + ' ₽' : 'Цена на Lamoda'; }
   function productImage(item){ return item.photo || clothSVG(item); }
@@ -361,27 +365,41 @@ body:before{display:none}
   function seasonOK(item, weather){ if(weather==='mild') return ['all','mild','warm','cold'].includes(item.season) || !item.season; if(weather==='hot') return ['all','warm'].includes(item.season)||!item.season; if(weather==='cold') return ['all','cold'].includes(item.season)||!item.season; return true; }
   function ownItems(){ return store.wardrobe; }
   function generateLooks({occasion, weather}){
-    const looks=[];
-    recipes.forEach(recipe=>{
-      if(!recipe.occasions.includes(occasion)) return;
-      if(!recipe.weather.includes(weather)) return;
-      const parts=[]; const missing=[];
-      recipe.slots.forEach(([type, colors])=>{
-        const owned = ownItems().filter(i=>i.type===type && colors.includes(i.color) && seasonOK(i, weather));
-        if(owned.length){
-          const preferred = owned.find(i=>store.profile.palette.includes(i.color)) || owned[0];
-          parts.push(preferred);
-        } else {
-          const reco = state.catalog.find(i=>i.type===type && colors.includes(i.color));
-          if(reco){ const m={...reco, missing:true}; parts.push(m); missing.push(m); }
-        }
-      });
-      if(parts.length === recipe.slots.length){
-        const score = 70 + paletteScore(parts)*4 - missing.length*12 + (recipe.style===store.profile.style ? 8 : 0);
-        looks.push({id:recipe.id,title:recipe.title,style:recipe.style,occasion,weather,parts,missing,score,reason:recipe.reason});
+    const own=ownItems(), looks=[];
+    const choices=recipes.filter(r=>r.occasions.includes(occasion));
+    const ranked=choices.length?choices:recipes;
+    for(const recipe of ranked){
+      const parts=[], missing=[];
+      for(const [type,colors] of recipe.slots){
+        const selected=own.filter(x=>x.type===type).sort((a,b)=>
+          (colors.includes(b.color)?8:0)-(colors.includes(a.color)?8:0) +
+          (seasonOK(b,weather)?3:0)-(seasonOK(a,weather)?3:0))[0];
+        if(selected){parts.push({...selected,missing:false});continue;}
+        const candidate=state.catalog.find(x=>x.type===type&&colors.includes(x.color)) ||
+          state.catalog.find(x=>x.type===type);
+        if(candidate){const suggestion={...candidate,missing:true};parts.push(suggestion);missing.push(suggestion);}
       }
-    });
-    return looks.sort((a,b)=>b.score-a.score).slice(0,3);
+      if(parts.length!==recipe.slots.length)continue;
+      const score=75+Math.min(12,parts.length*3)-missing.length*14+
+        (recipe.weather.includes(weather)?5:0)+(recipe.style===store.profile.style?5:0);
+      looks.push({id:recipe.id,title:recipe.title,style:recipe.style,occasion,weather,
+        parts,missing,score,reason:recipe.reason});
+    }
+    looks.sort((a,b)=>a.missing.length-b.missing.length||b.score-a.score);
+    if(!looks.length&&own.length){
+      const groups=['top','bottom','shoes'].map(group=>own.find(x=>GROUP[x.type]===group)).filter(Boolean);
+      if(groups.length>=2){
+        const parts=[...groups],missing=[];
+        for(const group of ['top','bottom','shoes']){
+          if(parts.some(p=>GROUP[p.type]===group))continue;
+          const found=state.catalog.find(p=>GROUP[p.type]===group);
+          if(found){const p={...found,missing:true};parts.push(p);missing.push(p);}
+        }
+        looks.push({id:'fallback',title:'Твой базовый комплект',style:'minimal',occasion,weather,
+        parts,missing,score:70-missing.length*12,reason:'Сочетание из доступных вещей твоего гардероба.'});
+      }
+    }
+    return looks.slice(0,3);
   }
   function todayLooks(){ return generateLooks({occasion:state.filters.outfitOccasion, weather:state.filters.outfitWeather}); }
   function lookPhoto(look){ return lookPhotos[look.occasion] || stylePhotos[look.style] || stylePhotos.casual; }
@@ -434,11 +452,16 @@ body:before{display:none}
       </div>`;
     }
     if(kind==='addItem'){
-      const firstBatch=state.catalog.slice(0,12);
-      html=`<div class='sheetHandle'></div><h2 class='sheetTitle'>Добавить вещь</h2><p class='sheetSub'>Выбери готовую карточку из каталога или добавь вещь вручную.</p>
-      <div class='chips' style='margin-bottom:10px'><button class='chip active'>Из каталога</button><button class='chip' onclick='window.appAction("manualForm")'>Вручную</button></div>
-      <div class='grid2'>${firstBatch.map(p=>`<div class='itemCard' onclick='window.appAction("addFromCatalog","${p.id}")'><div class='itemVisual' style='height:130px'><img alt='' src='${productImage(p)}' style='width:100%;height:100%;object-fit:contain'></div><div class='itemBody'><div class='itemName'>${p.brand}</div><div class='metaLine'>${TYPES[p.type]} · ${COLORS[p.color][0]}</div></div></div>`).join('')}</div>
-      <div class='sheetFooter'><button class='btn line' onclick='window.appAction("manualForm")'>Добавить вручную</button><button class='btn dark' onclick='window.appAction("switchTab","catalog")'>Открыть каталог</button></div>`;
+      const q=(state.addQuery||'').toLowerCase().trim(), cat=state.addCategory||'all';
+      const items=state.catalog.filter(p=>(cat==='all'||GROUP[p.type]===cat) &&
+        (!q||[p.brand,p.name,p.sku,TYPES[p.type],COLORS[p.color]?.[0]].join(' ').toLowerCase().includes(q)));
+      html=`<div class='sheetHandle'></div><h2 class='sheetTitle'>Добавить вещь</h2>
+        <p class='sheetSub'>Все ${state.catalog.length} товаров Lamoda. Поиск по названию, бренду, цвету или артикулу.</p>
+        <div class='search'><span>⌕</span><input id='addSearch' value='${(state.addQuery||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}' placeholder='Найти вещь' oninput='window.appAction("addSearch",this.value)'></div>
+        <div class='chips' style='margin:12px 0'>${[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Слои']].map(([k,v])=>`<button class='chip ${cat===k?'active':''}' onclick='window.appAction("addCategory","${k}")'>${v}</button>`).join('')}</div>
+        <div class='helper' style='margin-bottom:8px'>Найдено: ${items.length}</div>
+        <div class='grid2'>${items.map(p=>`<div class='itemCard' onclick='window.appAction("addFromCatalog","${p.id}")'><div class='itemVisual' style='height:130px'><img alt='' src='${productImage(p)}' style='width:100%;height:100%;object-fit:contain'></div><div class='itemBody'><div class='itemName'>${p.brand}</div><div class='metaLine'>${p.name} · ${COLORS[p.color]?.[0]}</div></div></div>`).join('')}</div>
+        <div class='sheetFooter'><button class='btn line' onclick='window.appAction("manualForm")'>Добавить вручную</button><button class='btn dark' onclick='window.appAction("switchTab","catalog")'>Каталог</button></div>`;
     }
     if(kind==='editProfile'){
       const p=store.profile;
@@ -641,7 +664,9 @@ body:before{display:none}
     if(action==='setOccasion'){ state.filters.outfitOccasion=payload; renderHome(); renderOutfits(); }
     if(action==='setWeather'){ state.filters.outfitWeather=payload; renderHome(); renderOutfits(); }
     if(action==='searchCatalog'){ state.filters.catalogSearch=payload; const input=document.activeElement; const at=input && input.selectionStart; renderCatalog(); const next=document.querySelector('#catalogScreen .search input'); if(next){next.focus(); if(at!==null) next.setSelectionRange(at,at); } }
-    if(action==='openAdd'){ openSheet('addItem'); }
+    if(action==='openAdd'){ state.addQuery='';state.addCategory='all';openSheet('addItem'); }
+    if(action==='addCategory'){state.addCategory=payload;openSheet('addItem');}
+    if(action==='addSearch'){state.addQuery=payload;const input=document.activeElement;const at=input?.selectionStart;openSheet('addItem');const next=document.getElementById('addSearch');if(next){next.focus();try{next.setSelectionRange(at,at)}catch(e){}}}
     if(action==='manualForm'){ openSheet('manualForm'); }
     if(action==='saveManual'){
       const item={id:'manual_'+Date.now(), ownedId:'manual_'+Date.now(), brand:'Моя вещь', name:document.getElementById('manualName').value || 'Новая вещь', type:document.getElementById('manualType').value, color:document.getElementById('manualColor').value, fit:document.getElementById('manualFit').value, season:document.getElementById('manualSeason').value, material:'', sku:'', price:null, url:''};
