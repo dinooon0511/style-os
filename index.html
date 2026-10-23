@@ -524,6 +524,7 @@ body:before{display:none}
       const ts=sortGroup('top'),bs=sortGroup('bottom'),ss=sortGroup('shoes'),ls=sortGroup('layer').slice(0,5);
       for(const t of ts)for(const b of bs)for(const shoe of ss)for(const layer of (weather==='hot'?[null]:weather==='cold'?ls:[null,...ls])){
         if(weather==='cold'&&(!layer||!['coat','jacket'].includes(layer.type)))continue;
+        if(weather==='mild'&&!layer&&!['knit','hoodie'].includes(t.type))continue;
         const parts=combos(t,b,shoe,layer),keys=parts.map(p=>p.catalogId||p.ownedId||p.id),id=keys.join('|');
         if(seen.has(id))continue;seen.add(id);
         const missing=parts.filter(p=>p.missing),ev=compatibility(parts,style,weather,occasion);
