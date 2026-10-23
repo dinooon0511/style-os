@@ -396,40 +396,85 @@ body:before{display:none}
   function paletteScore(parts){ const neutral=['white','cream','beige','gray','charcoal','black','navy','olive']; return parts.reduce((sum,p)=> sum + (neutral.includes(p.color)?1:0),0); }
   function seasonOK(item, weather){ if(weather==='mild') return ['all','mild','warm','cold'].includes(item.season) || !item.season; if(weather==='hot') return ['all','warm'].includes(item.season)||!item.season; if(weather==='cold') return ['all','cold'].includes(item.season)||!item.season; return true; }
   function ownItems(){ return store.wardrobe; }
-  function generateLooks({occasion, weather}){
-    const own=ownItems(), looks=[];
-    const choices=recipes.filter(r=>r.occasions.includes(occasion));
-    const ranked=choices.length?choices:recipes;
-    for(const recipe of ranked){
-      const parts=[], missing=[];
+  // STYLE OS rule engine v1: deterministic, explainable, no AI/API requests.
+  const STYLE_RULES={
+    minimal:{colors:['black','white','cream','gray','charcoal','beige','navy'],fits:['straight','regular','relaxed','wide','oversized'],texture:'clean'},
+    smart:{colors:['navy','cream','white','beige','charcoal','brown','gray'],fits:['regular','straight','relaxed','wide'],texture:'tailored'},
+    oldmoney:{colors:['navy','brown','cream','beige','white','olive','gray'],fits:['regular','straight','relaxed','wide'],texture:'knit'},
+    classic:{colors:['navy','charcoal','black','white','cream','brown'],fits:['regular','straight','relaxed','wide'],texture:'tailored'},
+    casual:{colors:['black','white','cream','gray','navy','olive','brown','beige'],fits:['regular','relaxed','wide','oversized'],texture:'soft'}
+  };
+  const STYLE_PALETTES=[
+    ['black','charcoal','gray','white'],['brown','beige','cream','olive'],
+    ['navy','blue','white','gray'],['olive','black','gray','cream'],
+    ['brown','charcoal','cream','white'],['beige','white','cream','navy']
+  ];
+  function normalizeFit(x){const f=String(x.fit||'regular').toLowerCase();return f.includes('oversiz')?'oversized':f.includes('baggy')?'baggy':f.includes('wide')?'wide':f.includes('relax')?'relaxed':f.includes('straight')?'straight':f.includes('slim')?'slim':f.includes('skinny')?'skinny':'regular';}
+  function itemTags(x){
+    const fit=normalizeFit(x), color=x.color||'unknown',type=x.type;
+    return {type,color,fit,group:GROUP[type]||'top',season:x.season||'all',
+      dressy:['trousers','chinos','shirt','polo','knit','blazer','coat','loafers','derby'].includes(type),
+      structured:['jacket','overshirt','blazer','coat','derby','loafers'].includes(type),
+      volume:['wide','baggy','oversized','relaxed'].includes(fit)?'wide':['slim','skinny'].includes(fit)?'narrow':'regular'};
+  }
+  function compatibility(parts,recipe,weather){
+    let score=60;const reasons=[],flags=[];
+    const tags=parts.map(itemTags),colors=tags.map(t=>t.color);
+    const neutral=['black','white','cream','beige','gray','charcoal','navy','brown','olive'];
+    if(colors.every(c=>neutral.includes(c))){score+=9;reasons.push('Сдержанная палитра объединяет вещи.');}
+    if(STYLE_PALETTES.some(p=>colors.every(c=>p.includes(c)))){score+=7;reasons.push('Оттенки входят в согласованную цветовую группу.');}
+    if(new Set(colors).size<=3){score+=4;reasons.push('Ограниченная палитра сохраняет визуальную цельность.');}
+    const top=tags.find(t=>t.group==='top'),bottom=tags.find(t=>t.group==='bottom'),layer=tags.find(t=>t.group==='layer'),shoe=tags.find(t=>t.group==='shoes');
+    if(bottom?.volume==='wide'){
+      if(top&&top.volume!=='wide'){score+=9;reasons.push('Более собранный верх уравновешивает свободный низ.');}
+      else if(top){score+=3;reasons.push('Свободные объёмы верха и низа поддерживают relaxed-силуэт.');}
+      if(layer?.structured){score+=4;reasons.push('Структурный верхний слой задаёт форму широкому низу.');}
+    }
+    if(shoe&&bottom&&shoe.dressy&&bottom.dressy){score+=6;reasons.push('Обувь поддерживает формальность брюк.');}
+    if(shoe&&bottom&&!shoe.dressy&&!bottom.dressy){score+=5;reasons.push('Повседневный низ и обувь согласованы по настроению.');}
+    if(tags.some(t=>t.type==='knit')&&tags.some(t=>t.type==='shirt')){score+=5;reasons.push('Трикотаж и рубашка создают продуманную многослойность.');}
+    if(weather==='hot'&&tags.some(t=>['coat','hoodie'].includes(t.type))){score-=25;flags.push('Тёплый слой может быть неуместен в жару.');}
+    if(weather==='cold'&&!tags.some(t=>['coat','jacket','overshirt','hoodie','knit'].includes(t.type))){score-=19;flags.push('Для холода может потребоваться утепляющий слой.');}
+    if(tags.filter(t=>t.group==='bottom').length!==1||tags.filter(t=>t.group==='shoes').length!==1){score-=25;flags.push('Нужны один низ и одна пара обуви.');}
+    if(recipe&&STYLE_RULES[recipe.style]&&colors.filter(c=>STYLE_RULES[recipe.style].colors.includes(c)).length>=2)score+=5;
+    return {score:Math.max(0,Math.min(100,score)),reasons:[...new Set(reasons)].slice(0,3),flags};
+  }
+  function choosePart(type,colors,weather,own,style){
+    const rank=x=>{
+      const t=itemTags(x);let v=0;
+      if(colors.includes(t.color))v+=14;
+      if(seasonOK(x,weather))v+=10;else v-=18;
+      if(STYLE_RULES[style]?.colors.includes(t.color))v+=4;
+      if(STYLE_RULES[style]?.fits.includes(t.fit))v+=3;
+      return v;
+    };
+    const available=own.filter(x=>x.type===type).sort((a,b)=>rank(b)-rank(a));
+    if(available.length)return {...available[0],missing:false};
+    const suggested=state.catalog.filter(x=>x.type===type).sort((a,b)=>rank(b)-rank(a))[0];
+    return suggested?{...suggested,missing:true}:null;
+  }
+  function generateLooks({occasion,weather}){
+    const own=ownItems(),looks=[],ranked=recipes.filter(r=>r.occasions.includes(occasion));
+    for(const recipe of (ranked.length?ranked:recipes)){
+      const parts=[],missing=[];
       for(const [type,colors] of recipe.slots){
-        const selected=own.filter(x=>x.type===type).sort((a,b)=>
-          (colors.includes(b.color)?8:0)-(colors.includes(a.color)?8:0) +
-          (seasonOK(b,weather)?3:0)-(seasonOK(a,weather)?3:0))[0];
-        if(selected){parts.push({...selected,missing:false});continue;}
-        const candidate=state.catalog.find(x=>x.type===type&&colors.includes(x.color)) ||
-          state.catalog.find(x=>x.type===type);
-        if(candidate){const suggestion={...candidate,missing:true};parts.push(suggestion);missing.push(suggestion);}
+        const part=choosePart(type,colors,weather,own,recipe.style);
+        if(!part)break;
+        parts.push(part);if(part.missing)missing.push(part);
       }
       if(parts.length!==recipe.slots.length)continue;
-      const score=75+Math.min(12,parts.length*3)-missing.length*14+
-        (recipe.weather.includes(weather)?5:0)+(recipe.style===store.profile.style?5:0);
-      looks.push({id:recipe.id,title:recipe.title,style:recipe.style,occasion,weather,
-        parts,missing,score,reason:recipe.reason});
+      const evaluation=compatibility(parts,recipe,weather);
+      const score=Math.max(0,evaluation.score-missing.length*12+(recipe.weather.includes(weather)?5:-5));
+      const reason=evaluation.reasons.length?evaluation.reasons.join(' '):recipe.reason;
+      looks.push({id:recipe.id,title:recipe.title,style:recipe.style,occasion,weather,parts,missing,score,
+        reason,explanations:evaluation.reasons,warnings:evaluation.flags});
     }
     looks.sort((a,b)=>a.missing.length-b.missing.length||b.score-a.score);
     if(!looks.length&&own.length){
-      const groups=['top','bottom','shoes'].map(group=>own.find(x=>GROUP[x.type]===group)).filter(Boolean);
-      if(groups.length>=2){
-        const parts=[...groups],missing=[];
-        for(const group of ['top','bottom','shoes']){
-          if(parts.some(p=>GROUP[p.type]===group))continue;
-          const found=state.catalog.find(p=>GROUP[p.type]===group);
-          if(found){const p={...found,missing:true};parts.push(p);missing.push(p);}
-        }
-        looks.push({id:'fallback',title:'Твой базовый комплект',style:'minimal',occasion,weather,
-        parts,missing,score:70-missing.length*12,reason:'Сочетание из доступных вещей твоего гардероба.'});
-      }
+      const parts=['top','bottom','shoes'].map(g=>own.find(x=>GROUP[x.type]===g)||state.catalog.find(x=>GROUP[x.type]===g)).filter(Boolean).map(x=>({...x,missing:!own.some(o=>(o.ownedId&&o.ownedId===x.ownedId)||(o.id&&o.id===x.id))}));
+      if(parts.length>=2){const missing=parts.filter(p=>p.missing),ev=compatibility(parts,null,weather);
+        looks.push({id:'fallback',title:'Твой базовый комплект',style:'minimal',occasion,weather,parts,missing,
+          score:Math.max(0,ev.score-missing.length*12),reason:ev.reasons.join(' ')||'Комбинация из твоего гардероба.',explanations:ev.reasons,warnings:ev.flags});}
     }
     return looks.slice(0,3);
   }
@@ -476,7 +521,7 @@ body:before{display:none}
       const look=payload;
       const missing=look.missing.length;
       html=`<div class='sheetHandle'></div><div class='hero small' style='--hero-image:url(${lookPhoto(look)})'><span class='glassTag'>${getOccLabel(look.occasion)}</span><h2>${look.title}</h2><p>${look.reason}</p></div>
-      <div class='sheetSection'><div class='sectionHead'><div><h3 class='sectionTitle'>Состав образа</h3><div class='sectionHint'>${missing ? 'Не хватает вещей: '+missing : 'Все вещи уже в гардеробе'}</div></div></div>
+      <div class='sheetSection'><h3 class='sectionTitle' style='margin-bottom:8px'>Почему сочетается</h3><p class='helper'>${(look.explanations||[look.reason]).join(' ')}</p>${(look.warnings||[]).length?`<p class='helper' style='color:#916b39'>${look.warnings.join(' ')}</p>`:''}</div><div class='sheetSection'><div class='sectionHead'><div><h3 class='sectionTitle'>Состав образа</h3><div class='sectionHint'>${missing ? 'Не хватает вещей: '+missing : 'Все вещи уже в гардеробе'}</div></div></div>
       <div class='lookItems'>${look.parts.map((p,i)=>`<button type='button' class='lookItem' onclick='window.appAction("openLookPart",${i})'><span class='lookItemImage'><img src='${productImage(p)}' alt=''></span><span class='lookItemInfo'><strong>${TYPES[p.type]}</strong><small>${p.brand ? p.brand+' · ' : ''}${p.name}</small><small class='lookItemDetail'>${p.missing?'Посмотреть товар и артикул':'Открыть карточку вещи'} →</small></span><span class='${p.missing?'stateNeed':'stateGood'}'>${p.missing?'Докупить':'Есть'}</span></button>`).join('')}</div></div>
       <div class='sheetFooter'>
         <button class='btn line' onclick='window.appAction("saveLook","${look.id}")'>Сохранить</button>
