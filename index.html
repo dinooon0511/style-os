@@ -282,6 +282,18 @@ body:before{display:none}
 .lookItemInfo .lookItemDetail{color:var(--olive-deep);font-weight:600}
 .lookItem .stateNeed,.lookItem .stateGood{font-size:10px;padding:6px 8px;flex:0 0 auto}
 @media(max-width:390px){.lookItem{gap:7px}.lookItemImage{width:52px;height:62px;flex-basis:52px}.lookItem .stateNeed,.lookItem .stateGood{padding:5px 6px;font-size:9px}}
+
+/* Outfit-only editorial flat lay: real wardrobe items rather than lifestyle photos */
+.outfitFlatlay{padding:14px;background:#e9e7e0}
+.outfitFlatlayGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.outfitFlatlayItem{min-width:0;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 7px;border:1px solid rgba(255,255,255,.84);border-radius:18px;background:#f6f4ef;cursor:pointer;color:#292d27}
+.outfitFlatlayItem img{display:block;width:100%;height:110px;object-fit:contain}
+.outfitFlatlayItem span{font:500 11px/1.35 Helvetica,Arial,sans-serif;text-align:center}
+.outfitIntro{padding:14px 15px 3px}
+.outfitIntro h3{font:600 22px/1.15 Helvetica,Arial,sans-serif;margin:5px 0 6px}
+.outfitIntro p{font:400 12px/1.45 Helvetica,Arial,sans-serif;color:var(--muted);margin:0 0 8px}
+@media(min-width:700px){.outfitFlatlayGrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:380px){.outfitFlatlayItem{min-height:116px}.outfitFlatlayItem img{height:86px}}
 </style>
 </head>
 <body>
@@ -528,7 +540,6 @@ body:before{display:none}
         <span class='glassTag'>Образ дня</span>
         <h1>${lead ? lead.title : 'Соберём твой первый образ'}</h1>
         <p>${lead ? lead.reason : 'Добавь несколько вещей — и приложение покажет готовые сочетания на каждый день.'}</p>
-        ${lead ? `<div class='heroComposition'><div class='heroCompositionLabel'>Вещи этого образа <span>· ${lead.parts.length} позиции</span></div><div class='heroPieces'>${lead.parts.map((p,i)=>`<button type='button' class='heroPiece' onclick='event.stopPropagation();window.appAction("openLeadPart",${i})' aria-label='Открыть ${TYPES[p.type]}'><img src='${productImage(p)}' alt='${TYPES[p.type]}'><span class='heroPieceLabel'>${TYPES[p.type]}</span>${p.missing?'<span class="heroPieceMissing">+</span>':''}</button>`).join('')}</div></div>` : ''}
         <div class='buttonRow'>
           <button class='btn primary' onclick='window.appAction("openLeadLook")'>Смотреть образ</button>
           <button class='btn soft' onclick='window.appAction("switchTab","wardrobe")'>Мой гардероб</button>
@@ -574,7 +585,7 @@ body:before{display:none}
     screen.innerHTML=`<div class='topbar'><div><div class='subtle'>build your look</div><div class='brand'>Образы</div></div><button class='btn line small' onclick='window.appAction("shuffle")'>Обновить</button></div>
       <div class='section'><div class='sectionHint'>Повод</div><div class='chips'>${[['everyday','Повседневность'],['office','Офис'],['date','Свидание'],['restaurant','Ужин'],['travel','Поездка']].map(([k,v])=>`<button class='chip ${occ===k?'active':''}' onclick='window.appAction("setOccasion","${k}")'>${v}</button>`).join('')}</div></div>
       <div class='section'><div class='sectionHint'>Погода</div><div class='chips'>${[['hot','Тепло'],['mild','Прохладно'],['cold','Холодно']].map(([k,v])=>`<button class='chip ${weather===k?'active':''}' onclick='window.appAction("setWeather","${k}")'>${v}</button>`).join('')}</div></div>
-      <section class='section'>${looks.length ? looks.map(look=>`<article class='outfitCard' style='margin-bottom:14px'><div class='outfitHero' style='--look:url(${lookPhoto(look)})'><span class='glassTag'>${store.profile.style==='all' ? 'STYLE OS' : store.profile.style}</span><h3>${look.title}</h3><p>${look.reason}</p></div><div class='outfitBody'><div class='itemPills'>${look.parts.map(item=>`<span class='pill'>${TYPES[item.type]}${item.missing?' · купить':''}</span>`).join('')}</div><div class='heroCaption'><span class='${look.missing.length?'stateNeed':'stateGood'}'>${look.missing.length ? 'Не хватает '+look.missing.length : 'Полный комплект'}</span><button class='btn dark small' onclick='window.appAction("openLook","${look.id}")'>Открыть</button></div></div></article>`).join('') : `<div class='card empty'><div style='font-size:38px'>✦</div><h3 style='margin:8px 0'>Пока мало вещей</h3><p>Добавь больше одежды в гардероб, чтобы собрать полноценные образы под выбранный повод.</p><button class='btn dark' onclick='window.appAction("switchTab","catalog")'>Открыть каталог</button></div>`}</section>`;
+      <section class='section'>${looks.length ? looks.map(look=>`<article class='outfitCard' style='margin-bottom:14px'><div class='outfitFlatlay'><div class='outfitFlatlayGrid'>${look.parts.map((item,i)=>`<button type='button' class='outfitFlatlayItem' onclick='window.appAction("openOutfitPart","${look.id}:${i}")' aria-label='Посмотреть ${TYPES[item.type]}'><img src='${productImage(item)}' alt='${TYPES[item.type]}'><span>${TYPES[item.type]}${item.missing?' · докупить':''}</span></button>`).join('')}</div></div><div class='outfitIntro'><span class='subtle'>${getOccLabel(look.occasion)}</span><h3>${look.title}</h3><p>${look.reason}</p></div><div class='outfitBody'><div class='itemPills'>${look.parts.map(item=>`<span class='pill'>${TYPES[item.type]}${item.missing?' · купить':''}</span>`).join('')}</div><div class='heroCaption'><span class='${look.missing.length?'stateNeed':'stateGood'}'>${look.missing.length ? 'Не хватает '+look.missing.length : 'Полный комплект'}</span><button class='btn dark small' onclick='window.appAction("openLook","${look.id}")'>Открыть</button></div></div></article>`).join('') : `<div class='card empty'><div style='font-size:38px'>✦</div><h3 style='margin:8px 0'>Пока мало вещей</h3><p>Добавь больше одежды в гардероб, чтобы собрать полноценные образы под выбранный повод.</p><button class='btn dark' onclick='window.appAction("switchTab","catalog")'>Открыть каталог</button></div>`}</section>`;
     document.getElementById('floatingAdd').classList.add('hidden');
   }
   function renderCatalog(){
@@ -708,6 +719,15 @@ body:before{display:none}
       const part=look?.parts[Number(payload)];
       if(part){
         const full=state.catalog.find(c=>c.id===(part.catalogId||part.id));
+        openSheet(part.missing?'product':'item',part.missing?(full||part):part);
+      }
+    }
+    if(action==='openOutfitPart'){
+      const [id,index]=String(payload).split(':');
+      const look=todayLooks().find(x=>x.id===id);
+      const part=look?.parts[Number(index)];
+      if(part){
+        const full=state.catalog.find(x=>x.id===(part.catalogId||part.id));
         openSheet(part.missing?'product':'item',part.missing?(full||part):part);
       }
     }
