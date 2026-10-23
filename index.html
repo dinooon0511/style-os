@@ -580,7 +580,7 @@ body:before{display:none}
       store.forecast=null;saveStore();closeSheet();updateForecast();renderHome();
     },()=>toast('Геолокация не разрешена — выбери город вручную'),{enableHighAccuracy:false,timeout:12000});
   }
-  function dayKey(){return new Date().toLocaleDateString('en-CA');}
+  function dayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   function dailyData(){
     const key=dayKey()+'-'+state.filters.outfitWeather;
     if(!store.daily||store.daily.key!==key){
@@ -622,9 +622,9 @@ body:before{display:none}
       html=`<div class='sheetHandle'></div><div class='sheetSection'><h2 class='sheetTitle'>Город и погода</h2><p class='helper'>Укажи город для прогноза. Геолокация запрашивается только по нажатию. Местоположение хранится в браузере, а координаты отправляются погодному сервису при запросе прогноза.</p><div style='display:flex;gap:7px;margin-top:16px'><input id='citySearch' placeholder='Например, Санкт-Петербург' style='min-width:0;flex:1;padding:10px;border:1px solid #ddd;border-radius:10px'><button class='btn dark small' onclick='window.appAction("setCityManual")'>Найти</button></div><button class='btn line' style='width:100%;margin-top:10px' onclick='window.appAction("setCityGps")'>Определить местоположение</button></div>`;
     }
     if(kind==='daily'){
-      const d=dailyData(),looks=dailyOptions(),current=looks[d.index];
+      const d=dailyData(),looks=dailyOptions(),current=d.selected?null:looks[d.index];
       const likes=looks.filter(l=>d.votes[l.identity]==='like');
-      const options=likes.length?likes:looks;
+      const options=d.selected?looks:(likes.length?likes:looks);
       html=`<div class='sheetHandle'></div><div class='sheetSection'><div class='subtle'>STYLE OS / ОБРАЗ ДНЯ</div><h2 class='sheetTitle'>${current?'Выбери образ дня':'Твой выбор на сегодня'}</h2><p class='helper'>${current?'Вариант '+(d.index+1)+' из '+looks.length+'. Свайп вправо — нравится, влево — не нравится.':'Выбери один комплект из списка или открой все образы.'}</p></div>
       ${current?`<div id='dailySwipe'><div class='dailyPieces'>${current.parts.map(p=>`<div><img alt='' src='${productImage(p)}'><small>${TYPES[p.type]}${p.missing?' · докупить':''}</small></div>`).join('')}</div><div class='sheetSection'><h3 class='sectionTitle'>${current.title}</h3><p class='helper'>${current.reason}</p></div></div><div class='sheetSection dailyVoteActions'><button class='btn line' onclick='window.appAction("dailyVote","dislike")'>← Не нравится</button><button class='btn dark' onclick='window.appAction("dailyVote","like")'>Нравится →</button></div>`:
       `<div class='sheetSection'><p class='helper'>${likes.length?'Понравившиеся образы':'Все варианты отклонены — можно выбрать любой из них.'}</p><div class='dailyPickList'>${options.map(l=>`<button class='dailyPick' onclick='window.appAction("dailyChoose","${l.identity}")'><strong>${l.title}</strong><small>${l.parts.map(p=>TYPES[p.type]).join(' · ')}</small><span>Сделать образом дня →</span></button>`).join('')}</div></div>`}
@@ -724,7 +724,7 @@ body:before{display:none}
     const savedCount=store.savedLooks.length;
     const screen=document.getElementById('homeScreen');
     screen.innerHTML=`<div class='topbar'><div><div class='subtle'>personal style system</div><div class='brand'>STYLE OS</div></div><div class='avatar'></div></div>
-      <div class='dailyWeatherBar'><span>${store.city?store.city.label:'Город не выбран'}${store.forecast?.day===dayKey()?' · '+Math.round(store.forecast.low)+'…'+Math.round(store.forecast.high)+'°C':''}</span><button onclick='window.appAction("openCity")'>${store.city?'Изменить':'Указать город'} ↗</button></div>
+      <div class='dailyWeatherBar'><span>${store.city?store.city.label:'Город не выбран'}${store.forecast?.day===dayKey()?' · '+Math.round(store.forecast.low)+'…'+Math.round(store.forecast.high)+'°C · завтра '+Math.round(store.forecast.tomorrowLow)+'…'+Math.round(store.forecast.tomorrowHigh)+'°C':''}</span><button onclick='window.appAction("openCity")'>${store.city?'Изменить':'Указать город'} ↗</button></div>
       <section class='hero'>
         <span class='glassTag'>Образ дня</span>
         <h1>${lead ? lead.title : 'Соберём твой первый образ'}</h1>
