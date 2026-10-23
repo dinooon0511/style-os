@@ -447,7 +447,7 @@ body:before{display:none}
   }
   function compatibility(parts,style,weather,occasion){
     const tags=parts.map(itemTags),colors=tags.map(t=>t.color),reasons=[],warnings=[],fired=[];
-    let score=50;
+    let score=32;
     const add=(id,delta,message)=>{score+=delta;fired.push(id);if(message&&delta>0)reasons.push(message);};
     if(colors.every(c=>['black','white','cream','beige','gray','charcoal','navy','brown','olive','blue'].includes(c)))add('C01',8,'Спокойная цветовая гамма связывает вещи.');
     if(PALETTES.some(p=>colors.every(c=>p.includes(c))))add('C02',7,'Оттенки образуют согласованную палитру.');
