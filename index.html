@@ -799,7 +799,7 @@ body:before{display:none}
   }
   async function init(){
     loadStore();
-    state.catalog=embeddedCatalog;
+    state.catalog=[...embeddedCatalog,{id:'ref-white-tee-001',brand:'STYLE OS · типовой пример',name:'Белая футболка',type:'tee',color:'white',fit:'regular',season:'all',material:'Не подтверждён',sku:'',url:'',price:null,source:'reference',photo:'https://commons.wikimedia.org/wiki/Special:FilePath/White-tshirt.jpg',image_status:'reference_image',availability:'not_for_sale'}];
     if(store.onboarded===false){ document.getElementById('onboarding').classList.add('show'); } else { document.getElementById('onboarding').classList.remove('show'); if(store.wardrobe === null || !Array.isArray(store.wardrobe)) { store.wardrobe=seedWardrobe(state.catalog); saveStore(); } }
     buildOnboarding();
     renderScreens();
