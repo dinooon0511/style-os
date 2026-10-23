@@ -320,7 +320,7 @@ body:before{display:none}
 .catalogProductCard .catalogProductFoot{margin-top:auto}
 .catalogProductCard .catalogProductPrice{font-size:11px;margin-top:0}
 @media(max-width:390px){.catalogProductCard .catalogProductBody{padding:8px 9px}.catalogProductCard .catalogProductName{font-size:12px}}
-.dailyPieces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px}.dailyPieces div{background:#efeee9;border-radius:12px;overflow:hidden;text-align:center}.dailyPieces img{width:100%;height:130px;object-fit:contain}.dailyPieces small{display:block;padding:6px}.dailyVoteActions{display:flex;gap:9px}.dailyVoteActions button{flex:1}.dailyPickList{display:grid;gap:9px;margin-top:12px}.dailyPick{display:grid;gap:5px;padding:13px;border:1px solid #dedbd3;border-radius:12px;background:#f8f7f3;text-align:left}.dailyPick small{color:#777}.dailyPick span{font-size:12px}#dailySwipe{touch-action:pan-y}.dailyWeatherBar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 4px;font-size:12px;color:#716f67}.dailyWeatherBar button{border:0;background:transparent;text-decoration:underline;color:inherit;cursor:pointer}</style>
+.dailyPieces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px}.dailyPieces div{background:#efeee9;border-radius:12px;overflow:hidden;text-align:center}.dailyPieces img{width:100%;height:130px;object-fit:contain}.dailyPieces small{display:block;padding:6px}.dailyVoteActions{display:flex;gap:9px}.dailyVoteActions button{flex:1}.dailyPickList{display:grid;gap:9px;margin-top:12px}.dailyPick{display:grid;gap:5px;padding:13px;border:1px solid #dedbd3;border-radius:12px;background:#f8f7f3;text-align:left}.dailyPick small{color:#777}.dailyPick span{font-size:12px}#dailySwipe{touch-action:pan-y}.dailyWeatherBar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 4px;font-size:12px;color:#716f67}.dailyWeatherBar button{border:0;background:transparent;text-decoration:underline;color:inherit;cursor:pointer}.dailySwipeCard{position:relative;touch-action:pan-y;user-select:none;cursor:grab;will-change:transform;background:#faf9f6;border-radius:16px;margin:0 10px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.07)}.dailySwipeCard:active{cursor:grabbing}.dailySwipeNo,.dailySwipeYes{position:absolute;z-index:3;top:22px;font-weight:800;letter-spacing:.08em;padding:9px;border:3px solid;border-radius:8px;opacity:0;pointer-events:none;transform:rotate(-12deg)}.dailySwipeNo{right:16px;color:#ab5b4e}.dailySwipeYes{left:16px;color:#57765d;transform:rotate(12deg)}.dailyDirectPick{display:inline-block;padding:8px 12px;border-radius:9px;background:#242922;color:white;font-size:12px;cursor:pointer}.dailyHomePieces{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-width:430px;margin:12px 0}.dailyHomePieces div{background:rgba(255,255,255,.82);border-radius:9px;overflow:hidden}.dailyHomePieces img{display:block;width:100%;height:90px;object-fit:contain}.dailyPreviewPieces img{height:175px}</style>
 </head>
 <body>
 <div class="app">
@@ -601,10 +601,46 @@ body:before{display:none}
     const d=dailyData();if(!dailyOptions().some(l=>l.identity===key))return;
     d.selected=key;saveStore();closeSheet();renderHome();toast('Образ дня выбран');
   }
+  function animateDailyVote(value){
+    const card=document.getElementById('dailySwipe');
+    if(!card||card.dataset.leaving==='yes'){return;}
+    card.dataset.leaving='yes';
+    card.style.transition='transform 330ms cubic-bezier(.22,.8,.2,1),opacity 330ms ease';
+    card.style.transform='translateX('+(value==='like'?110:-110)+'vw) rotate('+(value==='like'?18:-18)+'deg)';
+    card.style.opacity='0';
+    document.querySelectorAll('.dailyVoteActions button').forEach(b=>b.disabled=true);
+    window.setTimeout(()=>dailyVote(value),340);
+  }
   function initDailySwipe(){
-    const el=document.getElementById('dailySwipe');if(!el)return;let startX=null,startY=null;
-    el.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;},{passive:true});
-    el.addEventListener('touchend',e=>{if(startX===null)return;const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;startX=null;if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.3)dailyVote(dx>0?'like':'dislike');},{passive:true});
+    const card=document.getElementById('dailySwipe');if(!card)return;
+    let startX=0,startY=0,active=false,dragging=false;
+    card.addEventListener('pointerdown',e=>{
+      if(e.button!==0||card.dataset.leaving==='yes')return;
+      active=true;dragging=false;startX=e.clientX;startY=e.clientY;
+      card.style.transition='none';
+      card.setPointerCapture(e.pointerId);
+    });
+    card.addEventListener('pointermove',e=>{
+      if(!active)return;
+      const dx=e.clientX-startX,dy=e.clientY-startY;
+      if(Math.abs(dy)>Math.abs(dx)*1.5&&!dragging)return;
+      if(Math.abs(dx)>7)dragging=true;
+      if(!dragging)return;
+      card.style.transform='translateX('+dx+'px) rotate('+(dx/22)+'deg)';
+      const left=card.querySelector('.dailySwipeNo'),right=card.querySelector('.dailySwipeYes');
+      if(left)left.style.opacity=String(Math.min(1,Math.max(0,-dx/90)));
+      if(right)right.style.opacity=String(Math.min(1,Math.max(0,dx/90)));
+    });
+    const finish=e=>{
+      if(!active)return;active=false;
+      const dx=e.clientX-startX;
+      if(dragging&&Math.abs(dx)>85){animateDailyVote(dx>0?'like':'dislike');return;}
+      card.style.transition='transform 220ms ease';
+      card.style.transform='translateX(0) rotate(0)';
+      for(const x of card.querySelectorAll('.dailySwipeNo,.dailySwipeYes'))x.style.opacity='0';
+    };
+    card.addEventListener('pointerup',finish);
+    card.addEventListener('pointercancel',()=>{active=false;card.style.transition='transform 220ms ease';card.style.transform='';});
   }
   function todayLooks(){ return generateLooks({occasion:state.filters.outfitOccasion, weather:state.filters.outfitWeather}); }
   function lookPhoto(look){ return lookPhotos[look.occasion] || stylePhotos[look.style] || stylePhotos.casual; }
@@ -626,9 +662,13 @@ body:before{display:none}
       const likes=looks.filter(l=>d.votes[l.identity]==='like');
       const options=d.selected?looks:(likes.length?likes:looks);
       html=`<div class='sheetHandle'></div><div class='sheetSection'><div class='subtle'>STYLE OS / ОБРАЗ ДНЯ</div><h2 class='sheetTitle'>${current?'Выбери образ дня':'Твой выбор на сегодня'}</h2><p class='helper'>${current?'Вариант '+(d.index+1)+' из '+looks.length+'. Свайп вправо — нравится, влево — не нравится.':'Выбери один комплект из списка или открой все образы.'}</p></div>
-      ${current?`<div id='dailySwipe'><div class='dailyPieces'>${current.parts.map(p=>`<div><img alt='' src='${productImage(p)}'><small>${TYPES[p.type]}${p.missing?' · докупить':''}</small></div>`).join('')}</div><div class='sheetSection'><h3 class='sectionTitle'>${current.title}</h3><p class='helper'>${current.reason}</p></div></div><div class='sheetSection dailyVoteActions'><button class='btn line' onclick='window.appAction("dailyVote","dislike")'>← Не нравится</button><button class='btn dark' onclick='window.appAction("dailyVote","like")'>Нравится →</button></div>`:
-      `<div class='sheetSection'><p class='helper'>${likes.length?'Понравившиеся образы':'Все варианты отклонены — можно выбрать любой из них.'}</p><div class='dailyPickList'>${options.map(l=>`<button class='dailyPick' onclick='window.appAction("dailyChoose","${l.identity}")'><strong>${l.title}</strong><small>${l.parts.map(p=>TYPES[p.type]).join(' · ')}</small><span>Сделать образом дня →</span></button>`).join('')}</div></div>`}
+      ${current?`<div id='dailySwipe' class='dailySwipeCard'><span class='dailySwipeNo'>НЕ НРАВИТСЯ</span><span class='dailySwipeYes'>НРАВИТСЯ</span><div class='dailyPieces'>${current.parts.map(p=>`<div><img alt='' src='${productImage(p)}'><small>${TYPES[p.type]}${p.missing?' · докупить':''}</small></div>`).join('')}</div><div class='sheetSection'><h3 class='sectionTitle'>${current.title}</h3><p class='helper'>${current.reason}</p></div></div><div class='sheetSection dailyVoteActions'><button class='btn line' onclick='window.appAction("dailyVote","dislike")'>← Не нравится</button><button class='btn dark' onclick='window.appAction("dailyVote","like")'>Нравится →</button></div>`:
+      `<div class='sheetSection'><p class='helper'>${likes.length?'Понравившиеся образы':'Все варианты отклонены — можно выбрать любой из них.'}</p><div class='dailyPickList'>${options.map(l=>`<button class='dailyPick' onclick='window.appAction("dailyPreview","${l.identity}")'><strong>${l.title}</strong><small>${l.parts.map(p=>TYPES[p.type]).join(' · ')}</small><span class='dailyDirectPick' role='button' tabindex='0' onclick='event.stopPropagation();window.appAction("dailyChoose","${l.identity}")'>Выбрать этот образ →</span></button>`).join('')}</div></div>`}
       <div class='sheetSection' style='display:flex;gap:8px;flex-wrap:wrap'><button class='btn line small' onclick='window.appAction("dailyOutfits")'>Выбрать во вкладке «Образы»</button><button class='btn line small' onclick='window.appAction("dailyReset")'>Начать заново</button></div>`;
+    }
+    if(kind==='dailyPreview'){
+      const l=payload;
+      html=`<div class='sheetHandle'></div><div class='sheetSection'><div class='subtle'>STYLE OS / ПРЕДПРОСМОТР</div><h2 class='sheetTitle'>${l.title}</h2><p class='helper'>${l.reason}</p></div><div class='dailyPieces dailyPreviewPieces'>${l.parts.map(p=>`<div><img src='${productImage(p)}' alt='${TYPES[p.type]}'><small>${TYPES[p.type]}${p.missing?' · докупить':''}</small></div>`).join('')}</div><div class='sheetSection' style='display:flex;gap:8px'><button class='btn line' onclick='window.appAction("dailyBack")'>Назад</button><button class='btn dark' onclick='window.appAction("dailyChoose","${l.identity}")'>Выбрать этот образ</button></div>`;
     }
     if(kind==='item'){
       const item=payload;
@@ -719,7 +759,8 @@ body:before{display:none}
   }
   function renderHome(){
     const looks=todayLooks();
-    const lead=chosenDaily()||looks[0];
+    const picked=chosenDaily();
+    const lead=picked||looks[0];
     const wardrobeCount=store.wardrobe.length;
     const savedCount=store.savedLooks.length;
     const screen=document.getElementById('homeScreen');
@@ -729,8 +770,9 @@ body:before{display:none}
         <span class='glassTag'>Образ дня</span>
         <h1>${lead ? lead.title : 'Соберём твой первый образ'}</h1>
         <p>${lead ? lead.reason : 'Добавь несколько вещей — и приложение покажет готовые сочетания на каждый день.'}</p>
+        ${picked?`<div class='dailyHomePieces'>${picked.parts.map(p=>`<div><img src='${productImage(p)}' alt='${TYPES[p.type]}'></div>`).join('')}</div>`:''}
         <div class='buttonRow'>
-          <button class='btn primary' onclick='window.appAction("openLeadLook")'>Выбрать образ дня</button>
+          <button class='btn primary' onclick='window.appAction("openLeadLook")'>${picked?'Смотреть выбранный образ':'Выбрать образ дня'}</button>
           <button class='btn soft' onclick='window.appAction("switchTab","wardrobe")'>Мой гардероб</button>
         </div>
       </section>
@@ -872,7 +914,9 @@ body:before{display:none}
     if(action==='openCity'){openSheet('city');}
     if(action==='setCityManual'){setCityManual();}
     if(action==='setCityGps'){setCityGps();}
-    if(action==='dailyVote'){dailyVote(payload);}
+    if(action==='dailyVote'){animateDailyVote(payload);}
+    if(action==='dailyPreview'){const l=dailyOptions().find(x=>x.identity===payload);if(l)openSheet('dailyPreview',l);}
+    if(action==='dailyBack'){openSheet('daily');}
     if(action==='dailyChoose'){dailyChoose(payload);}
     if(action==='dailyReset'){store.daily=null;saveStore();openSheet('daily');}
     if(action==='dailyOutfits'){closeSheet();state.screen='outfits';renderScreens();}
@@ -932,7 +976,7 @@ body:before{display:none}
       if(look){store.feedback.push({items:look.parts.map(p=>p.catalogId||p.id),style:look.style,value:payload==='like'?1:-1});
         store.feedback=store.feedback.slice(-100);saveStore();closeSheet();renderScreens();toast('Спасибо! Учтём в следующих образах.');}
     }
-    if(action==='openLeadLook'){if(todayLooks().length)openSheet('daily');else {state.screen='outfits';renderScreens();}}
+    if(action==='openLeadLook'){const chosen=chosenDaily();if(chosen)openSheet('look',chosen);else if(todayLooks().length)openSheet('daily');else {state.screen='outfits';renderScreens();}}
     if(action==='openLook'){ const look=todayLooks().find(l=>l.id===payload); if(look) openSheet('look',look); }
     if(action==='saveLook'){ if(!store.savedLooks.includes(payload)) store.savedLooks.push(payload); saveStore(); toast('Образ сохранён'); closeSheet(); renderProfile(); }
     if(action==='shoppingFromLook'){ state.screen='catalog'; closeSheet(); renderScreens(); }
