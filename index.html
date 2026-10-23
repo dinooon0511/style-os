@@ -586,7 +586,7 @@ body:before{display:none}
       const p=store.profile;
       html=`<div class='sheetHandle'></div><h2 class='sheetTitle'>Мои настройки</h2><p class='sheetSub'>Размеры, эстетика и бюджет помогают сделать подбор точнее.</p><div class='fields'>
         <div class='field'><label>Имя</label><input id='profileName' value='${p.name||''}'></div>
-        <div class='field'><label>Стиль</label><select id='profileStyle'>${[['minimal','Минимализм'],['oldmoney','Old money'],['smart','Smart casual'],['classic','Классика'],['casual','Casual']].map(([k,v])=>`<option value='${k}' ${p.style===k?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class='field'><label>Стиль</label><select id='profileStyle'>${[['minimal','Минимализм'],['dark_minimal','Тёмный минимализм'],['smart','Smart casual'],['classic','Современная классика'],['oldmoney','Old money'],['utility','Workwear'],['soft_tailoring','Soft tailoring'],['casual','Повседневный'],['summer_relaxed','Летний relaxed'],['winter_layered','Зимняя многослойность']].map(([k,v])=>`<option value='${k}' ${p.style===k?'selected':''}>${v}</option>`).join('')}</select></div>
         <div class='field'><label>Размер верха</label><select id='profileTop'>${['S','M','L','XL','XXL'].map(v=>`<option ${p.topSize===v?'selected':''}>${v}</option>`).join('')}</select></div>
         <div class='field'><label>Размер низа</label><select id='profileBottom'>${['S','M','L','XL','XXL'].map(v=>`<option ${p.bottomSize===v?'selected':''}>${v}</option>`).join('')}</select></div>
         <div class='field'><label>Размер обуви</label><select id='profileShoe'>${['39','40','41','42','43','44','45','46'].map(v=>`<option ${p.shoeSize===v?'selected':''}>${v}</option>`).join('')}</select></div>
