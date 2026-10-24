@@ -337,6 +337,33 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
 .btn.icon,.floatBtn{border-radius:50%}
 .dailyPieces div,.dailyHomePieces div{border-radius:12px}
 @media(max-width:600px){.hero{border-radius:19px}.quickCard,.catalogProductCard{border-radius:14px}.tabbar{border-radius:16px}}
+
+/* Filter visibility and daily outfit caption spacing / 2026-10-24 */
+#wardrobeScreen .chip:not(.active),#outfitsScreen .chip:not(.active){
+  background:#d7d9d2!important;
+  color:#2b302a!important;
+  font-weight:600;
+  opacity:1;
+}
+#wardrobeScreen .chip.active,#outfitsScreen .chip.active{
+  background:#292f29!important;color:#fff!important;
+}
+#wardrobeScreen .chips,#outfitsScreen .chips{padding-top:4px;padding-bottom:7px;gap:8px}
+#dailySwipe .dailyPieces{gap:10px;padding:13px}
+#dailySwipe .dailyPieces>div{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+#dailySwipe .dailyPieces img{height:120px;flex:0 0 120px;min-width:0}
+#dailySwipe .dailyPieces small{
+  display:block;box-sizing:border-box;width:100%;
+  padding:9px 10px 12px;line-height:1.45;min-height:38px;
+  font-size:11px;white-space:normal;overflow-wrap:anywhere;
+}
+#dailySwipe>.sheetSection{padding:5px 17px 19px;margin:0}
+#dailySwipe>.sheetSection h3{margin:0 0 9px;line-height:1.23;overflow-wrap:anywhere}
+#dailySwipe>.sheetSection .helper{margin:0;line-height:1.55;overflow-wrap:anywhere}
+.dailyPick{min-width:0}
+.dailyPickView strong,.dailyPickView small{line-height:1.45;overflow-wrap:anywhere}
+.dailyPickView{padding:3px 0}
+@media(max-width:370px){#dailySwipe .dailyPieces img{height:100px;flex-basis:100px}#dailySwipe .dailyPieces small{padding:8px 7px 10px}}
 </style>
 </head>
 <body>
