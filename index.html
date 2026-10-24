@@ -504,7 +504,7 @@ body:before{display:none}
   function partsAreMissing(parts){return parts.some(p=>p.missing);}
   function generateLooks({occasion,weather,ownedOnly=false}){
     const owned=ownItems(),catalog=state.catalog,preferred=getStyleMode();
-    const styles=[preferred,...Object.keys(STYLE_MODES).filter(x=>x!==preferred)];
+    const styles=[preferred,...Object.keys(STYLE_MODES).filter(x=>x!==preferred)].slice(0,5);
     const allowed=(x,group)=>{
       if(weather==='hot')return !['knit','hoodie','coat','jacket','blazer','overshirt','boots'].includes(x.type)&&x.season!=='cold';
       if(weather==='cold')return x.type!=='shorts'&&x.season!=='warm'&&(group!=='layer'||['coat','jacket','overshirt'].includes(x.type));
@@ -526,7 +526,7 @@ body:before{display:none}
       Number(STYLE_MODES[style].colors.includes(b.color))-Number(STYLE_MODES[style].colors.includes(a.color))
     ).slice(0,limit);
     for(const style of styles){
-      const tops=pick('top',style,ownedOnly?12:8),bottoms=pick('bottom',style,ownedOnly?100:24),shoes=pick('shoes',style,ownedOnly?12:8),layers=pick('layer',style,ownedOnly?14:10);
+      const tops=pick('top',style,ownedOnly?12:9),bottoms=pick('bottom',style,ownedOnly?100:24),shoes=pick('shoes',style,ownedOnly?10:6),layers=pick('layer',style,ownedOnly?12:9);
       // Base shirt / tee can sit beneath knitwear; outerwear is a separate layer.
       const bases=tops.filter(x=>!['knit','hoodie'].includes(x.type));
       const mids=tops.filter(x=>['knit','hoodie'].includes(x.type));
@@ -539,7 +539,7 @@ body:before{display:none}
       // Include coat over a shirt and knit layer; five pieces total including trousers and shoes.
       const outerOptions=weather==='hot'?[null]:weather==='cold'?shells.filter(x=>['coat','jacket'].includes(x.type)):[null,...shells,...overs];
       if(weather==='cold'&&!outerOptions.length)continue;
-      for(const base of variants.slice(0,65))for(const bottom of bottoms)for(const shoe of shoes)for(const outer of outerOptions.slice(0,7)){
+      for(const base of variants.slice(0,28))for(const bottom of bottoms)for(const shoe of shoes)for(const outer of outerOptions.slice(0,5)){
         const parts=[...base,bottom,shoe,...(outer?[outer]:[])];
         if(new Set(parts.map(key)).size!==parts.length)continue;
         if(parts.length>6)continue;
@@ -571,7 +571,7 @@ body:before{display:none}
     const selected=[],used=new Map(),usedLooks=new Set();
     while(selected.length<5){
       let best=null,bestRank=-Infinity;
-      for(const look of candidates.slice(0,6000)){
+      for(const look of candidates.slice(0,3500)){
         if(usedLooks.has(look.identity))continue;
         const bottom=look.parts.find(p=>GROUP[p.type]==='bottom');
         const bottomId=key(bottom),repeat=used.get(bottomId)||0;
