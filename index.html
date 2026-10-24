@@ -531,6 +531,34 @@ html,body{background:#e8ebe7;color:var(--text);font-family:Inter,"Helvetica Neue
 @media(prefers-reduced-motion:reduce){
  .btn,.quickCard,.catalogProductCard{transition:none}
 }
+
+/* Dark styling studio, restricted to the daily swipe sheet */
+.sheet:has(#dailySwipe){
+ background:linear-gradient(155deg,rgba(34,40,35,.94),rgba(18,22,19,.95));
+ border:1px solid rgba(255,255,255,.18);
+ color:#f8f9f6;
+ -webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px)
+}
+.sheet:has(#dailySwipe) .sheetHandle{background:rgba(255,255,255,.35)}
+.sheet:has(#dailySwipe) .subtle,.sheet:has(#dailySwipe) .helper{color:rgba(255,255,255,.67)}
+.sheet:has(#dailySwipe) .sheetTitle,.sheet:has(#dailySwipe) .sectionTitle{color:#f8f9f6}
+.sheet:has(#dailySwipe) .dailySwipeCard{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.3)}
+.sheet:has(#dailySwipe) .dailyPieces div{background:rgba(255,255,255,.86);color:#242823}
+.sheet:has(#dailySwipe) .dailySwipeCard .helper{color:rgba(255,255,255,.74)}
+.sheet:has(#dailySwipe) .dailyVoteActions .btn.line{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35)}
+.sheet:has(#dailySwipe) .dailyVoteActions .btn.dark{background:#f3f5ef;color:#212722}
+.sheet:has(#dailySwipe) .sheetSection>.btn.line{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff}
+.sheet:has(#dailySwipe) .dailySwipeNo,.sheet:has(#dailySwipe) .dailySwipeYes{background:rgba(255,255,255,.88)}
+/* Make each garment visually read as a product shot rather than a thumbnail */
+.dailyPieces img,.outfitFlatlayItem img{display:block;max-width:100%;mix-blend-mode:normal}
+.catalogProductCard:focus-within,.outfitFlatlayItem:focus-visible{outline:2px solid #657c6c;outline-offset:2px}
+@media(max-width:360px){
+ .dailyPieces{gap:7px;padding:9px}
+ .dailyPieces img{height:106px}
+ .dailyVoteActions{gap:7px}
+ .dailyVoteActions .btn{padding:11px 9px;font-size:11px}
+ .quickCard span{line-height:1.25}
+}
 </style>
 </head>
 <body>
