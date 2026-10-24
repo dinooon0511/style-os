@@ -553,7 +553,7 @@ body:before{display:none}
   }
 
 
-  function weatherMode(temp,wind){return temp<=11||(wind>=40&&temp<=15)?'cold':temp>=23?'hot':'mild';}
+  function weatherMode(temp,wind,low=temp,rain=0){return temp<=15||low<=10||(wind>=30&&temp<=18)||(rain>=4&&temp<=17)?'cold':temp>=23&&low>=17?'hot':'mild';}
   async function updateForecast(){
     if(!store.city||!Number.isFinite(store.city.lat))return;
     const day=dayKey();if(store.forecast?.day===day)return;
@@ -561,7 +561,7 @@ body:before{display:none}
       const url='https://api.open-meteo.com/v1/forecast?latitude='+encodeURIComponent(store.city.lat)+'&longitude='+encodeURIComponent(store.city.lon)+'&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=3';
       const res=await fetch(url);if(!res.ok)throw Error('weather unavailable');const j=await res.json(),i=0;
       const high=j.daily.temperature_2m_max[i],low=j.daily.temperature_2m_min[i],wind=j.daily.wind_speed_10m_max[i],rain=j.daily.precipitation_sum[i];
-      const mode=weatherMode((high+low)/2,wind);
+      const mode=weatherMode((high+low)/2,wind,low,rain);
       store.forecast={day,high,low,wind,rain,mode,source:'Open-Meteo',tomorrow:j.daily.time[1],tomorrowHigh:j.daily.temperature_2m_max[1],tomorrowLow:j.daily.temperature_2m_min[1]};
       state.filters.outfitWeather=mode;saveStore();renderScreens();
     }catch(e){toast('Прогноз недоступен — выбери погоду вручную');}
@@ -584,7 +584,7 @@ body:before{display:none}
   }
   function dayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   function dailyData(){
-    const key=dayKey()+'-'+state.filters.outfitWeather;
+    const key=dayKey()+'-'+(store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather);
     if(!store.daily||store.daily.key!==key){
       store.daily={key,selected:null,index:0,votes:{},candidates:dailyLooks().map(l=>({...l}))};
       saveStore();
@@ -592,7 +592,7 @@ body:before{display:none}
     return store.daily;
   }
   function dailyOptions(){return dailyData().candidates;}
-  function chosenDaily(){const d=store.daily;return d&&d.key===dayKey()+'-'+state.filters.outfitWeather?d.candidates.find(l=>l.identity===d.selected):null;}
+  function chosenDaily(){const d=store.daily;return d&&d.key===dayKey()+'-'+(store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather)?d.candidates.find(l=>l.identity===d.selected):null;}
   function dailyVote(value){
     const d=dailyData(),l=dailyOptions()[d.index];if(!l)return;
     d.votes[l.identity]=value;d.index++;
