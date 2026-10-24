@@ -429,6 +429,108 @@ html,body{background:#e9e9e9;color:var(--text);font-family:Inter,"Helvetica Neue
  .outfitFlatlayItem{min-height:118px;border-radius:17px}
 }
 @media(prefers-reduced-motion:reduce){.btn,.catalogProductCard{transition:none}}
+
+/* STYLE OS 2026 / GLASS EDITORIAL — consolidated final visual system */
+:root{
+ --bg:#eff0ed;--bg-2:#f8f8f6;--sand:#e6e8e4;--olive:#778077;--olive-deep:#232825;
+ --text:#191c1a;--muted:#777e79;--line:rgba(59,70,63,.11);
+ --white:rgba(255,255,255,.76);--glass:rgba(255,255,255,.48);--glass-strong:rgba(255,255,255,.7);
+ --shadow:0 18px 50px rgba(28,35,28,.075),inset 0 1px 0 rgba(255,255,255,.45);
+ --radius-xl:32px;--radius-lg:26px;--radius-md:20px;--radius-sm:14px;
+ --glass-blur:24px;--glass-border:rgba(255,255,255,.58);
+ --glass-dark:rgba(29,33,31,.62);--glass-light:rgba(255,255,255,.52);
+}
+html,body{background:#e8ebe7;color:var(--text);font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif}
+.shell{background:linear-gradient(155deg,#f7f8f6 0%,#e9ece8 54%,#f5f5f2 100%)}
+.screen{isolation:isolate}
+.brand,.sectionTitle,.sheetTitle,.outfitIntro h3,.catalogProductName{font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif}
+.brand{font-weight:500;letter-spacing:-1.65px}
+.sectionTitle{font-weight:500}
+.sectionHint,.helper,.metaLine{color:#7d837e}
+.card,.quickCard,.statCard,.itemCard,.miniProduct,.listRow{
+ background:var(--glass-light);border:1px solid var(--glass-border);
+ box-shadow:var(--shadow);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(125%);backdrop-filter:blur(var(--glass-blur)) saturate(125%)
+}
+.card,.quickCard,.statCard{border-radius:27px}
+.quickCard{min-height:150px;transition:transform .2s,background .2s;cursor:pointer}
+.quickCard:hover{transform:translateY(-3px);background:rgba(255,255,255,.65)}
+.iconBadge{background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.55)}
+.hero{
+ min-height:500px;justify-content:flex-end;position:relative;border-radius:38px;
+ background-image:linear-gradient(180deg,rgba(15,19,17,.01) 0%,rgba(11,16,13,.14) 38%,rgba(7,12,9,.76) 100%),url('https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1600&q=85');
+}
+.hero h1,.hero h2{font-weight:400;letter-spacing:-2px;line-height:1}
+.hero .glassTag,.glassTag{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:white}
+.hero .buttonRow{align-items:center}
+.hero .btn.soft{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.38);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px)}
+.btn{transition:transform .18s ease,background .18s ease;letter-spacing:-.01em}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:#f5f6f2;color:#1d241e}
+.btn.dark{background:#252b27;color:#fff}
+.btn.line,.chip,.pill{background:rgba(255,255,255,.52);border:1px solid rgba(255,255,255,.64);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.chip.active{background:#242b27;color:#fff}
+.dailyWeatherBar{
+ background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.68);border-radius:100px;
+ -webkit-backdrop-filter:blur(24px) saturate(130%);backdrop-filter:blur(24px) saturate(130%);
+ box-shadow:0 7px 22px rgba(21,30,24,.04);padding:13px 17px;color:#363e38
+}
+.dailyWeatherBar button{color:#2b332e}
+.tabbar{
+ background:rgba(29,34,31,.72);border:1px solid rgba(255,255,255,.26);border-radius:32px;
+ -webkit-backdrop-filter:blur(26px) saturate(125%);backdrop-filter:blur(26px) saturate(125%);
+ box-shadow:0 14px 38px rgba(15,21,17,.23),inset 0 1px 0 rgba(255,255,255,.18)
+}
+.tab{color:rgba(255,255,255,.67)}
+.tab.active{background:rgba(255,255,255,.89);color:#1b211d;box-shadow:0 3px 15px rgba(0,0,0,.08)}
+.floatBtn{background:#232a25;box-shadow:0 12px 32px rgba(13,23,16,.2)}
+.search,.outfitOnlyToggle{background:rgba(255,255,255,.52);border:1px solid rgba(255,255,255,.7);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.outfitOnlyToggle{border-radius:24px}
+.catalogProductCard,.outfitCard{background:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.7);box-shadow:var(--shadow);border-radius:28px}
+.catalogProductCard .catalogProductVisual{background:linear-gradient(145deg,#ebecea,#f4f4f1);border-radius:25px 25px 16px 16px}
+.catalogProductCard .catalogProductBody{background:rgba(255,255,255,.65)}
+.catalogProductVisual img{object-fit:cover}
+.outfitFlatlay{background:linear-gradient(140deg,#e8ebe6,#dfe3dd);border-radius:27px 27px 10px 10px}
+.outfitFlatlayItem{background:rgba(255,255,255,.53);border:1px solid rgba(255,255,255,.62);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-radius:24px}
+.outfitFlatlayItem img{object-fit:contain}
+.styleCard{box-shadow:0 12px 32px rgba(17,25,18,.11);border-radius:31px}
+.styleCard h3{font-weight:500;letter-spacing:-.8px}
+.sheetBackdrop{background:rgba(14,18,15,.53);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.sheet{
+ background:rgba(246,248,244,.82);border:1px solid rgba(255,255,255,.68);
+ -webkit-backdrop-filter:blur(30px) saturate(135%);backdrop-filter:blur(30px) saturate(135%);
+ border-radius:34px 34px 0 0;box-shadow:0 -18px 65px rgba(3,8,5,.18)
+}
+.sheetHandle{background:rgba(37,48,39,.22)}
+.sheetFooter{background:linear-gradient(180deg,rgba(246,248,244,.1),rgba(246,248,244,.91) 28%)}
+.field input,.field select{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.72)}
+.dailySwipeCard{
+ background:rgba(239,241,237,.86);border:1px solid rgba(255,255,255,.8);
+ -webkit-backdrop-filter:blur(25px);backdrop-filter:blur(25px);
+ box-shadow:0 24px 58px rgba(3,8,5,.2);border-radius:30px
+}
+.dailyPieces div{background:rgba(255,255,255,.64);border:1px solid rgba(255,255,255,.56);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.dailyPick{background:rgba(255,255,255,.59);border:1px solid rgba(255,255,255,.74);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.dailyDirectPick{background:#252c27}
+.dailyHomePieces div{background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.lookItem{background:rgba(255,255,255,.53);border:1px solid rgba(255,255,255,.72);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.onboarding{background:rgba(242,244,239,.91);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px)}
+.choiceCard,.toggleCard{background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.78);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.choiceCard.active{background:rgba(255,255,255,.86);outline:2px solid #465549}
+:focus-visible{outline:2px solid #576d5e;outline-offset:3px}
+@supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+ .card,.quickCard,.statCard,.itemCard,.miniProduct,.listRow,.dailyWeatherBar,.sheet,.dailySwipeCard,.tabbar,.search,.outfitOnlyToggle,.dailyPick,.lookItem{background:#f6f7f4}
+ .tabbar{background:#252b27}
+}
+@media(max-width:600px){
+ .hero{min-height:470px;border-radius:32px}
+ .quickCard{border-radius:21px}
+ .dailyWeatherBar{padding:11px 13px}
+ .tabbar{border-radius:27px}
+ .sheet{background:rgba(247,248,245,.92)}
+}
+@media(prefers-reduced-motion:reduce){
+ .btn,.quickCard,.catalogProductCard{transition:none}
+}
 </style>
 </head>
 <body>
