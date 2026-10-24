@@ -320,7 +320,116 @@ body:before{display:none}
 .catalogProductCard .catalogProductFoot{margin-top:auto}
 .catalogProductCard .catalogProductPrice{font-size:11px;margin-top:0}
 @media(max-width:390px){.catalogProductCard .catalogProductBody{padding:8px 9px}.catalogProductCard .catalogProductName{font-size:12px}}
-.dailyPieces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px}.dailyPieces div{background:#efeee9;border-radius:12px;overflow:hidden;text-align:center}.dailyPieces img{width:100%;height:130px;object-fit:contain}.dailyPieces small{display:block;padding:6px}.dailyVoteActions{display:flex;gap:9px}.dailyVoteActions button{flex:1}.dailyPickList{display:grid;gap:9px;margin-top:12px}.dailyPick{display:grid;gap:5px;padding:13px;border:1px solid #dedbd3;border-radius:12px;background:#f8f7f3;text-align:left}.dailyPick small{color:#777}.dailyPick span{font-size:12px}#dailySwipe{touch-action:pan-y}.dailyWeatherBar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 4px;font-size:12px;color:#716f67}.dailyWeatherBar button{border:0;background:transparent;text-decoration:underline;color:inherit;cursor:pointer}.dailySwipeCard{position:relative;touch-action:pan-y;user-select:none;cursor:grab;will-change:transform;background:#faf9f6;border-radius:16px;margin:0 10px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.07)}.dailySwipeCard:active{cursor:grabbing}.dailySwipeNo,.dailySwipeYes{position:absolute;z-index:3;top:22px;font-weight:800;letter-spacing:.08em;padding:9px;border:3px solid;border-radius:8px;opacity:0;pointer-events:none;transform:rotate(-12deg)}.dailySwipeNo{right:16px;color:#ab5b4e}.dailySwipeYes{left:16px;color:#57765d;transform:rotate(12deg)}.dailyDirectPick{display:inline-block;padding:8px 12px;border-radius:9px;background:#242922;color:white;font-size:12px;cursor:pointer}.dailyHomePieces{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-width:430px;margin:12px 0}.dailyHomePieces div{background:rgba(255,255,255,.82);border-radius:9px;overflow:hidden}.dailyHomePieces img{display:block;width:100%;height:90px;object-fit:contain}.dailyPreviewPieces img{height:175px}.dailyPickView{width:100%;border:0;background:transparent;text-align:left;display:grid;gap:5px;padding:0;color:inherit;cursor:pointer}.dailyPickView span{color:#777;font-size:12px}.dailyPick .dailyDirectPick{border:0;width:100%;margin-top:9px}.outfitOnlyToggle{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:15px;border:1px solid #e0ddd5;border-radius:14px;cursor:pointer}.outfitOnlyToggle span{display:grid;gap:4px}.outfitOnlyToggle small{font-size:11px;color:#777}.outfitOnlyToggle input{appearance:none;position:absolute;opacity:0}.outfitOnlyToggle i{flex-shrink:0;width:45px;height:26px;background:#c9c8c1;border-radius:20px;position:relative;transition:background .2s}.outfitOnlyToggle i:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:white;transition:transform .2s}.outfitOnlyToggle input:checked+i{background:#59634c}.outfitOnlyToggle input:checked+i:after{transform:translateX(19px)}.outfitOnlyToggle input:focus-visible+i{outline:2px solid #59634c;outline-offset:3px}.dailyAgain{display:inline-block;border:0;background:none;color:inherit;font-size:12px;text-decoration:underline;margin:5px 0 10px;padding:4px;cursor:pointer}</style>
+.dailyPieces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px}.dailyPieces div{background:#efeee9;border-radius:12px;overflow:hidden;text-align:center}.dailyPieces img{width:100%;height:130px;object-fit:contain}.dailyPieces small{display:block;padding:6px}.dailyVoteActions{display:flex;gap:9px}.dailyVoteActions button{flex:1}.dailyPickList{display:grid;gap:9px;margin-top:12px}.dailyPick{display:grid;gap:5px;padding:13px;border:1px solid #dedbd3;border-radius:12px;background:#f8f7f3;text-align:left}.dailyPick small{color:#777}.dailyPick span{font-size:12px}#dailySwipe{touch-action:pan-y}.dailyWeatherBar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 4px;font-size:12px;color:#716f67}.dailyWeatherBar button{border:0;background:transparent;text-decoration:underline;color:inherit;cursor:pointer}.dailySwipeCard{position:relative;touch-action:pan-y;user-select:none;cursor:grab;will-change:transform;background:#faf9f6;border-radius:16px;margin:0 10px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.07)}.dailySwipeCard:active{cursor:grabbing}.dailySwipeNo,.dailySwipeYes{position:absolute;z-index:3;top:22px;font-weight:800;letter-spacing:.08em;padding:9px;border:3px solid;border-radius:8px;opacity:0;pointer-events:none;transform:rotate(-12deg)}.dailySwipeNo{right:16px;color:#ab5b4e}.dailySwipeYes{left:16px;color:#57765d;transform:rotate(12deg)}.dailyDirectPick{display:inline-block;padding:8px 12px;border-radius:9px;background:#242922;color:white;font-size:12px;cursor:pointer}.dailyHomePieces{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-width:430px;margin:12px 0}.dailyHomePieces div{background:rgba(255,255,255,.82);border-radius:9px;overflow:hidden}.dailyHomePieces img{display:block;width:100%;height:90px;object-fit:contain}.dailyPreviewPieces img{height:175px}.dailyPickView{width:100%;border:0;background:transparent;text-align:left;display:grid;gap:5px;padding:0;color:inherit;cursor:pointer}.dailyPickView span{color:#777;font-size:12px}.dailyPick .dailyDirectPick{border:0;width:100%;margin-top:9px}.outfitOnlyToggle{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:15px;border:1px solid #e0ddd5;border-radius:14px;cursor:pointer}.outfitOnlyToggle span{display:grid;gap:4px}.outfitOnlyToggle small{font-size:11px;color:#777}.outfitOnlyToggle input{appearance:none;position:absolute;opacity:0}.outfitOnlyToggle i{flex-shrink:0;width:45px;height:26px;background:#c9c8c1;border-radius:20px;position:relative;transition:background .2s}.outfitOnlyToggle i:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:white;transition:transform .2s}.outfitOnlyToggle input:checked+i{background:#59634c}.outfitOnlyToggle input:checked+i:after{transform:translateX(19px)}.outfitOnlyToggle input:focus-visible+i{outline:2px solid #59634c;outline-offset:3px}.dailyAgain{display:inline-block;border:0;background:none;color:inherit;font-size:12px;text-decoration:underline;margin:5px 0 10px;padding:4px;cursor:pointer}
+/* STYLE OS / AURA + N99 art direction / visual layer only */
+:root{
+ --bg:#f2f2f1;--bg-2:#fafafa;--sand:#e8e8e7;--olive:#4b514b;
+ --olive-deep:#202322;--text:#161817;--muted:#838584;
+ --line:#e5e5e4;--white:#fff;--glass:#f7f7f6;--glass-strong:#fff;
+ --shadow:0 14px 36px rgba(14,16,16,.055);
+ --radius-xl:32px;--radius-lg:28px;--radius-md:22px;--radius-sm:15px;
+}
+html,body{background:#e9e9e9;color:var(--text);font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-.015em}
+.shell{background:#f9f9f8;max-width:1180px}
+.screen{padding-top:clamp(23px,3vw,40px)}
+.topbar{margin-bottom:22px}
+.brand{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-1.7px;font-weight:400;font-size:clamp(29px,4vw,43px);color:#161717}
+.subtle{color:#888989;letter-spacing:1.7px;font-size:10px;font-weight:600}
+.avatar{width:42px;height:42px;border:2px solid #fff;box-shadow:none;filter:grayscale(.3)}
+.section{margin-top:36px}.sectionHead{margin-bottom:15px}
+.sectionTitle{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:500;font-size:clamp(21px,2.8vw,30px);letter-spacing:-1.1px}
+.sectionHint{font-size:12px;color:#929292;line-height:1.5}
+.dailyWeatherBar{margin:0 0 18px;padding:11px 15px;border:1px solid #e7e7e6;background:#f0f0ef;border-radius:100px;color:#4a4b49;font-size:12px;gap:12px}
+.dailyWeatherBar button{font-size:11px;font-weight:600;text-decoration:none;color:#262727;white-space:nowrap}
+.hero{min-height:490px;border-radius:38px;padding:clamp(23px,3vw,40px);background-image:linear-gradient(180deg,rgba(15,15,15,.05) 2%,rgba(13,14,13,.17) 35%,rgba(6,7,6,.76) 100%),url('https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1600&q=85');background-position:center;justify-content:flex-end;box-shadow:none}
+.hero:before{background:linear-gradient(180deg,rgba(255,255,255,.07),transparent 33%,rgba(0,0,0,.13))}
+.hero h1,.hero h2{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:clamp(38px,5vw,63px);font-weight:400;letter-spacing:-2.2px;max-width:510px;line-height:.99;margin:16px 0 12px}
+.hero p{font-size:13px;max-width:420px;line-height:1.5;color:#e6e6e5}
+.hero .glassTag{align-self:flex-start}
+.glassTag{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.22);font-size:10px;letter-spacing:.08em;font-weight:500;padding:7px 11px}
+.btn{border-radius:100px;font-weight:600;font-size:12px;letter-spacing:0;min-height:44px;padding:12px 19px;transition:background .2s ease,transform .2s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn.dark,.chip.active,.toggleCard.active{background:#1b1d1c;color:#fff}
+.btn.primary{background:#f5f5f3;color:#202221}
+.btn.soft{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.32);color:#fff}
+.btn.line{background:#f2f2f1;border-color:#e1e1df;color:#292b2a}
+.card,.quickCard,.statCard,.itemCard,.outfitCard,.miniProduct,.listRow{background:#fff;border:1px solid #e9e9e8;box-shadow:none}
+.card{border-radius:28px}.quickGrid{gap:10px}
+.quickCard{border-radius:26px;min-height:150px;padding:17px;cursor:pointer}
+.quickCard b{font-weight:600;font-size:13px;letter-spacing:-.025em}
+.quickCard span{color:#929393;font-size:11px;line-height:1.45}
+.iconBadge{background:#efefed;border-radius:50%;width:37px;height:37px;color:#212323}
+.styleCard,.recoCard{border-radius:30px;overflow:hidden}
+.styleCard{min-height:260px;background-image:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.62)),var(--img);box-shadow:none}
+.styleCard h3{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-1px;font-size:30px;font-weight:400}
+.styleCard p{color:#e9e9e8}
+.chip{background:#f2f2f1;border:1px solid #e6e6e5;color:#555756;font-weight:500;padding:11px 15px}
+.chips{gap:7px}
+.search{background:#fff;border:1px solid #e7e7e5;border-radius:100px;box-shadow:none}
+.tabbar{background:rgba(20,21,21,.96);border:1px solid rgba(255,255,255,.1);box-shadow:0 13px 40px rgba(0,0,0,.16);border-radius:32px;backdrop-filter:blur(22px);padding:7px}
+.tab{color:#a9aaa9;border-radius:26px;font-size:10px}
+.tab.active{background:#f3f3f1;color:#1b1d1c}
+.floatBtn{background:#1c1f1d;color:#fff;box-shadow:0 12px 30px rgba(0,0,0,.2)}
+.catalogProductCard{border:0;background:#fff;border-radius:28px;box-shadow:0 1px 0 #ededec;overflow:hidden}
+.catalogProductCard .catalogProductVisual{background:#eee;flex-basis:72%;height:72%}
+.catalogProductCard .catalogProductBody{background:#fff;padding:13px 13px 14px;gap:5px}
+.catalogProductName{color:#222;font-weight:500;letter-spacing:-.025em}
+.catalogProductEyebrow{color:#999}
+.catalogProductPrice{color:#262727}
+.outfitCard{border-radius:32px}
+.outfitFlatlay{background:#ececeb;padding:13px}
+.outfitFlatlayGrid{gap:9px}
+.outfitFlatlayItem{border-radius:23px;background:#f8f8f7;border:0;min-height:155px}
+.outfitFlatlayItem span{color:#545655;font-size:11px}
+.outfitIntro{padding:18px 19px 4px}
+.outfitIntro h3{font-size:25px;font-weight:500;letter-spacing:-1px}
+.outfitBody{padding:13px 19px 18px}
+.pill{border:1px solid #ebebea;background:#f1f1f0;color:#525452}
+.stateGood{background:#e8ebe6;color:#505c50}.stateNeed{background:#f0e9e0;color:#766351}
+.statCard{border-radius:25px}.statValue{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400}
+.listRow{border-radius:21px;padding:16px}.listRow strong{font-weight:500}
+.sheetBackdrop{background:rgba(9,10,10,.66);backdrop-filter:blur(9px)}
+.sheet{background:#f8f8f7;border-radius:34px 34px 0 0;box-shadow:0 -24px 70px rgba(0,0,0,.18);padding:20px 19px 28px}
+.sheetTitle{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:31px;font-weight:400;line-height:1.04;letter-spacing:-1.25px}
+.sheetSub{color:#868887}
+.sheetHandle{background:#d4d5d3;width:40px}
+.field input,.field select{background:#fff;border:1px solid #e2e3e1;border-radius:16px}
+.sheetFooter{background:linear-gradient(180deg,rgba(248,248,247,.1),#f8f8f7 25%)}
+.outfitOnlyToggle{background:#fff;border:1px solid #e8e8e6;border-radius:22px;padding:16px}
+.outfitOnlyToggle input:checked+i{background:#222523}
+.dailyHomePieces{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;max-width:520px}
+.dailyHomePieces div{background:#f2f2ef;border-radius:17px}
+.dailyHomePieces img{height:93px}
+.dailySwipeCard{border-radius:28px;background:#e9e9e8;box-shadow:0 12px 38px rgba(0,0,0,.1)}
+.dailyPieces{gap:10px;padding:13px}.dailyPieces div{border-radius:21px;background:#f7f7f6}
+.dailyPieces img{height:145px}
+.dailySwipeYes{color:#728b72}.dailySwipeNo{color:#b06d6b}
+.dailyPick{background:#fff;border-color:#e6e6e5;border-radius:23px;padding:16px}
+.dailyDirectPick{border-radius:100px;background:#1c1e1d;padding:10px 14px}
+.dailyPick .dailyDirectPick{border-radius:100px}
+.dailyAgain{color:#f5f5f2;text-decoration:underline;text-underline-offset:3px;font-weight:500}
+.heroPiece{background:#f7f7f5;border:0;border-radius:16px}
+.heroPieces{gap:8px}
+.lookItem{border-radius:20px;border-color:#e9e9e7;background:#fff}
+.lookItemImage{background:#eeeeec;border-radius:16px}
+.onboarding{background:#f5f5f3}.choiceCard,.toggleCard{background:#fff;border-color:#e6e6e3;border-radius:24px}
+.choiceCard.active{outline:2px solid #272a27;background:#f6f6f5}
+@media(max-width:600px){
+ .screen{padding-top:21px}
+ .brand{font-size:29px;letter-spacing:-1px}
+ .hero{min-height:470px;border-radius:31px;padding:23px}
+ .hero h1{font-size:43px}
+ .quickGrid{gap:7px}.quickCard{border-radius:19px;padding:11px 9px;min-height:137px}
+ .quickCard b{font-size:11px}.quickCard span{font-size:10px}
+ .section{margin-top:30px}
+ .catalogProductCard{border-radius:21px}
+ .catalogProductCard .catalogProductBody{padding:10px}
+ .tabbar{border-radius:27px}
+ .dailyPieces img{height:122px}
+ .outfitFlatlayItem{min-height:118px;border-radius:17px}
+}
+@media(prefers-reduced-motion:reduce){.btn,.catalogProductCard{transition:none}}
+</style>
 </head>
 <body>
 <div class="app">
