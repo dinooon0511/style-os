@@ -546,7 +546,7 @@ body:before{display:none}
     for(const look of generated){
       let signature=look.parts.map(p=>p.type+':'+p.color).sort().join('|');
       if(signatures.has(signature))continue;
-      if(selected.some(prev=>look.parts.filter(p=>prev.parts.some(z=>(z.ownedId||z.id)===(p.ownedId||p.id))).length>=Math.min(look.parts.length,3)))continue;
+      if(!ownedOnly&&selected.some(prev=>look.parts.filter(p=>prev.parts.some(z=>(z.ownedId||z.id)===(p.ownedId||p.id))).length>=Math.min(look.parts.length,3)))continue;
       signatures.add(signature);selected.push(look);if(selected.length===5)break;
     }
     return selected;
@@ -586,7 +586,7 @@ body:before{display:none}
   function dailyData(){
     const key=dayKey()+'-'+(store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather);
     const wardrobeSignature=store.wardrobe.map(x=>x.ownedId||x.id).sort().join('|');
-    if(!store.daily||store.daily.key!==key||store.daily.wardrobeSignature!==wardrobeSignature){
+    if(!store.daily||store.daily.key!==key||store.daily.wardrobeSignature!==wardrobeSignature||!Array.isArray(store.daily.candidates)||store.daily.candidates.some(l=>l.missing?.length||!l.parts?.every(p=>store.wardrobe.some(w=>(w.ownedId||w.id)===(p.ownedId||p.id))))){
       store.daily={key,wardrobeSignature,selected:null,index:0,votes:{},candidates:dailyLooks().map(l=>({...l}))};
       saveStore();
     }
@@ -646,7 +646,7 @@ body:before{display:none}
     card.addEventListener('pointercancel',()=>{active=false;card.style.transition='transform 220ms ease';card.style.transform='';});
   }
   function todayLooks(){ return generateLooks({occasion:state.filters.outfitOccasion, weather:state.filters.outfitWeather,ownedOnly:state.filters.ownedOnly}); }
-  function dailyLooks(){return generateLooks({occasion:'everyday',weather:store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather,ownedOnly:true});}
+  function dailyLooks(){return generateLooks({occasion:'everyday',weather:store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather,ownedOnly:true}).filter(l=>l.missing.length===0&&l.parts.every(p=>store.wardrobe.some(w=>(w.ownedId||w.id)===(p.ownedId||p.id))));}
   function lookPhoto(look){ return lookPhotos[look.occasion] || stylePhotos[look.style] || stylePhotos.casual; }
   function openSheet(kind,payload){ state.sheet={kind,payload}; renderSheet(); }
   function closeSheet(){ state.sheet=null; document.getElementById('sheetBackdrop').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); }
