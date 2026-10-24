@@ -503,55 +503,89 @@ body:before{display:none}
   function getStyleMode(){let user=store.profile?.style;return STYLE_MODES[user]?user:'minimal';}
   function partsAreMissing(parts){return parts.some(p=>p.missing);}
   function generateLooks({occasion,weather,ownedOnly=false}){
-    let owned=ownItems(),catalog=state.catalog,mode=getStyleMode(),styles=[mode,...['minimal','smart','casual','utility','dark_minimal','soft_tailoring','oldmoney','classic','summer_relaxed','winter_layered'].filter(x=>x!==mode)];
-    if(weather==='hot')styles=['summer_relaxed',...styles.filter(x=>x!=='summer_relaxed'&&x!=='winter_layered')];
-    if(weather==='cold')styles=['winter_layered',...styles.filter(x=>x!=='winter_layered'&&x!=='summer_relaxed')];
-    const allowed=(x,g)=>{
+    const owned=ownItems(),catalog=state.catalog,preferred=getStyleMode();
+    const styles=[preferred,...Object.keys(STYLE_MODES).filter(x=>x!==preferred)];
+    const allowed=(x,group)=>{
       if(weather==='hot')return !['knit','hoodie','coat','jacket','blazer','overshirt','boots'].includes(x.type)&&x.season!=='cold';
-      if(weather==='cold')return x.type!=='shorts'&&x.season!=='warm'&&(g!=='layer'||['coat','jacket'].includes(x.type));
+      if(weather==='cold')return x.type!=='shorts'&&x.season!=='warm'&&(group!=='layer'||['coat','jacket','overshirt'].includes(x.type));
       return x.type!=='coat'&&x.season!=='cold';
     };
-    const pools={};for(const group of ['top','bottom','shoes','layer']){
-      let a=owned.filter(x=>GROUP[x.type]===group&&allowed(x,group)).map(x=>({...x,missing:false}));
-      let existing=new Set(a.map(x=>x.id));
-      let b=ownedOnly?[]:catalog.filter(x=>GROUP[x.type]===group&&!existing.has(x.id)&&allowed(x,group)).map(x=>({...x,missing:true}));
-      pools[group]=[...a,...b].slice(0,150);
+    const pools={};
+    for(const group of ['top','bottom','shoes','layer']){
+      const own=owned.filter(x=>GROUP[x.type]===group&&allowed(x,group)).map(x=>({...x,missing:false}));
+      const ids=new Set(own.map(x=>x.id));
+      const suggestions=ownedOnly?[]:catalog.filter(x=>GROUP[x.type]===group&&!ids.has(x.id)&&allowed(x,group)).map(x=>({...x,missing:true}));
+      pools[group]=[...own,...suggestions];
     }
-    const generated=[],seen=new Set();
-    const combos=(top,bottom,shoe,layer)=>[top,bottom,shoe,...(layer?[layer]:[])];
+    // Every owned bottom is kept in consideration, irrespective of catalogue ranking.
+    const candidates=[],seen=new Set();
+    const key=x=>x.ownedId||x.catalogId||x.id;
+    const pick=(group,style,limit)=>[...pools[group]].sort((a,b)=>
+      Number(a.missing)-Number(b.missing)||
+      Number(STYLE_MODES[style].types.includes(b.type))-Number(STYLE_MODES[style].types.includes(a.type))||
+      Number(STYLE_MODES[style].colors.includes(b.color))-Number(STYLE_MODES[style].colors.includes(a.color))
+    ).slice(0,limit);
     for(const style of styles){
-      const modeInfo=STYLE_MODES[style];
-      const sortGroup=g=>[...pools[g]].sort((a,b)=>(Number(a.missing)-Number(b.missing))||(Number(modeInfo.types.includes(b.type))-Number(modeInfo.types.includes(a.type)))||(Number(modeInfo.colors.includes(b.color))-Number(modeInfo.colors.includes(a.color)))).slice(0,7);
-      const ts=sortGroup('top'),bs=sortGroup('bottom'),ss=sortGroup('shoes'),ls=sortGroup('layer').slice(0,5);
-      for(const t of ts)for(const b of bs)for(const shoe of ss)for(const layer of (weather==='hot'?[null]:weather==='cold'?ls:[null,...ls])){
-        if(weather==='cold'&&(!layer||!['coat','jacket'].includes(layer.type)))continue;
-        if(weather==='mild'&&!layer&&!['knit','hoodie'].includes(t.type))continue;
-        if(ownedOnly&&partsAreMissing([t,b,shoe,...(layer?[layer]:[])]))continue;
-        const parts=combos(t,b,shoe,layer),keys=parts.map(p=>p.catalogId||p.ownedId||p.id),id=keys.join('|');
+      const tops=pick('top',style,ownedOnly?12:8),bottoms=pick('bottom',style,ownedOnly?100:24),shoes=pick('shoes',style,ownedOnly?12:8),layers=pick('layer',style,ownedOnly?14:10);
+      // Base shirt / tee can sit beneath knitwear; outerwear is a separate layer.
+      const bases=tops.filter(x=>!['knit','hoodie'].includes(x.type));
+      const mids=tops.filter(x=>['knit','hoodie'].includes(x.type));
+      const shells=layers.filter(x=>['coat','jacket','blazer'].includes(x.type));
+      const overs=layers.filter(x=>x.type==='overshirt');
+      const variants=[];
+      for(const base of tops)variants.push([base]);
+      for(const base of bases.slice(0,8))for(const mid of mids.slice(0,6))if(key(base)!==key(mid))variants.push([base,mid]);
+      for(const base of bases.slice(0,5))for(const mid of mids.slice(0,4))for(const over of overs.slice(0,2))variants.push([base,mid,over]);
+      // Include coat over a shirt and knit layer; five pieces total including trousers and shoes.
+      const outerOptions=weather==='hot'?[null]:weather==='cold'?shells.filter(x=>['coat','jacket'].includes(x.type)):[null,...shells,...overs];
+      if(weather==='cold'&&!outerOptions.length)continue;
+      for(const base of variants.slice(0,65))for(const bottom of bottoms)for(const shoe of shoes)for(const outer of outerOptions.slice(0,7)){
+        const parts=[...base,bottom,shoe,...(outer?[outer]:[])];
+        if(new Set(parts.map(key)).size!==parts.length)continue;
+        if(parts.length>6)continue;
+        if(ownedOnly&&parts.some(p=>p.missing))continue;
+        if(weather==='cold'&&!outer)continue;
+        if(weather==='mild'&&!outer&&!base.some(p=>['knit','hoodie'].includes(p.type)))continue;
+        const id=parts.map(key).sort().join('|');
         if(seen.has(id))continue;seen.add(id);
         const missing=parts.filter(p=>p.missing),ev=compatibility(parts,style,weather,occasion);
-        let score=ev.score+preferenceBonus(parts,style)-missing.length*10;
-        if(weather==='hot'&&layer)continue;
-        if(weather==='cold'&&['knit','hoodie'].includes(t.type))score+=8;
-        if(['office','restaurant'].includes(occasion)&&['classic','smart','soft_tailoring'].includes(style))score+=6;
-        if(['everyday','travel'].includes(occasion)&&['casual','utility','minimal'].includes(style))score+=5;
-        if(score<45)continue;
-        generated.push({id:'v2_'+generated.length,title:modeInfo.label,style,occasion,weather,parts,missing,
-          score:Math.min(100,Math.max(0,score)),reason:ev.explanations.join(' ')||'Сочетание по типу, цвету и силуэту.',
+        let score=ev.score+preferenceBonus(parts,style)-missing.length*11;
+        if(base.length>1&&base.some(p=>p.type==='shirt')&&base.some(p=>p.type==='knit'))score+=9;
+        if(outer?.type==='coat'&&bottom.type==='trousers')score+=12;
+        if(outer?.type==='coat'&&bottom.type==='jeans'){
+          const fit=normalizeFit(bottom);
+          if(['wide','relaxed','straight','baggy'].includes(fit))score+=9;
+          else if(['slim','skinny'].includes(fit))score-=5;
+          else score+=3;
+        }
+        if(weather==='cold'&&base.some(p=>['knit','hoodie'].includes(p.type)))score+=8;
+        if(['office','restaurant'].includes(occasion)&&['classic','smart','soft_tailoring'].includes(style))score+=5;
+        if(score<42)continue;
+        candidates.push({id:'v2_'+candidates.length,title:STYLE_MODES[style].label,style,occasion,weather,parts,missing,
+          score:Math.max(0,Math.min(100,score)),reason:ev.explanations.join(' ')||'Сочетание по типу, цвету и силуэту.',
           explanations:ev.explanations,warnings:ev.warnings,rules:ev.rules,identity:id});
       }
     }
-    generated.sort((a,b)=>b.score-a.score||a.missing.length-b.missing.length);
-    const selected=[];const signatures=new Set();
-    for(const look of generated){
-      let signature=look.parts.map(p=>p.type+':'+p.color).sort().join('|');
-      if(signatures.has(signature))continue;
-      if(!ownedOnly&&selected.some(prev=>look.parts.filter(p=>prev.parts.some(z=>(z.ownedId||z.id)===(p.ownedId||p.id))).length>=Math.min(look.parts.length,3)))continue;
-      signatures.add(signature);selected.push(look);if(selected.length===5)break;
+    candidates.sort((a,b)=>b.score-a.score||a.missing.length-b.missing.length);
+    // Balance different bottoms and colourways, rather than letting one high-scoring jean dominate.
+    const selected=[],used=new Map(),usedLooks=new Set();
+    while(selected.length<5){
+      let best=null,bestRank=-Infinity;
+      for(const look of candidates.slice(0,6000)){
+        if(usedLooks.has(look.identity))continue;
+        const bottom=look.parts.find(p=>GROUP[p.type]==='bottom');
+        const bottomId=key(bottom),repeat=used.get(bottomId)||0;
+        const overlap=selected.reduce((max,l)=>Math.max(max,look.parts.filter(p=>l.parts.some(z=>key(z)===key(p))).length),0);
+        const rank=look.score-repeat*25-overlap*5-look.missing.length*3+(bottom.type==='trousers'?3:0);
+        if(rank>bestRank){bestRank=rank;best=look;}
+      }
+      if(!best)break;
+      selected.push(best);usedLooks.add(best.identity);
+      const bottom=best.parts.find(p=>GROUP[p.type]==='bottom'),id=key(bottom);
+      used.set(id,(used.get(id)||0)+1);
     }
     return selected;
   }
-
 
   function weatherMode(temp,wind,low=temp,rain=0){return temp<=15||low<=10||(wind>=30&&temp<=18)||(rain>=4&&temp<=17)?'cold':temp>=23&&low>=17?'hot':'mild';}
   async function updateForecast(){
