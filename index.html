@@ -546,9 +546,16 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   }
   function getStyleMode(){let user=store.profile?.style;return STYLE_MODES[user]?user:'minimal';}
   function partsAreMissing(parts){return parts.some(p=>p.missing);}
-  function generateLooks({occasion,weather,ownedOnly=false}){
+  function generateLooks({occasion,weather,ownedOnly=false,limit=5,mix=false}){
     const owned=ownItems(),catalog=state.catalog,preferred=getStyleMode();
-    const styles=[preferred,...Object.keys(STYLE_MODES).filter(x=>x!==preferred)].slice(0,5);
+    const occasionStyles={
+      everyday:['casual','minimal','utility','dark_minimal','oldmoney','smart'],
+      office:['classic','soft_tailoring','smart','minimal','oldmoney'],
+      date:['oldmoney','smart','soft_tailoring','minimal','casual','classic'],
+      restaurant:['classic','soft_tailoring','oldmoney','smart','minimal'],
+      travel:['casual','utility','minimal','summer_relaxed','dark_minimal']
+    };
+    const styles=[...(occasionStyles[occasion]||occasionStyles.everyday),preferred].filter((x,i,a)=>a.indexOf(x)===i&&STYLE_MODES[x]).slice(0,6);
     const allowed=(x,group)=>{
       if(weather==='hot')return !['knit','hoodie','coat','jacket','blazer','overshirt','boots'].includes(x.type)&&x.season!=='cold';
       if(weather==='cold')return x.type!=='shorts'&&x.season!=='warm'&&(group!=='layer'||['coat','jacket','overshirt'].includes(x.type));
@@ -578,12 +585,20 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
       const overs=layers.filter(x=>x.type==='overshirt');
       const variants=[];
       for(const base of tops)variants.push([base]);
-      for(const base of bases.slice(0,8))for(const mid of mids.slice(0,6))if(key(base)!==key(mid))variants.push([base,mid]);
-      for(const base of bases.slice(0,5))for(const mid of mids.slice(0,4))for(const over of overs.slice(0,2))variants.push([base,mid,over]);
+      for(const base of bases.slice(0,8))for(const mid of mids.slice(0,6)){
+        if(key(base)===key(mid))continue;
+        if(base.type==='shirt'&&['turtleneck','sweater'].includes(mid.subtype))continue;
+        variants.push([base,mid]);
+      }
+      for(const base of bases.slice(0,5))for(const mid of mids.slice(0,4))for(const over of overs.slice(0,2)){
+        if(base.type==='shirt'&&['turtleneck','sweater'].includes(mid.subtype))continue;
+        variants.push([base,mid,over]);
+      }
+      variants.sort((a,b)=>Number(a.some(x=>x.type==='shirt'))-Number(b.some(x=>x.type==='shirt'))||a.length-b.length);
       // Include coat over a shirt and knit layer; five pieces total including trousers and shoes.
       const outerOptions=weather==='hot'?[null]:weather==='cold'?shells.filter(x=>['coat','jacket'].includes(x.type)):[null,...shells,...overs];
       if(weather==='cold'&&!outerOptions.length)continue;
-      for(const base of variants.slice(0,28))for(const bottom of bottoms)for(const shoe of shoes)for(const outer of outerOptions.slice(0,5)){
+      for(const base of variants.slice(0,42))for(const bottom of bottoms)for(const shoe of shoes)for(const outer of outerOptions.slice(0,5)){
         const parts=[...base,bottom,shoe,...(outer?[outer]:[])];
         if(new Set(parts.map(key)).size!==parts.length)continue;
         if(parts.length>6)continue;
@@ -594,7 +609,16 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
         if(seen.has(id))continue;seen.add(id);
         const missing=parts.filter(p=>p.missing),ev=compatibility(parts,style,weather,occasion);
         let score=ev.score+preferenceBonus(parts,style)-missing.length*11;
-        if(base.length>1&&base.some(p=>p.type==='shirt')&&base.some(p=>p.type==='knit'))score+=9;
+        if(base.length>1&&base.some(p=>p.type==='shirt')&&base.some(p=>p.type==='knit'&&!['turtleneck','sweater'].includes(p.subtype)))score+=6;
+        if(base.length>1&&base.some(p=>p.type==='shirt')&&base.some(p=>['turtleneck','sweater'].includes(p.subtype)))score-=24;
+        const formalShoe=['loafers','derby'].includes(shoe.type);
+        const tailoredBottom=['trousers','chinos'].includes(bottom.type);
+        const relaxedBottom=['jeans','joggers','shorts'].includes(bottom.subtype||bottom.type)||bottom.type==='jeans'||bottom.type==='shorts';
+        if(occasion==='office')score+=(tailoredBottom?16:-10)+(formalShoe?11:-7)+(['blazer','coat'].includes(outer?.type)?6:0)+(base.some(p=>p.type==='shirt')?5:0);
+        if(occasion==='restaurant')score+=(tailoredBottom?17:-6)+(formalShoe?13:-8)+(['blazer','coat'].includes(outer?.type)?10:0)+(base.some(p=>p.type==='shirt')?7:0);
+        if(occasion==='date')score+=(tailoredBottom?8:0)+(formalShoe?5:0)+(base.some(p=>['shirt','polo','knit'].includes(p.type))?8:0)+(base.some(p=>p.type==='hoodie')?-12:0);
+        if(occasion==='everyday')score+=(relaxedBottom?10:0)+(shoe.type==='sneakers'?10:0)+(base.length===1?8:0)+(base.some(p=>p.type==='shirt')?-5:0);
+        if(occasion==='travel')score+=(relaxedBottom?10:0)+(shoe.type==='sneakers'?13:-5)+(base.some(p=>p.type==='hoodie')?5:0);
         if(outer?.type==='coat'&&bottom.type==='trousers')score+=12;
         if(outer?.type==='coat'&&bottom.type==='jeans'){
           const fit=normalizeFit(bottom);
@@ -611,23 +635,34 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
       }
     }
     candidates.sort((a,b)=>b.score-a.score||a.missing.length-b.missing.length);
-    // Balance different bottoms and colourways, rather than letting one high-scoring jean dominate.
+    // Diversify bottoms and silhouettes; for Explore mix ready and shopping looks.
     const selected=[],used=new Map(),usedLooks=new Set();
-    while(selected.length<5){
-      let best=null,bestRank=-Infinity;
-      for(const look of candidates.slice(0,3500)){
-        if(usedLooks.has(look.identity))continue;
-        const bottom=look.parts.find(p=>GROUP[p.type]==='bottom');
-        const bottomId=key(bottom),repeat=used.get(bottomId)||0;
-        const overlap=selected.reduce((max,l)=>Math.max(max,look.parts.filter(p=>l.parts.some(z=>key(z)===key(p))).length),0);
-        const rank=look.score-repeat*25-overlap*5-look.missing.length*3+(bottom.type==='trousers'?3:0);
-        if(rank>bestRank){bestRank=rank;best=look;}
+    const selectFrom=(pool,count)=>{
+      for(let n=0;n<count;n++){
+        let best=null,bestRank=-Infinity;
+        for(const look of pool.slice(0,6500)){
+          if(usedLooks.has(look.identity))continue;
+          const bottom=look.parts.find(p=>GROUP[p.type]==='bottom');
+          const bottomId=key(bottom),repeat=used.get(bottomId)||0;
+          const overlap=selected.reduce((max,l)=>Math.max(max,look.parts.filter(p=>l.parts.some(z=>key(z)===key(p))).length),0);
+          const usedShirts=selected.filter(l=>l.parts.some(p=>p.type==='shirt')).length;
+          const rank=look.score-repeat*24-overlap*5+(bottom.type==='trousers'?3:0)-
+            (look.parts.some(p=>p.type==='shirt')?usedShirts*9:0);
+          if(rank>bestRank){bestRank=rank;best=look;}
+        }
+        if(!best)break;
+        selected.push(best);usedLooks.add(best.identity);
+        const bottom=best.parts.find(p=>GROUP[p.type]==='bottom'),id=key(bottom);
+        used.set(id,(used.get(id)||0)+1);
       }
-      if(!best)break;
-      selected.push(best);usedLooks.add(best.identity);
-      const bottom=best.parts.find(p=>GROUP[p.type]==='bottom'),id=key(bottom);
-      used.set(id,(used.get(id)||0)+1);
-    }
+    };
+    if(mix&&!ownedOnly){
+      const ready=candidates.filter(l=>l.missing.length===0);
+      const shopping=candidates.filter(l=>l.missing.length>0);
+      selectFrom(ready,Math.ceil(limit/2));
+      selectFrom(shopping,Math.floor(limit/2));
+      if(selected.length<limit)selectFrom(candidates,limit-selected.length);
+    }else selectFrom(candidates,limit);
     return selected;
   }
 
@@ -723,7 +758,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     card.addEventListener('pointerup',finish);
     card.addEventListener('pointercancel',()=>{active=false;card.style.transition='transform 220ms ease';card.style.transform='';});
   }
-  function todayLooks(){ return generateLooks({occasion:state.filters.outfitOccasion, weather:state.filters.outfitWeather,ownedOnly:state.filters.ownedOnly}); }
+  function todayLooks(){ return generateLooks({occasion:state.filters.outfitOccasion, weather:state.filters.outfitWeather,ownedOnly:state.filters.ownedOnly,limit:10,mix:true}); }
   function dailyLooks(){return generateLooks({occasion:'everyday',weather:store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather,ownedOnly:true}).filter(l=>l.missing.length===0&&l.parts.every(p=>store.wardrobe.some(w=>(w.ownedId||w.id)===(p.ownedId||p.id))));}
   function lookPhoto(look){ return lookPhotos[look.occasion] || stylePhotos[look.style] || stylePhotos.casual; }
   function openSheet(kind,payload){ state.sheet={kind,payload}; renderSheet(); }
