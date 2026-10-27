@@ -484,7 +484,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
 
   const SUPABASE_URL='https://maqhxkhltckttfwhyoqn.supabase.co';
   const SUPABASE_PUBLISHABLE='sb_publishable_PI-la72WM_8vQClRljs1NQ__O4I4FRp';
-  let sb=null,authUser=null,cloudTimer=null,cloudPending=false,cloudWriting=false,cloudRevision=0;
+  let sb=null,authUser=null,cloudTimer=null,cloudPending=false,cloudWriting=false,cloudRevision=0,recoveringPassword=false;
   function newUserStore(){return {onboarded:false,wardrobe:[],savedLooks:[],wish:[],feedback:[],profile:{...defaultProfile}};}
   function authMessage(message){const el=document.getElementById('authMessage');if(el)el.textContent=message||'';}
   function authDisplay(mode='login'){
@@ -522,7 +522,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
       }else if(mode==='password'){
         if(password.length<10)throw Error('Используй пароль не короче 10 символов.');
         const {error}=await sb.auth.updateUser({password});if(error)throw error;
-        authMessage('Пароль обновлён.');authDisplay('login');
+        recoveringPassword=false;authMessage('Пароль обновлён.');authHide();
       }else{
         const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;
         await activateAccount(data.user);
@@ -553,7 +553,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     buildOnboarding();
     document.getElementById('onboarding').classList.toggle('show',store.onboarded===false);
     if(store.forecast?.day===dayKey())state.filters.outfitWeather=store.forecast.mode;
-    renderScreens();authHide();
+    renderScreens();if(!recoveringPassword)authHide();
   }
   function scheduleCloudSave(){
     if(!authUser||!sb)return;
@@ -579,7 +579,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     if(!window.supabase?.createClient){authDisplay();authMessage('Библиотека Supabase не загрузилась. Проверь соединение и обнови страницу.');return;}
     sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     sb.auth.onAuthStateChange((event,session)=>{
-      if(event==='PASSWORD_RECOVERY'){authDisplay('password');return;}
+      if(event==='PASSWORD_RECOVERY'){recoveringPassword=true;authDisplay('password');return;}
       if(event==='SIGNED_OUT'){authUser=null;store=newUserStore();authDisplay('login');return;}
       if(event==='SIGNED_IN'&&session?.user&&!authUser)setTimeout(()=>activateAccount(session.user),0);
     });
@@ -1261,5 +1261,5 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   }
   init();
 </script>
-<div id="styleAuth" role="dialog" aria-modal="true" aria-labelledby="authHeading"><div class="authPanel"><div class="subtle">STYLE OS / PERSONAL WARDROBE</div><h1 id="authHeading">Войти в STYLE OS</h1><p>Личный гардероб и твои образы сохраняются в аккаунте.</p><form onsubmit="window.styleAuth.submit(event)"><label for="authEmail">Электронная почта</label><input id="authEmail" type="email" autocomplete="email" required><div id="authPassword"><label for="authPass">Пароль</label><input id="authPass" type="password" autocomplete="current-password" minlength="10"></div><button id="authSubmit" class="authMain" type="submit">Войти</button><div id="authMessage" aria-live="polite"></div></form><div class="authLinks"><button onclick="window.styleAuth.display('register')">Регистрация</button><button onclick="window.styleAuth.display('login')">Войти</button><button onclick="window.styleAuth.display('reset')">Забыли пароль?</button></div></div></div></body>
+<div id="styleAuth" role="dialog" aria-modal="true" aria-labelledby="authHeading"><div class="authPanel"><div class="subtle">STYLE OS / PERSONAL WARDROBE</div><h1 id="authHeading">Войти в STYLE OS</h1><p>Личный гардероб и твои образы сохраняются в аккаунте.</p><form onsubmit="window.styleAuth.submit(event)"><label for="authEmail">Электронная почта</label><input id="authEmail" type="email" autocomplete="email" required><div id="authPassword"><label for="authPass">Пароль</label><input id="authPass" type="password" autocomplete="current-password"></div><button id="authSubmit" class="authMain" type="submit">Войти</button><div id="authMessage" aria-live="polite"></div></form><div class="authLinks"><button onclick="window.styleAuth.display('register')">Регистрация</button><button onclick="window.styleAuth.display('login')">Войти</button><button onclick="window.styleAuth.display('reset')">Забыли пароль?</button></div></div></div></body>
 </html>
