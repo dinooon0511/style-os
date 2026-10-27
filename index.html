@@ -486,7 +486,11 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120"><rect x="1" y="1" width="98" height="118" rx="16" fill="#f2f1ed"/>'+path+'</svg>');
   }
   function formatPrice(p){ return p ? new Intl.NumberFormat('ru-RU').format(p) + ' ₽' : 'Цена на Lamoda'; }
-  function productImage(item){ return item.photo || clothSVG(item); }
+  function productImage(item){
+    // Existing wardrobe copies may predate the curated photo import.
+    const match=state.catalog.find(p=>(item.sku&&p.sku===item.sku)||(item.catalogId&&p.id===item.catalogId)||(item.id&&p.id===item.id));
+    return match?.photo || item.photo || clothSVG(item);
+  }
   function getOccLabel(v){ return ({everyday:'На каждый день',office:'Офис',date:'Свидание',restaurant:'Ужин',travel:'Поездка',event:'Мероприятие',university:'Учёба'})[v] || v; }
   function getWeatherLabel(v){ return ({hot:'Тепло',mild:'Прохладно',cold:'Холодно'})[v] || v; }
   function uniq(arr){ return [...new Set(arr)]; }
