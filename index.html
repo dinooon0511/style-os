@@ -423,6 +423,22 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   .styleCard{background-position:center 28%}
   .hero.small{background-position:center 27%}
 }
+
+/* iOS Safari automatically zooms focused controls with computed text under 16px. */
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select,
+  .field input,
+  .field select,
+  .search input,
+  .authPanel input,
+  #citySearch {
+    font-size:16px !important;
+    line-height:1.3;
+  }
+  input,textarea,select{max-width:100%;min-width:0}
+}
 </style>
 </head>
 <body>
@@ -571,7 +587,11 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     document.getElementById('authSubmit').textContent=mode==='register'?'Зарегистрироваться':mode==='reset'?'Отправить письмо':mode==='password'?'Изменить пароль':'Войти';
     el.dataset.mode=mode;authMessage('');
   }
-  function authHide(){document.getElementById('styleAuth')?.classList.remove('visible');}
+  function authHide(){
+    const panel=document.getElementById('styleAuth');
+    if(panel?.contains(document.activeElement))document.activeElement.blur();
+    panel?.classList.remove('visible');
+  }
   function authFriendly(e){
     const x=String(e?.message||e||'Не удалось выполнить запрос');
     if(/invalid login credentials/i.test(x))return 'Проверь почту и пароль.';
