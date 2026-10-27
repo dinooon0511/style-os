@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://drive.google.com" crossorigin>
   <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
   <link rel="dns-prefetch" href="https://images.unsplash.com">
-  <title>STYLE OS — Premium Beta</title>
+  <title>STYLE OS — Персональный гардероб</title>
   <style>
     :root{
       --bg:#ece6dd;
@@ -55,7 +55,8 @@
     .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px}
     .brand{font:500 31px/1.02 Helvetica, Arial, sans-serif; letter-spacing:-1.5px}
     .subtle{font-size:12px; letter-spacing:1.4px; text-transform:uppercase; color:var(--muted)}
-    .avatar{width:40px;height:40px;border-radius:50%; background:center/cover no-repeat url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'); box-shadow:var(--shadow); border:1px solid rgba(255,255,255,.72)}
+    .avatar{width:40px;height:40px;border-radius:50%;background:#dce2db;display:grid;place-items:center;color:#647064;overflow:hidden;border:1px solid rgba(255,255,255,.72);cursor:pointer}
+    .avatar img{width:100%;height:100%;object-fit:cover}
     .hero{
       position:relative; overflow:hidden; border-radius:30px; min-height:330px; padding:18px; margin-bottom:14px; display:flex; flex-direction:column; justify-content:flex-end; color:#fff;
       background:linear-gradient(180deg, rgba(35,38,32,.02), rgba(19,20,17,.56)), center/cover no-repeat url('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=80');
@@ -384,6 +385,17 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
 .authLinks{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;margin-top:18px}
 .authLinks button{background:none;border:0;padding:6px 0;color:#33473a;font-size:12px;text-decoration:underline}
 #authMessage{font-size:13px;color:#465f4b;line-height:1.5;margin-top:12px;overflow-wrap:anywhere}
+/* Profile, overlays and shared catalog styling */
+.profileHero{background:linear-gradient(155deg,#475146,#222a24);color:white;text-align:center;border-radius:28px;padding:24px 18px;box-shadow:0 16px 32px #1a231b25}
+.profileAvatar{border:3px solid #ffffffcd;background:#dce2db;color:#677365;width:112px;height:112px;border-radius:50%;display:grid;place-items:center;overflow:hidden;margin:0 auto 14px;cursor:pointer}
+.profileAvatar img{width:100%;height:100%;object-fit:cover}
+.profileHero h2{font:400 31px Georgia,serif;margin:7px 0}.profileHero p{font-size:13px;color:#dce2da}
+.profileStats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.profileStats div{border:1px solid #ffffff35;padding:12px;border-radius:18px}.profileStats strong{display:block;font-size:24px}.profileStats small{font-size:11px;color:#dce2da}
+.profileActions{display:flex;gap:8px}.profileActions button{flex:1}
+.profilePanel{border-radius:24px;background:#ffffffa8;padding:18px;margin-top:14px;border:1px solid white}
+.sheetClose{position:absolute;right:14px;top:12px;z-index:30;border:1px solid #e6e8e3;background:#fff;color:#293328;width:38px;height:38px;border-radius:50%;font-size:25px;cursor:pointer}
+.citySuggestions{margin-top:8px;border-radius:12px;max-height:220px;overflow:auto;background:#fff}.citySuggestion{display:block;width:100%;text-align:left;background:white;border:0;border-bottom:1px solid #edf0eb;padding:12px;cursor:pointer}.citySuggestion small{display:block;color:#707970;margin-top:3px}
+.savedLookCard{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:10px;margin-bottom:9px}.savedLookCard img{width:63px;height:70px;object-fit:contain;background:#f4f5f2;border-radius:12px}.savedLookInfo{flex:1;min-width:0}.savedLookInfo small{display:block;color:#778075;margin:5px 0}
 </style>
 </head>
 <body>
@@ -485,11 +497,24 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     if(!Array.isArray(store.feedback)) store.feedback=[];
   }
   function saveStore(){scheduleCloudSave();}
+  function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  const userIcon='<svg width="52" height="52" viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle cx="32" cy="23" r="12" fill="currentColor"/><path d="M10 55c0-13 9-20 22-20s22 7 22 20" fill="currentColor"/></svg>';
+  function avatarMarkup(){return store.profile?.avatar?'<img alt="Фото профиля" src="'+escapeHtml(store.profile.avatar)+'">':userIcon;}
+  async function uploadAvatar(file){
+    if(!file)return;
+    if(!file.type.startsWith('image/')||file.size>12*1024*1024){toast('Нужна фотография размером до 12 МБ');return;}
+    try{
+      const image=await createImageBitmap(file),canvas=document.createElement('canvas');canvas.width=256;canvas.height=256;
+      const ctx=canvas.getContext('2d'),side=Math.min(image.width,image.height);
+      ctx.drawImage(image,(image.width-side)/2,(image.height-side)/2,side,side,0,0,256,256);image.close?.();
+      store.profile.avatar=canvas.toDataURL('image/jpeg',.76);saveStore();renderScreens();toast('Фото профиля сохранено');
+    }catch(e){toast('Не удалось открыть фотографию');}
+  }
 
   const SUPABASE_URL='https://maqhxkhltckttfwhyoqn.supabase.co';
   const SUPABASE_PUBLISHABLE='sb_publishable_PI-la72WM_8vQClRljs1NQ__O4I4FRp';
   let sb=null,authUser=null,cloudTimer=null,cloudPending=false,cloudWriting=false,cloudRevision=0,recoveringPassword=false;
-  function newUserStore(){return {onboarded:false,wardrobe:[],savedLooks:[],wish:[],feedback:[],profile:{...defaultProfile}};}
+  function newUserStore(){return {onboarded:false,wardrobe:[],savedLooks:[],savedLookDetails:{},wish:[],feedback:[],profile:{...defaultProfile}};}
   function authMessage(message){const el=document.getElementById('authMessage');if(el)el.textContent=message||'';}
   function authDisplay(mode='login'){
     const el=document.getElementById('styleAuth');if(!el)return;
@@ -551,6 +576,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     if(!store.profile)store.profile={...defaultProfile};
     if(!Array.isArray(store.wardrobe))store.wardrobe=[];
     if(!Array.isArray(store.savedLooks))store.savedLooks=[];
+    if(!store.savedLookDetails||typeof store.savedLookDetails!=='object')store.savedLookDetails={};
     if(!Array.isArray(store.wish))store.wish=[];
     if(!Array.isArray(store.feedback))store.feedback=[];
     state.screen='home';state.sheet=null;
@@ -817,12 +843,29 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
       state.filters.outfitWeather=mode;saveStore();renderScreens();
     }catch(e){toast('Прогноз недоступен — выбери погоду вручную');}
   }
+  let cityTimer,cityController,cityResults=[];
+  function onCityInput(value){clearTimeout(cityTimer);cityTimer=setTimeout(()=>searchCities(value),250);}
+  async function searchCities(value){
+    const root=document.getElementById('citySuggestions');if(!root)return;
+    if(value.trim().length<2){cityResults=[];root.innerHTML='';return;}
+    cityController?.abort();cityController=new AbortController();root.innerHTML='<div class="helper" style="padding:12px">Ищем города…</div>';
+    try{
+      const res=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(value.trim())+'&count=7&language=ru',{signal:cityController.signal});
+      if(!res.ok)throw Error('search failed');const result=await res.json();cityResults=result.results||[];
+      root.innerHTML=cityResults.length?cityResults.map((c,i)=>'<button class="citySuggestion" onclick="window.appAction(&quot;chooseCity&quot;,'+i+')">'+escapeHtml(c.name)+(c.admin1&&c.admin1!==c.name?' · '+escapeHtml(c.admin1):'')+'<small>'+escapeHtml(c.country||'')+'</small></button>').join(''):'<div class="helper" style="padding:12px">Город не найден</div>';
+    }catch(e){if(e.name!=='AbortError')root.innerHTML='<div class="helper" style="padding:12px">Поиск временно недоступен</div>';}
+  }
+  function chooseCity(index){
+    const city=cityResults[index];if(!city)return;
+    store.city={label:city.name,country:city.country,lat:city.latitude,lon:city.longitude};
+    store.forecast=null;saveStore();closeSheet();renderHome();updateForecast();
+  }
   async function setCityManual(){
     const name=document.getElementById('citySearch')?.value.trim();if(!name)return;
     try{
       const res=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(name)+'&count=1&language=ru');
       const data=await res.json(),city=data.results?.[0];if(!city){toast('Город не найден');return;}
-      store.city={label:city.name+', '+city.country,lat:city.latitude,lon:city.longitude};
+      store.city={label:city.name,country:city.country,lat:city.latitude,lon:city.longitude};
       store.forecast=null;saveStore();closeSheet();updateForecast();renderHome();
     }catch(e){toast('Не удалось найти город');}
   }
@@ -910,7 +953,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
 
 
     if(kind==='city'){
-      html=`<div class='sheetHandle'></div><div class='sheetSection'><h2 class='sheetTitle'>Город и погода</h2><p class='helper'>Укажи город для прогноза. Геолокация запрашивается только по нажатию. Местоположение хранится в браузере, а координаты отправляются погодному сервису при запросе прогноза.</p><div style='display:flex;gap:7px;margin-top:16px'><input id='citySearch' placeholder='Например, Санкт-Петербург' style='min-width:0;flex:1;padding:10px;border:1px solid #ddd;border-radius:10px'><button class='btn dark small' onclick='window.appAction("setCityManual")'>Найти</button></div><button class='btn line' style='width:100%;margin-top:10px' onclick='window.appAction("setCityGps")'>Определить местоположение</button></div>`;
+      html=`<div class='sheetHandle'></div><div class='sheetSection'><h2 class='sheetTitle'>Город и погода</h2><p class='helper'>Начни вводить название города и выбери его из подсказок. Прогноз берётся из Open-Meteo.</p><div style='display:flex;gap:7px;margin-top:16px'><input id='citySearch' oninput='window.appAction("cityInput",this.value)' placeholder='Например, Санкт-Петербург' style='min-width:0;flex:1;padding:10px;border:1px solid #ddd;border-radius:10px'><button class='btn dark small' onclick='window.appAction("setCityManual")'>Найти</button></div><div id='citySuggestions' class='citySuggestions' role='listbox'></div><button class='btn line' style='width:100%;margin-top:10px' onclick='window.appAction("setCityGps")'>Определить местоположение</button></div>`;
     }
     if(kind==='daily'){
       const d=dailyData(),looks=dailyOptions(),current=d.selected?null:looks[d.index];
@@ -975,7 +1018,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
         <div class='search'><span>⌕</span><input id='addSearch' value='${(state.addQuery||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}' placeholder='Найти вещь' oninput='window.appAction("addSearch",this.value)'></div>
         <div class='chips' style='margin:12px 0'>${[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Слои']].map(([k,v])=>`<button class='chip ${cat===k?'active':''}' onclick='window.appAction("addCategory","${k}")'>${v}</button>`).join('')}</div>
         <div class='helper' style='margin-bottom:8px'>Найдено: ${items.length}</div>
-        <div class='grid2'>${items.map(p=>`<div class='itemCard' onclick='window.appAction("addFromCatalog","${p.id}")'><div class='itemVisual' style='height:130px'><img alt='' src='${productImage(p,true)}' decoding='async' style='width:100%;height:100%;object-fit:contain'></div><div class='itemBody'><div class='itemName'>${p.brand}</div><div class='metaLine'>${p.name} · ${COLORS[p.color]?.[0]}</div></div></div>`).join('')}</div>
+        <div class='grid2'>${items.map(p=>`<article class='itemCard catalogProductCard' onclick='window.appAction("addFromCatalog","${p.id}")'><div class='itemVisual catalogProductVisual'><img alt='${escapeHtml(p.name)}' src='${productImage(p)}' loading='lazy' decoding='async'></div><div class='itemBody catalogProductBody'><div class='catalogProductEyebrow'>${escapeHtml(p.brand||'STYLE OS')}</div><div class='catalogProductName'>${escapeHtml(p.name)}</div><div class='catalogProductFoot'><span class='catalogProductColor'><i style='background:${colorHex(p.color)}'></i>${escapeHtml(COLORS[p.color]?.[0]||'Цвет не указан')}</span></div></div></article>`).join('')}</div>
         <div class='sheetFooter'><button class='btn line' onclick='window.appAction("manualForm")'>Добавить вручную</button><button class='btn dark' onclick='window.appAction("switchTab","catalog")'>Каталог</button></div>`;
     }
     if(kind==='editProfile'){
@@ -990,8 +1033,8 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
       </div><div class='sheetFooter'><button class='btn line' onclick='window.appAction("closeSheet")'>Отмена</button><button class='btn dark' onclick='window.appAction("saveProfile")'>Сохранить</button></div>`;
     }
     if(kind==='savedLooks'){
-      const saved=store.savedLooks.map(id=>recipes.find(r=>r.id===id)).filter(Boolean);
-      html=`<div class='sheetHandle'></div><h2 class='sheetTitle'>Сохранённые образы</h2><p class='sheetSub'>Избранные стилистические формулы</p><div class='list'>${saved.length?saved.map(r=>`<div class='listRow'><div><strong>${r.title}</strong><div class='helper'>${r.reason}</div></div><button class='btn line small' onclick='window.appAction("removeSaved","${r.id}")'>Удалить</button></div>`).join(''):`<div class='empty'>Пока нет сохранённых образов. Открой «Образы» и сохрани понравившийся вариант.</div>`}</div>`;
+      const saved=store.savedLooks.map(id=>({id,look:findSavedLook(id)}));
+      html=`<div class='sheetHandle'></div><h2 class='sheetTitle'>Сохранённые образы</h2><p class='sheetSub'>Твои избранные сочетания</p><div class='list'>${saved.length?saved.map(r=>`<div class='savedLookCard'><img alt='' src='${r.look?.parts?.[0]?productImage(r.look.parts[0]):lookPhotos.everyday}'><div class='savedLookInfo'><strong>${escapeHtml(r.look?.title||'Сохранённый образ')}</strong><small>${r.look?.parts?.length?r.look.parts.length+' вещи · посмотреть состав':'Старый образ пока не восстановлен'}</small>${r.look?`<button class='btn dark small' onclick='window.appAction("viewSaved","${r.id}")'>Посмотреть</button>`:''}</div><button class='btn line small' onclick='window.appAction("removeSaved","${r.id}")'>Удалить</button></div>`).join(''):`<div class='empty'>Пока нет сохранённых образов. Открой «Образы» и сохрани понравившийся вариант.</div>`}</div>`;
     }
     if(kind==='manualForm'){
       html=`<div class='sheetHandle'></div><h2 class='sheetTitle'>Новая вещь</h2><p class='sheetSub'>Минимальный быстрый ввод — без фото, но с ключевыми характеристиками.</p>
@@ -1004,7 +1047,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
       </div>
       <div class='sheetFooter'><button class='btn line' onclick='window.appAction("openAdd")'>Назад</button><button class='btn dark' onclick='window.appAction("saveManual")'>Сохранить вещь</button></div>`;
     }
-    sheet.innerHTML=html;
+    sheet.innerHTML=html+'<button type="button" class="sheetClose" aria-label="Закрыть" onclick="window.appAction(&quot;closeSheet&quot;)">×</button>';
     if(kind==='daily')initDailySwipe();
     document.getElementById('sheetBackdrop').classList.add('show');
     sheet.classList.add('show');
@@ -1020,7 +1063,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     const wardrobeCount=store.wardrobe.length;
     const savedCount=store.savedLooks.length;
     const screen=document.getElementById('homeScreen');
-    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>personal style system</div><div class='brand'>STYLE OS</div></div><div class='avatar'></div></div>
+    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>personal style system</div><div class='brand'>STYLE OS</div></div><button class='avatar' aria-label='Мой профиль' onclick='window.appAction("switchTab","profile")'>${avatarMarkup()}</button></div>
       <div class='dailyWeatherBar'><span>${store.city?store.city.label:'Город не выбран'}${store.forecast?.day===dayKey()?' · '+Math.round(store.forecast.low)+'…'+Math.round(store.forecast.high)+'°C · завтра '+Math.round(store.forecast.tomorrowLow)+'…'+Math.round(store.forecast.tomorrowHigh)+'°C':''}</span><button onclick='window.appAction("openCity")'>${store.city?'Изменить':'Указать город'} ↗</button></div>
       <section class='hero'>
         <span class='glassTag'>Образ дня</span>
@@ -1092,25 +1135,36 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   function renderProfile(){
     const p=store.profile;
     const screen=document.getElementById('profileScreen');
-    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>personal settings</div><div class='brand'>Профиль</div></div><button class='btn line small' onclick='window.styleAuth.logout()'>Выйти</button></div>
-      <div class='card' style='padding:18px'><div class='between' style='display:flex;justify-content:space-between;align-items:center'><div><div class='sectionTitle' style='font-size:28px'>${p.name||'Dmitriy'}</div><div class='sectionHint'>Твой цифровой стилист</div></div><button class='btn line small' onclick='window.appAction("editProfile")'>Изменить</button></div></div>
-      <section class='section'><div class='sectionHead'><div><h2 class='sectionTitle'>Мои параметры</h2><div class='sectionHint'>Эти настройки влияют на выдачу образов и покупок</div></div></div>
-        <div class='list'>
-          <div class='listRow'><div><strong>Основной стиль</strong><div class='helper'>Что приложение берёт за основу</div></div><strong>${p.style}</strong></div>
-          <div class='listRow'><div><strong>Размер верха</strong><div class='helper'>Футболки, рубашки, трикотаж</div></div><strong>${p.topSize}</strong></div>
-          <div class='listRow'><div><strong>Размер низа</strong><div class='helper'>Брюки, джинсы, шорты</div></div><strong>${p.bottomSize}</strong></div>
-          <div class='listRow'><div><strong>Обувь</strong><div class='helper'>Для рекомендаций покупок</div></div><strong>${p.shoeSize}</strong></div>
-          <div class='listRow'><div><strong>Бюджет</strong><div class='helper'>Ценовой диапазон каталога</div></div><strong>${p.budget}</strong></div>
-        </div>
+    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>STYLE OS / ACCOUNT</div><div class='brand'>Мой профиль</div></div><button class='btn line small' onclick='window.styleAuth.logout()'>Выйти</button></div>
+      <section class='profileHero'>
+        <button class='profileAvatar' aria-label='Добавить фото' onclick='window.appAction("chooseAvatar")'>${avatarMarkup()}</button>
+        <input type='file' id='profileAvatarFile' accept='image/*' hidden onchange='window.uploadStyleAvatar(this.files[0])'>
+        <h2>${escapeHtml(p.name||'Пользователь')}</h2><p>Твой персональный стиль, собранный в одном месте</p>
+        <div class='profileStats'><div><strong>${store.wardrobe.length}</strong><small>вещей в гардеробе</small></div><div><strong>${store.savedLooks.length}</strong><small>сохранённых образов</small></div></div>
+        <div class='profileActions'><button class='btn line' onclick='window.appAction("editProfile")'>Редактировать</button><button class='btn line' onclick='window.appAction("chooseAvatar")'>Изменить фото</button></div>
       </section>
-      <section class='section'><div class='sectionHead'><div><h2 class='sectionTitle'>Настройки STYLE OS</h2></div></div>
-        <div class='list'>
-          <div class='listRow' onclick='window.appAction("openSaved")'><div><strong>Сохранённые образы</strong><div class='helper'>${store.savedLooks.length} сохранено</div></div><span>›</span></div>
-          <div class='listRow' onclick='window.appAction("resetDemo")'><div><strong>Сбросить демо-данные</strong><div class='helper'>Вернуть стартовый гардероб и настройки</div></div><span>›</span></div>
-          <div class='listRow' onclick='window.appAction("replayOnboarding")'><div><strong>Пройти onboarding заново</strong><div class='helper'>Проверить сценарий первого входа</div></div><span>›</span></div>
-        </div>
+      <section class='profilePanel'><div class='sectionHead'><div><h2 class='sectionTitle'>Моя коллекция</h2><div class='sectionHint'>Всё, что делает стиль твоим</div></div></div>
+        <div class='listRow' onclick='window.appAction("openSaved")'><div><strong>♡ Сохранённые образы</strong><div class='helper'>${store.savedLooks.length} сохранено · открыть подборку</div></div><span>›</span></div>
+        <div class='listRow' onclick='window.appAction("switchTab","wardrobe")'><div><strong>Мой гардероб</strong><div class='helper'>${store.wardrobe.length} вещей</div></div><span>›</span></div>
+      </section>
+      <section class='profilePanel'><div class='sectionHead'><div><h2 class='sectionTitle'>Параметры стиля</h2><div class='sectionHint'>Используются при составлении образов</div></div></div>
+        <div class='listRow'><span>Основной стиль</span><strong>${escapeHtml(p.style)}</strong></div>
+        <div class='listRow'><span>Верх / низ</span><strong>${escapeHtml(p.topSize)} / ${escapeHtml(p.bottomSize)}</strong></div>
+        <div class='listRow'><span>Размер обуви</span><strong>${escapeHtml(p.shoeSize)}</strong></div>
+        <div class='listRow'><span>Бюджет</span><strong>${escapeHtml(p.budget)}</strong></div>
+        <button class='btn line' style='width:100%;margin-top:12px' onclick='window.appAction("editProfile")'>Изменить параметры</button>
       </section>`;
     document.getElementById('floatingAdd').classList.add('hidden');
+  }
+  function findSavedLook(id){
+    if(store.savedLookDetails?.[id]?.parts?.length)return store.savedLookDetails[id];
+    for(const occasion of ['everyday','office','date','restaurant','travel','event','university']){
+      for(const weather of ['cold','mild','hot']){
+        const match=generateLooks({occasion,weather,ownedOnly:false,limit:30,mix:true}).find(l=>l.id===id);
+        if(match){store.savedLookDetails??={};store.savedLookDetails[id]=match;saveStore();return match;}
+      }
+    }
+    return null;
   }
   function renderSavedLooksSheet(){
     const all=todayLooks();
@@ -1174,6 +1228,8 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     if(action==='closeSheet'){ closeSheet(); }
     if(action==='openCity'){openSheet('city');}
     if(action==='setCityManual'){setCityManual();}
+    if(action==='cityInput'){onCityInput(payload);}
+    if(action==='chooseCity'){chooseCity(Number(payload));}
     if(action==='setCityGps'){setCityGps();}
     if(action==='dailyVote'){animateDailyVote(payload);}
     if(action==='dailyPreview'){const l=dailyOptions().find(x=>x.identity===payload);if(l)openSheet('dailyPreview',l);}
@@ -1191,7 +1247,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
       store.profile.budget=document.getElementById('profileBudget').value;
       saveStore(); closeSheet();renderScreens();toast('Настройки сохранены');
     }
-    if(action==='removeSaved'){ store.savedLooks=store.savedLooks.filter(x=>x!==payload);saveStore();openSheet('savedLooks');renderScreens(); }
+    if(action==='removeSaved'){ store.savedLooks=store.savedLooks.filter(x=>x!==payload);if(store.savedLookDetails)delete store.savedLookDetails[payload];saveStore();openSheet('savedLooks');renderScreens(); }
     if(action==='switchTab'){ state.screen=payload; closeSheet(); renderScreens(); }
     if(action==='setWardrobeFilter'){ state.filters.wardrobe=payload; renderWardrobe(); }
     if(action==='setCatalogFilter'){ state.filters.catalog=payload; renderCatalog(); }
@@ -1241,7 +1297,12 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     }
     if(action==='openLeadLook'){const chosen=chosenDaily();if(chosen)openSheet('look',chosen);else openSheet('daily');}
     if(action==='openLook'){ const look=todayLooks().find(l=>l.id===payload); if(look) openSheet('look',look); }
-    if(action==='saveLook'){ if(!store.savedLooks.includes(payload)) store.savedLooks.push(payload); saveStore(); toast('Образ сохранён'); closeSheet(); renderProfile(); }
+    if(action==='saveLook'){
+      const look=state.sheet?.kind==='look'?state.sheet.payload:todayLooks().find(l=>l.id===payload);
+      if(look){if(!store.savedLooks.includes(payload))store.savedLooks.push(payload);
+        store.savedLookDetails??={};store.savedLookDetails[payload]=JSON.parse(JSON.stringify(look));
+        saveStore();toast('Образ сохранён');closeSheet();renderScreens();}
+    }
     if(action==='shoppingFromLook'){ state.screen='catalog'; closeSheet(); renderScreens(); }
     if(action==='removeOrCopy'){
       const owned=store.wardrobe.find(i=>i.ownedId===payload);
@@ -1251,8 +1312,8 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     if(action==='shuffle'){ const keys=['everyday','office','date','restaurant','travel'];state.filters.outfitOccasion=keys[(keys.indexOf(state.filters.outfitOccasion)+1)%keys.length];renderHome();renderOutfits(); }
     if(action==='editProfile'){ openSheet('editProfile'); }
     if(action==='openSaved'){ openSheet('savedLooks'); }
-    if(action==='resetDemo'){ store={onboarded:true, wardrobe:seedWardrobe(state.catalog), savedLooks:[], wish:[], profile:{...defaultProfile}}; saveStore(); toast('Демо-данные обновлены'); renderScreens(); }
-    if(action==='replayOnboarding'){ document.getElementById('onboarding').classList.add('show'); state.onboardingController.showStep(0); }
+    if(action==='viewSaved'){const look=findSavedLook(payload);if(look)openSheet('look',look);}
+    if(action==='chooseAvatar'){document.getElementById('profileAvatarFile')?.click();}
     if(action==='skipOnboarding'){ store.onboarded=true; if(!store.wardrobe.length) store.wardrobe=seedWardrobe(state.catalog); saveStore(); document.getElementById('onboarding').classList.remove('show'); renderScreens(); }
     if(action==='nextOnboarding'){ state.onboardingController.showStep(Math.min(2, state.onboardingController.current+1)); }
     if(action==='prevOnboarding'){ state.onboardingController.showStep(Math.max(0, state.onboardingController.current-1)); }
@@ -1269,6 +1330,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{state.screen=btn.dataset.screen; closeSheet(); renderScreens();}));
     document.getElementById('floatingAdd').onclick=()=>openSheet('addItem');
     window.appAction=appAction;
+    window.uploadStyleAvatar=uploadAvatar;
     window.styleAuth={display:authDisplay,submit:authSubmit,logout:logoutAccount};
     startAuth().catch(err=>{authDisplay();authMessage("Ошибка инициализации: "+authFriendly(err));});
   }
