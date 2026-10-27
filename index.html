@@ -370,7 +370,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
 .catalogProductCard .catalogProductVisual,.itemVisual,.outfitFlatlayItem,.dailyPieces div{background:#f6f6f4!important}
 .catalogProductCard .catalogProductVisual{padding:8px!important}
 
-#styleAuth{position:fixed;inset:0;z-index:99999;background:#e5e6e1;display:flex;overflow:auto;padding:28px 18px;align-items:center;justify-content:center}
+#styleAuth{position:fixed;inset:0;z-index:99999;background:#e5e6e1;display:none;overflow:auto;padding:28px 18px;align-items:center;justify-content:center}
 #styleAuth.visible{display:flex}
 .authPanel{background:#f8f8f5;border-radius:18px;width:min(100%,410px);padding:27px 22px;color:#273027}
 .authPanel h1{font-size:28px;margin:8px 0 8px}
@@ -381,9 +381,6 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
 .authLinks{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;margin-top:18px}
 .authLinks button{background:none;border:0;padding:6px 0;color:#33473a;font-size:12px;text-decoration:underline}
 #authMessage{font-size:13px;color:#465f4b;line-height:1.5;margin-top:12px;overflow-wrap:anywhere}
-
-/* Auth gate is visible from first paint and only hides once a user session is verified */
-#styleAuth:not(.visible){display:none}
 </style>
 </head>
 <body>
@@ -413,7 +410,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
 </div>
 <div id="sheetBackdrop" class="sheetBackdrop"></div>
 <div id="sheet" class="sheet"></div>
-<div id="styleAuth" role="dialog" aria-modal="true" aria-labelledby="authHeading"><div class="authPanel"><div class="subtle">STYLE OS / PERSONAL WARDROBE</div><h1 id="authHeading">Войти в STYLE OS</h1><p>Личный гардероб и твои образы сохраняются в аккаунте.</p><form onsubmit="window.styleAuth.submit(event)"><label for="authEmail">Электронная почта</label><input id="authEmail" type="email" autocomplete="email" required><div id="authPassword"><label for="authPass">Пароль</label><input id="authPass" type="password" autocomplete="current-password"></div><button id="authSubmit" class="authMain" type="submit">Войти</button><div id="authMessage" aria-live="polite"></div></form><div class="authLinks"><button onclick="window.styleAuth.display('register')">Регистрация</button><button onclick="window.styleAuth.display('login')">Войти</button><button onclick="window.styleAuth.display('reset')">Забыли пароль?</button></div></div></div>
+<div id="styleAuth" class="visible" role="dialog" aria-modal="true" aria-labelledby="authHeading"><div class="authPanel"><div class="subtle">STYLE OS / PERSONAL WARDROBE</div><h1 id="authHeading">Войти в STYLE OS</h1><p>Личный гардероб и твои образы сохраняются в аккаунте.</p><form onsubmit="window.styleAuth.submit(event)"><label for="authEmail">Электронная почта</label><input id="authEmail" type="email" autocomplete="email" required><div id="authPassword"><label for="authPass">Пароль</label><input id="authPass" type="password" autocomplete="current-password"></div><button id="authSubmit" class="authMain" type="submit">Войти</button><div id="authMessage" aria-live="polite"></div></form><div class="authLinks"><button onclick="window.styleAuth.display('register')">Регистрация</button><button onclick="window.styleAuth.display('login')">Войти</button><button onclick="window.styleAuth.display('reset')">Забыли пароль?</button></div></div></div>
 <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'></script>
 <script>
   const KEY='styleos_premium_beta10';
