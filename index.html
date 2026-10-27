@@ -369,6 +369,18 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
 .catalogProductCard .catalogProductVisual img,.itemVisual img,.dailyPieces img,.dailyHomePieces img,.outfitFlatlayItem img,.lookItemImage img,.heroPiece img{object-fit:contain!important;object-position:center!important;mix-blend-mode:normal!important}
 .catalogProductCard .catalogProductVisual,.itemVisual,.outfitFlatlayItem,.dailyPieces div{background:#f6f6f4!important}
 .catalogProductCard .catalogProductVisual{padding:8px!important}
+
+#styleAuth{position:fixed;inset:0;z-index:99999;background:#e5e6e1;display:none;overflow:auto;padding:28px 18px;align-items:center;justify-content:center}
+#styleAuth.visible{display:flex}
+.authPanel{background:#f8f8f5;border-radius:18px;width:min(100%,410px);padding:27px 22px;color:#273027}
+.authPanel h1{font-size:28px;margin:8px 0 8px}
+.authPanel p{line-height:1.5;font-size:13px;color:#586057;margin:0 0 20px}
+.authPanel label{display:block;font-size:12px;font-weight:700;margin:14px 0 6px}
+.authPanel input{width:100%;box-sizing:border-box;border:1px solid #c4c9c1!important;border-radius:10px;padding:13px;font-size:15px;background:white;color:#253126}
+.authPanel .authMain{width:100%;border:0;background:#29382f;color:white;border-radius:10px;padding:14px;margin-top:18px;font-weight:700}
+.authLinks{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;margin-top:18px}
+.authLinks button{background:none;border:0;padding:6px 0;color:#33473a;font-size:12px;text-decoration:underline}
+#authMessage{font-size:13px;color:#465f4b;line-height:1.5;margin-top:12px;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -398,6 +410,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
 </div>
 <div id="sheetBackdrop" class="sheetBackdrop"></div>
 <div id="sheet" class="sheet"></div>
+<script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'></script>
 <script>
   const KEY='styleos_premium_beta10';
   const COLORS={burgundy:['Бордовый','#743744'],red:['Красный','#b53f3e'],white:['Белый','#f6f4ef'],cream:['Молочный','#eee5d8'],beige:['Бежевый','#d4c1a3'],olive:['Оливковый','#72775c'],black:['Чёрный','#2e302c'],gray:['Серый','#979894'],charcoal:['Графит','#565854'],navy:['Тёмно-синий','#394659'],blue:['Синий','#738eb2'],brown:['Коричневый','#8a6a4e'],khaki:['Хаки','#8a8773']};
@@ -467,7 +480,113 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     if(!store.profile) store.profile={...defaultProfile};
     if(!Array.isArray(store.feedback)) store.feedback=[];
   }
-  function saveStore(){ localStorage.setItem(KEY, JSON.stringify(store)); }
+  function saveStore(){scheduleCloudSave();}
+
+  const SUPABASE_URL='https://maqhxkhltckttfwhyoqn.supabase.co';
+  const SUPABASE_PUBLISHABLE='sb_publishable_PI-la72WM_8vQClRljs1NQ__O4I4FRp';
+  let sb=null,authUser=null,cloudTimer=null,cloudPending=false,cloudWriting=false,cloudRevision=0;
+  function newUserStore(){return {onboarded:false,wardrobe:[],savedLooks:[],wish:[],feedback:[],profile:{...defaultProfile}};}
+  function authMessage(message){const el=document.getElementById('authMessage');if(el)el.textContent=message||'';}
+  function authDisplay(mode='login'){
+    const el=document.getElementById('styleAuth');if(!el)return;
+    el.classList.add('visible');
+    document.getElementById('authHeading').textContent=mode==='register'?'Создать аккаунт':mode==='reset'?'Восстановить пароль':mode==='password'?'Новый пароль':'Войти в STYLE OS';
+    document.getElementById('authPassword').style.display=mode==='reset'?'none':'block';
+    document.getElementById('authSubmit').textContent=mode==='register'?'Зарегистрироваться':mode==='reset'?'Отправить письмо':mode==='password'?'Изменить пароль':'Войти';
+    el.dataset.mode=mode;authMessage('');
+  }
+  function authHide(){document.getElementById('styleAuth')?.classList.remove('visible');}
+  function authFriendly(e){
+    const x=String(e?.message||e||'Не удалось выполнить запрос');
+    if(/invalid login credentials/i.test(x))return 'Проверь почту и пароль.';
+    if(/email not confirmed/i.test(x))return 'Подтверди адрес почты по ссылке в письме.';
+    return x;
+  }
+  async function authSubmit(e){
+    e.preventDefault();
+    const mode=document.getElementById('styleAuth').dataset.mode;
+    const email=document.getElementById('authEmail').value.trim();
+    const password=document.getElementById('authPass').value;
+    const button=document.getElementById('authSubmit');button.disabled=true;authMessage('Выполняем запрос…');
+    try{
+      if(!sb)throw Error('Модуль авторизации пока не загрузился. Обнови страницу.');
+      if(mode==='register'){
+        if(password.length<10)throw Error('Используй пароль не короче 10 символов.');
+        const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});
+        if(error)throw error;
+        authMessage(data.session?'Аккаунт создан. Выполняется вход…':'Проверь почту и перейди по ссылке для подтверждения регистрации.');
+        if(data.session)await activateAccount(data.user);
+      }else if(mode==='reset'){
+        const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;
+        authMessage('Если адрес зарегистрирован, письмо с восстановлением отправлено.');
+      }else if(mode==='password'){
+        if(password.length<10)throw Error('Используй пароль не короче 10 символов.');
+        const {error}=await sb.auth.updateUser({password});if(error)throw error;
+        authMessage('Пароль обновлён.');authDisplay('login');
+      }else{
+        const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;
+        await activateAccount(data.user);
+      }
+    }catch(err){authMessage(authFriendly(err));}finally{button.disabled=false;}
+  }
+  async function activateAccount(user){
+    if(!user)return;
+    if(authUser?.id===user.id){authHide();return;}
+    authUser=user;clearTimeout(cloudTimer);cloudPending=false;cloudRevision++;
+    const {data,error}=await sb.from('user_state').select('data').eq('user_id',user.id).maybeSingle();
+    if(error){authUser=null;authDisplay('login');authMessage('Не удалось открыть личные данные. Примени SQL из supabase/migrations в SQL Editor: '+authFriendly(error));return;}
+    if(data?.data&&typeof data.data==='object'){store={...newUserStore(),...data.data};}
+    else {
+      store=newUserStore();
+      const legacy=localStorage.getItem(KEY);
+      if(legacy&&confirm('На этом устройстве найден прежний локальный гардероб. Перенести его в твой аккаунт?')){
+        try{const parsed=JSON.parse(legacy);if(parsed&&typeof parsed==='object')store={...newUserStore(),...parsed};}catch(e){}
+      }
+      await sb.from('user_state').upsert({user_id:user.id,data:store},{onConflict:'user_id'});
+    }
+    if(!store.profile)store.profile={...defaultProfile};
+    if(!Array.isArray(store.wardrobe))store.wardrobe=[];
+    if(!Array.isArray(store.savedLooks))store.savedLooks=[];
+    if(!Array.isArray(store.wish))store.wish=[];
+    if(!Array.isArray(store.feedback))store.feedback=[];
+    state.screen='home';state.sheet=null;
+    buildOnboarding();
+    document.getElementById('onboarding').classList.toggle('show',store.onboarded===false);
+    if(store.forecast?.day===dayKey())state.filters.outfitWeather=store.forecast.mode;
+    renderScreens();authHide();
+  }
+  function scheduleCloudSave(){
+    if(!authUser||!sb)return;
+    cloudPending=true;cloudRevision++;
+    clearTimeout(cloudTimer);
+    cloudTimer=setTimeout(flushCloudSave,650);
+  }
+  async function flushCloudSave(){
+    if(cloudWriting||!cloudPending||!authUser||!sb)return;
+    cloudWriting=true;cloudPending=false;
+    const userId=authUser.id,rev=cloudRevision,payload=JSON.parse(JSON.stringify(store));
+    const {error}=await sb.from('user_state').upsert({user_id:userId,data:payload},{onConflict:'user_id'});
+    cloudWriting=false;
+    if(error){cloudPending=true;console.error('Cloud save:',error);toast('Не удалось сохранить данные в облаке. Проверь подключение.');}
+    if(authUser?.id===userId&&cloudPending)setTimeout(flushCloudSave,error?4000:50);
+  }
+  async function logoutAccount(){
+    await flushCloudSave();
+    const {error}=await sb.auth.signOut();if(error){toast(authFriendly(error));return;}
+    authUser=null;store=newUserStore();document.getElementById('onboarding').classList.remove('show');authDisplay('login');
+  }
+  async function startAuth(){
+    if(!window.supabase?.createClient){authDisplay();authMessage('Библиотека Supabase не загрузилась. Проверь соединение и обнови страницу.');return;}
+    sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    sb.auth.onAuthStateChange((event,session)=>{
+      if(event==='PASSWORD_RECOVERY'){authDisplay('password');return;}
+      if(event==='SIGNED_OUT'){authUser=null;store=newUserStore();authDisplay('login');return;}
+      if(event==='SIGNED_IN'&&session?.user&&!authUser)setTimeout(()=>activateAccount(session.user),0);
+    });
+    const {data,error}=await sb.auth.getUser();
+    if(data?.user)await activateAccount(data.user);
+    else {authDisplay('login');if(error&&error.name!=='AuthSessionMissingError')authMessage(authFriendly(error));}
+  }
   function icon(name){ return `<span style="font-size:18px">${name}</span>`; }
   function colorHex(c){ return (COLORS[c]||['','#d9d4cb'])[1]; }
   function clothSVG(item){
@@ -963,7 +1082,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   function renderProfile(){
     const p=store.profile;
     const screen=document.getElementById('profileScreen');
-    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>personal settings</div><div class='brand'>Профиль</div></div><div class='avatar'></div></div>
+    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>personal settings</div><div class='brand'>Профиль</div></div><button class='btn line small' onclick='window.styleAuth.logout()'>Выйти</button></div>
       <div class='card' style='padding:18px'><div class='between' style='display:flex;justify-content:space-between;align-items:center'><div><div class='sectionTitle' style='font-size:28px'>${p.name||'Dmitriy'}</div><div class='sectionHint'>Твой цифровой стилист</div></div><button class='btn line small' onclick='window.appAction("editProfile")'>Изменить</button></div></div>
       <section class='section'><div class='sectionHead'><div><h2 class='sectionTitle'>Мои параметры</h2><div class='sectionHint'>Эти настройки влияют на выдачу образов и покупок</div></div></div>
         <div class='list'>
@@ -1129,18 +1248,18 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     }
   }
   async function init(){
-    loadStore();
+    store=newUserStore();
     state.catalog=embeddedCatalog;
-    if(store.onboarded===false){ document.getElementById('onboarding').classList.add('show'); } else { document.getElementById('onboarding').classList.remove('show'); if(store.wardrobe === null || !Array.isArray(store.wardrobe)) { store.wardrobe=seedWardrobe(state.catalog); saveStore(); } }
+    document.getElementById('onboarding').classList.remove('show');
     buildOnboarding();
     if(store.forecast?.day===dayKey())state.filters.outfitWeather=store.forecast.mode;
-    renderScreens();
-    if(store.city&&store.forecast?.day!==dayKey())updateForecast();
+    startAuth();
     document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{state.screen=btn.dataset.screen; closeSheet(); renderScreens();}));
     document.getElementById('floatingAdd').onclick=()=>openSheet('addItem');
     window.appAction=appAction;
+    window.styleAuth={display:authDisplay,submit:authSubmit,logout:logoutAccount};
   }
   init();
 </script>
-</body>
+<div id="styleAuth" role="dialog" aria-modal="true" aria-labelledby="authHeading"><div class="authPanel"><div class="subtle">STYLE OS / PERSONAL WARDROBE</div><h1 id="authHeading">Войти в STYLE OS</h1><p>Личный гардероб и твои образы сохраняются в аккаунте.</p><form onsubmit="window.styleAuth.submit(event)"><label for="authEmail">Электронная почта</label><input id="authEmail" type="email" autocomplete="email" required><div id="authPassword"><label for="authPass">Пароль</label><input id="authPass" type="password" autocomplete="current-password" minlength="10"></div><button id="authSubmit" class="authMain" type="submit">Войти</button><div id="authMessage" aria-live="polite"></div></form><div class="authLinks"><button onclick="window.styleAuth.display('register')">Регистрация</button><button onclick="window.styleAuth.display('login')">Войти</button><button onclick="window.styleAuth.display('reset')">Забыли пароль?</button></div></div></div></body>
 </html>
