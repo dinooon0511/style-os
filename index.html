@@ -813,7 +813,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   }
   function getStyleMode(){let user=store.profile?.style;return STYLE_MODES[user]?user:'minimal';}
   function partsAreMissing(parts){return parts.some(p=>p.missing);}
-  function generateLooks({occasion,weather,ownedOnly=false,limit=5,mix=false}){
+  function generateLooks({occasion,weather,ownedOnly=false,limit=5,mix=false,anchorItem=null}){
     const owned=ownItems(),catalog=state.catalog,preferred=getStyleMode();
     const occasionStyles={
       everyday:['casual','minimal','utility','dark_minimal','oldmoney','smart'],
@@ -834,11 +834,13 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
       const ids=new Set(own.map(x=>x.id));
       const suggestions=ownedOnly?[]:catalog.filter(x=>GROUP[x.type]===group&&!ids.has(x.id)&&allowed(x,group)).map(x=>({...x,missing:true}));
       pools[group]=[...own,...suggestions];
+      if(anchorItem&&GROUP[anchorItem.type]===group&&!pools[group].some(x=>(x.ownedId||x.id)===(anchorItem.ownedId||anchorItem.id)))pools[group].unshift({...anchorItem,missing:false});
     }
     // Every owned bottom is kept in consideration, irrespective of catalogue ranking.
     const candidates=[],seen=new Set();
     const key=x=>x.ownedId||x.catalogId||x.id;
     const pick=(group,style,limit)=>[...pools[group]].sort((a,b)=>
+      (anchorItem?Number((b.ownedId||b.id)===(anchorItem.ownedId||anchorItem.id))-Number((a.ownedId||a.id)===(anchorItem.ownedId||anchorItem.id)):0)||
       Number(a.missing)-Number(b.missing)||
       Number(STYLE_MODES[style].types.includes(b.type))-Number(STYLE_MODES[style].types.includes(a.type))||
       Number(STYLE_MODES[style].colors.includes(b.color))-Number(STYLE_MODES[style].colors.includes(a.color))
@@ -868,6 +870,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
       for(const base of variants.slice(0,42))for(const bottom of bottoms)for(const shoe of shoes)for(const outer of outerOptions.slice(0,5)){
         const parts=[...base,bottom,shoe,...(outer?[outer]:[])];
         if(new Set(parts.map(key)).size!==parts.length)continue;
+        if(anchorItem&&!parts.some(p=>(p.ownedId||p.id)===(anchorItem.ownedId||anchorItem.id)))continue;
         if(parts.length>6)continue;
         if(ownedOnly&&parts.some(p=>p.missing))continue;
         if(weather==='cold'&&!outer)continue;
@@ -1043,6 +1046,24 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     card.addEventListener('pointercancel',()=>{active=false;card.style.transition='transform 220ms ease';card.style.transform='';});
   }
   function todayLooks(){ return generateLooks({occasion:state.filters.outfitOccasion, weather:state.filters.outfitWeather,ownedOnly:state.filters.ownedOnly,limit:10,mix:true}); }
+
+  function anchorWeather(item){
+    const current=store.forecast?.day===dayKey()?store.forecast.mode:'mild';
+    if(item.type==='shorts'||item.season==='warm')return 'hot';
+    if(['coat','boots'].includes(item.type)||item.season==='cold')return 'cold';
+    if(['knit','hoodie','jacket','blazer','overshirt'].includes(item.type)&&current==='hot')return 'mild';
+    return current;
+  }
+  function createAnchorLooks(item){
+    const conditions=[anchorWeather(item),'mild','cold','hot'].filter((x,i,a)=>a.indexOf(x)===i);
+    let best=[];
+    for(const weather of conditions){
+      const looks=generateLooks({occasion:'everyday',weather,anchorItem:item,limit:5});
+      if(looks.length>best.length)best=looks;
+      if(best.length===5)break;
+    }
+    return best.map((look,index)=>({...look,id:'anchored_'+Date.now()+'_'+index,anchorSource:true}));
+  }
   function dailyLooks(){return generateLooks({occasion:'everyday',weather:store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather,ownedOnly:true}).filter(l=>l.missing.length===0&&l.parts.every(p=>store.wardrobe.some(w=>(w.ownedId||w.id)===(p.ownedId||p.id))));}
   function lookPhoto(look,index=0){
     const options=lookPhotos[look.occasion]||[stylePhotos[look.style]||stylePhotos.casual];
@@ -1074,6 +1095,22 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     if(kind==='dailyPreview'){
       const l=payload;
       html=`<div class='sheetHandle'></div><div class='sheetSection'><div class='subtle'>STYLE OS / ПРЕДПРОСМОТР</div><h2 class='sheetTitle'>${l.title}</h2><p class='helper'>${l.reason}</p></div><div class='dailyPieces dailyPreviewPieces'>${l.parts.map(p=>`<div><img src='${productImage(p)}' alt='${TYPES[p.type]}'><small>${TYPES[p.type]}${p.missing?' · докупить':''}</small></div>`).join('')}</div><div class='sheetSection' style='display:flex;gap:8px'><button class='btn line' onclick='window.appAction("dailyBack")'>Назад</button><button class='btn dark' onclick='window.appAction("dailyChoose","${l.identity}")'>Выбрать этот образ</button></div>`;
+    }
+
+    if(kind==='anchorPicker'){
+      const selected=store.wardrobe.find(x=>x.ownedId===state.anchorItemId);
+      html=`<div class='sheetHandle'></div><h2 class='sheetTitle'>Создать образ по одной вещи</h2>
+        <p class='sheetSub'>Выбери вещь из своего гардероба. Мы подберём пять разных комплектов, где она будет основой каждого образа.</p>
+        <div style='display:grid;gap:9px;margin:14px 0'>${store.wardrobe.map(item=>`<button type='button' class='lookItem' style='border:2px solid ${selected?.ownedId===item.ownedId?'#59634c':'#ecebe6'};background:${selected?.ownedId===item.ownedId?'#eff2ec':'#fff'}' onclick='window.appAction("chooseAnchor",${JSON.stringify(item.ownedId||item.id)})'><span class='lookItemImage'><img src='${productImage(item)}' alt=''></span><span class='lookItemInfo'><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(TYPES[item.type]||'Вещь')}</small></span><span aria-hidden='true'>${selected?.ownedId===item.ownedId?'✓':'○'}</span></button>`).join('')}</div>
+        ${!store.wardrobe.length?`<div class='empty'>Гардероб пока пуст. Сначала добавь хотя бы одну вещь.</div>`:''}
+        <div class='sheetFooter'><button class='btn line' onclick='window.appAction("switchTab","wardrobe")'>Гардероб</button><button class='btn dark' ${selected?'':'disabled'} onclick='window.appAction("generateAnchorLooks")'>Подобрать образы</button></div>`;
+    }
+    if(kind==='anchorResults'){
+      const looks=state.anchorLooks||[],chosen=store.wardrobe.find(x=>x.ownedId===state.anchorItemId);
+      html=`<div class='sheetHandle'></div><h2 class='sheetTitle'>Образы с выбранной вещью</h2>
+        <p class='sheetSub'>${escapeHtml(chosen?.name||'Твоя вещь')} · ${looks.length} вариантов</p>
+        <div style='display:grid;gap:12px;margin:16px 0'>${looks.map((look,index)=>`<article class='outfitCard'><div class='outfitFlatlay'><div class='outfitFlatlayGrid'>${look.parts.map(item=>`<div class='outfitFlatlayItem'><img src='${productImage(item)}' alt=''><span>${escapeHtml(TYPES[item.type]||'Вещь')}${item.missing?' · докупить':''}</span></div>`).join('')}</div></div><div class='outfitIntro'><span class='subtle'>Вариант ${index+1}</span><h3>${escapeHtml(look.title)}</h3><p>${escapeHtml(look.reason)}</p></div><div class='outfitBody'><div class='heroCaption'><span class='${look.missing.length?'stateNeed':'stateGood'}'>${look.missing.length?'Докупить: '+look.missing.length:'Полный комплект'}</span><button class='btn dark small' onclick='window.appAction("openAnchorLook",${index})'>Открыть</button></div></div></article>`).join('')}</div>
+        <div class='sheetFooter'><button class='btn line' onclick='window.appAction("openAnchorPicker")'>Другая вещь</button><button class='btn dark' onclick='window.appAction("generateAnchorLooks")'>Обновить подборку</button></div>`;
     }
     if(kind==='item'){
       const item=payload;
@@ -1107,7 +1144,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     if(kind==='look'){
       const look=payload;
       const missing=look.missing.length;
-      html=`<div class='sheetHandle'></div><div class='hero small' style='--hero-image:url(${lookPhoto(look)})'><span class='glassTag'>${getOccLabel(look.occasion)}</span><h2>${look.title}</h2><p>${look.reason}</p></div>
+      html=`<div class='sheetHandle'></div>${look.anchorSource?`<div class='sheetSection'><button class='btn line small' onclick='window.appAction("backToAnchorResults")'>← К пяти образам</button></div>`:''}<div class='hero small' style='--hero-image:url(${lookPhoto(look)})'><span class='glassTag'>${getOccLabel(look.occasion)}</span><h2>${look.title}</h2><p>${look.reason}</p></div>
       <div class='sheetSection'><h3 class='sectionTitle' style='margin-bottom:8px'>Почему сочетается</h3><p class='helper'>${(look.explanations||[look.reason]).join(' ')}</p>${(look.warnings||[]).length?`<p class='helper' style='color:#916b39'>${look.warnings.join(' ')}</p>`:''}</div><div class='sheetSection'><div class='sectionHead'><div><h3 class='sectionTitle'>Состав образа</h3><div class='sectionHint'>${missing ? 'Не хватает вещей: '+missing : 'Все вещи уже в гардеробе'}</div></div></div>
       <div class='lookItems'>${look.parts.map((p,i)=>`<button type='button' class='lookItem' onclick='window.appAction("openLookPart",${i})'><span class='lookItemImage'><img src='${productImage(p)}' alt=''></span><span class='lookItemInfo'><strong>${TYPES[p.type]}</strong><small>${p.brand ? p.brand+' · ' : ''}${p.name}</small><small class='lookItemDetail'>${p.missing?'Посмотреть товар и артикул':'Открыть карточку вещи'} →</small></span><span class='${p.missing?'stateNeed':'stateGood'}'>${p.missing?'Докупить':'Есть'}</span></button>`).join('')}</div></div>
       <div class='sheetSection'><div class='sectionHint'>Оцени рекомендацию — следующие подборки учтут твой выбор</div><div style='display:flex;gap:8px;margin-top:10px'><button class='btn line small' onclick='window.appAction("rateLook","like")'>Нравится</button><button class='btn line small' onclick='window.appAction("rateLook","dislike")'>Не нравится</button></div></div><div class='sheetFooter'>
@@ -1220,6 +1257,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     const looks=todayLooks();
     const screen=document.getElementById('outfitsScreen');
     screen.innerHTML=`<div class='topbar'><div><div class='subtle'>build your look</div><div class='brand'>Образы</div></div><button class='btn line small' onclick='window.appAction("shuffle")'>Обновить</button></div>
+      <div class='section'><button class='btn dark' style='width:100%;padding:16px;border-radius:17px' onclick='window.appAction("openAnchorPicker")'>＋ Создать образ по одной вещи</button></div>
       <div class='section'><div class='sectionHint'>Повод</div><div class='chips'>${[['everyday','Повседневность'],['office','Офис'],['date','Свидание'],['restaurant','Ужин'],['travel','Поездка']].map(([k,v])=>`<button class='chip ${occ===k?'active':''}' onclick='window.appAction("setOccasion","${k}")'>${v}</button>`).join('')}</div></div>
       <div class='section'><div class='sectionHint'>Погода</div><div class='chips'>${[['hot','Тепло'],['mild','Прохладно'],['cold','Холодно']].map(([k,v])=>`<button class='chip ${weather===k?'active':''}' onclick='window.appAction("setWeather","${k}")'>${v}</button>`).join('')}</div></div>
       <div class='section'><label class='outfitOnlyToggle'><span><strong>Только мой гардероб</strong><small>Не предлагать вещи, которые нужно докупить</small></span><input type='checkbox' ${state.filters.ownedOnly?'checked':''} onchange='window.appAction("setOwnedOnly",this.checked?"true":"false")'><i></i></label></div>
@@ -1332,6 +1370,20 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   }
   function appAction(action,payload){
     if(action==='closeSheet'){ closeSheet(); }
+    if(action==='openAnchorPicker'){state.anchorItemId=null;state.anchorLooks=[];openSheet('anchorPicker');}
+    if(action==='chooseAnchor'){state.anchorItemId=payload;openSheet('anchorPicker');}
+    if(action==='generateAnchorLooks'){
+      const selected=store.wardrobe.find(item=>(item.ownedId||item.id)===state.anchorItemId);
+      if(!selected){toast('Сначала выбери вещь');return;}
+      const looks=createAnchorLooks(selected);
+      if(!looks.length){toast('Не удалось подобрать комплекты для этой вещи. Добавь больше одежды в гардероб.');return;}
+      state.anchorLooks=looks;openSheet('anchorResults');
+    }
+    if(action==='backToAnchorResults'){openSheet('anchorResults');}
+    if(action==='openAnchorLook'){
+      const look=state.anchorLooks?.[Number(payload)];
+      if(look)openSheet('look',look);
+    }
     if(action==='openCity'){openSheet('city');}
     if(action==='setCityManual'){setCityManual();}
     if(action==='cityInput'){onCityInput(payload);}
