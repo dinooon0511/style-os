@@ -833,6 +833,16 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   }
   function getStyleMode(){let user=store.profile?.style;return STYLE_MODES[user]?user:'minimal';}
   function partsAreMissing(parts){return parts.some(p=>p.missing);}
+  function isBaseUnderlayer(item){
+    return ['tee','polo','shirt'].includes(item?.type);
+  }
+  function requiresBaseUnderlayer(item){
+    // Open-front knitwear and zip-up hoodies are never styled directly on bare skin.
+    return /кардиган|зип[- ]?худи|на молнии|на пуговицах|расст[её]гива/i.test(item?.name||'');
+  }
+  function isKnitMidlayer(item){
+    return ['knit','hoodie'].includes(item?.type);
+  }
   function generateLooks({occasion,weather,ownedOnly=false,limit=5,mix=false,anchorItem=null}){
     const owned=ownItems(),catalog=state.catalog,preferred=getStyleMode();
     const occasionStyles={
@@ -859,39 +869,51 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     // Every owned bottom is kept in consideration, irrespective of catalogue ranking.
     const candidates=[],seen=new Set();
     const key=x=>x.ownedId||x.catalogId||x.id;
-    const pick=(group,style,limit)=>[...pools[group]].sort((a,b)=>
+    const pick=(group,style,limit,pool=pools[group])=>[...pool].sort((a,b)=>
       (anchorItem?Number((b.ownedId||b.id)===(anchorItem.ownedId||anchorItem.id))-Number((a.ownedId||a.id)===(anchorItem.ownedId||anchorItem.id)):0)||
       Number(a.missing)-Number(b.missing)||
       Number(STYLE_MODES[style].types.includes(b.type))-Number(STYLE_MODES[style].types.includes(a.type))||
       Number(STYLE_MODES[style].colors.includes(b.color))-Number(STYLE_MODES[style].colors.includes(a.color))
     ).slice(0,limit);
     for(const style of styles){
-      const tops=pick('top',style,ownedOnly?12:9),bottoms=pick('bottom',style,ownedOnly?100:24),shoes=pick('shoes',style,ownedOnly?10:6),layers=pick('layer',style,ownedOnly?12:9);
-      // Base shirt / tee can sit beneath knitwear; outerwear is a separate layer.
-      const bases=tops.filter(x=>!['knit','hoodie'].includes(x.type));
-      const mids=tops.filter(x=>['knit','hoodie'].includes(x.type));
+      const tops=pick('top',style,ownedOnly?12:12),bottoms=pick('bottom',style,ownedOnly?100:24),shoes=pick('shoes',style,ownedOnly?10:6),layers=pick('layer',style,ownedOnly?12:9);
+      // Select base layers and knitwear independently: a wardrobe rich in sweaters
+      // must not push every tee or shirt out of the candidate pool.
+      const bases=pick('top',style,ownedOnly?10:9,pools.top.filter(isBaseUnderlayer));
+      const mids=pick('top',style,ownedOnly?10:9,pools.top.filter(isKnitMidlayer));
       const shells=layers.filter(x=>['coat','jacket','blazer'].includes(x.type));
       const overs=layers.filter(x=>x.type==='overshirt');
       const variants=[];
-      for(const base of tops)variants.push([base]);
-      for(const base of bases.slice(0,8))for(const mid of mids.slice(0,6)){
+      for(const base of tops)if(!requiresBaseUnderlayer(base))variants.push([base]);
+      for(const base of bases)for(const mid of mids){
         if(key(base)===key(mid))continue;
-        if(base.type==='shirt'&&['turtleneck','sweater'].includes(mid.subtype))continue;
+        // A bulky high collar pairs best with a thin tee, not another shirt collar.
+        if(base.type!=='tee'&&/водолазка|с горлом/i.test(mid.name||''))continue;
         variants.push([base,mid]);
       }
-      for(const base of bases.slice(0,5))for(const mid of mids.slice(0,4))for(const over of overs.slice(0,2)){
-        if(base.type==='shirt'&&['turtleneck','sweater'].includes(mid.subtype))continue;
+      for(const base of bases.slice(0,5))for(const mid of mids.slice(0,5))for(const over of overs.slice(0,2)){
+        if(base.type!=='tee'&&/водолазка|с горлом/i.test(mid.name||''))continue;
         variants.push([base,mid,over]);
       }
-      variants.sort((a,b)=>Number(a.some(x=>x.type==='shirt'))-Number(b.some(x=>x.type==='shirt'))||a.length-b.length);
+      variants.sort((a,b)=>{
+        const anchored=list=>anchorItem&&list.some(x=>(x.ownedId||x.id)===(anchorItem.ownedId||anchorItem.id));
+        const preferred=list=>list.some(isKnitMidlayer)&&list.some(isBaseUnderlayer);
+        return Number(anchored(b))-Number(anchored(a))||
+          Number(preferred(b))-Number(preferred(a))||
+          Number(a.some(x=>x.type==='shirt'))-Number(b.some(x=>x.type==='shirt'))||a.length-b.length;
+      });
+      // Keep both single-layer and layered outfits in the search, instead of
+      // letting the much larger set of layered combinations hide all basics.
+      const consideredVariants=[...variants.filter(v=>v.length>1).slice(0,26),...variants.filter(v=>v.length===1).slice(0,12),...variants.filter(v=>v.length>1).slice(26,42)];
       // Include coat over a shirt and knit layer; five pieces total including trousers and shoes.
       const outerOptions=weather==='hot'?[null]:weather==='cold'?shells.filter(x=>['coat','jacket'].includes(x.type)):[null,...shells,...overs];
       if(weather==='cold'&&!outerOptions.length)continue;
-      for(const base of variants.slice(0,42))for(const bottom of bottoms)for(const shoe of shoes)for(const outer of outerOptions.slice(0,5)){
+      for(const base of consideredVariants)for(const bottom of bottoms)for(const shoe of shoes)for(const outer of outerOptions.slice(0,5)){
         const parts=[...base,bottom,shoe,...(outer?[outer]:[])];
         if(new Set(parts.map(key)).size!==parts.length)continue;
         if(anchorItem&&!parts.some(p=>(p.ownedId||p.id)===(anchorItem.ownedId||anchorItem.id)))continue;
         if(parts.length>6)continue;
+        if(base.some(requiresBaseUnderlayer)&&!base.some(isBaseUnderlayer))continue;
         if(ownedOnly&&parts.some(p=>p.missing))continue;
         if(weather==='cold'&&!outer)continue;
         if(weather==='mild'&&!outer&&!base.some(p=>['knit','hoodie'].includes(p.type)))continue;
@@ -899,6 +921,8 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
         if(seen.has(id))continue;seen.add(id);
         const missing=parts.filter(p=>p.missing),ev=compatibility(parts,style,weather,occasion);
         let score=ev.score+preferenceBonus(parts,style)-missing.length*11;
+        if(base.some(isKnitMidlayer)&&base.some(isBaseUnderlayer))score+=base.some(p=>p.type==='knit')?17:7;
+        if(base.length===1&&base[0].type==='knit')score-=14;
         if(base.length>1&&base.some(p=>p.type==='shirt')&&base.some(p=>p.type==='knit'&&!['turtleneck','sweater'].includes(p.subtype)))score+=6;
         if(base.length>1&&base.some(p=>p.type==='shirt')&&base.some(p=>['turtleneck','sweater'].includes(p.subtype)))score-=24;
         const formalShoe=['loafers','derby'].includes(shoe.type);
@@ -919,9 +943,12 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
         if(weather==='cold'&&base.some(p=>['knit','hoodie'].includes(p.type)))score+=8;
         if(['office','restaurant'].includes(occasion)&&['classic','smart','soft_tailoring'].includes(style))score+=5;
         if(score<42)continue;
+        const explanations=[...ev.explanations];
+        if(base.some(p=>p.type==='knit')&&base.some(isBaseUnderlayer))explanations.push('Футболка или рубашка под трикотажем делает комплект удобнее.');
+        if(base.some(requiresBaseUnderlayer))explanations.push('Под расстёгивающейся вещью предусмотрен нижний слой.');
         candidates.push({id:'v2_'+candidates.length,title:STYLE_MODES[style].label,style,occasion,weather,parts,missing,
           score:Math.max(0,Math.min(100,score)),reason:ev.explanations.join(' ')||'Сочетание по типу, цвету и силуэту.',
-          explanations:ev.explanations,warnings:ev.warnings,rules:ev.rules,identity:id});
+          explanations,warnings:ev.warnings,rules:ev.rules,identity:id});
       }
     }
     candidates.sort((a,b)=>b.score-a.score||a.missing.length-b.missing.length);
