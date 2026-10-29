@@ -454,7 +454,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .lookbookFilterSummary{font-size:11px;line-height:1.4;display:flex;flex-wrap:wrap;align-items:center;gap:5px;flex:1}
 .lookbookFilterSummary i{font-style:normal;color:#a2a49c}
 .lookbookChevron{font-size:24px;line-height:13px;color:#646d64}
-.lookbookStory{position:relative}
+.lookbookStory{position:relative;touch-action:pan-y;overscroll-behavior-x:contain}
 .lookbookPhoto{height:clamp(285px,86vw,365px);background-size:cover;background-position:center 43%;position:relative;color:#fff;overflow:hidden}
 .lookbookPhotoCopy{position:absolute;left:21px;top:35px;max-width:65%;text-shadow:0 2px 15px #12171055}
 .lookbookKicker{font-size:9px;letter-spacing:2.3px;font-weight:600;color:#e6e8e3}
@@ -466,7 +466,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .lookbookProgress button{border:0;background:#ffffff70;border-radius:6px;width:16px;height:4px;padding:0;cursor:pointer}
 .lookbookProgress button.selected{background:white;width:28px}
 .lookbookArrows{position:absolute;bottom:19px;right:19px;display:flex;gap:9px}
-.lookbookArrows button{width:39px;height:39px;border-radius:50%;border:1px solid #ffffff85;background:#22282075;color:#fff;display:grid;place-items:center;font-size:28px;line-height:1;cursor:pointer}
+.lookbookArrows button{width:42px;height:42px;min-width:42px;min-height:42px;padding:0;border-radius:50%;border:1px solid #ffffff85;background:#22282075;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;cursor:pointer;box-sizing:border-box}.lookbookArrows button span{display:block;line-height:1;transform:translateY(-1px);font-family:Helvetica,Arial,sans-serif!important}
 .lookbookArrows button:last-child{background:#fff;color:#222820}
 .lookbookArrows button:disabled{opacity:.34;cursor:default}
 .lookbookDetails{position:relative;margin:-13px 8px 0;padding:23px 18px 18px;background:#fff;border-radius:25px 25px 20px 20px;box-shadow:0 8px 27px #2428200b}
@@ -1368,6 +1368,24 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
   }
   function outfitDisplayTitle(look){const titles={minimal:'Городская база',dark_minimal:'Тихий минимализм',smart:'Современный ритм',classic:'Деловая классика',oldmoney:'Сдержанный характер',utility:'Городская практичность',soft_tailoring:'Спокойная элегантность',casual:'На каждый день',summer_relaxed:'Лёгкий силуэт',winter_layered:'Тёплый городской образ'};return titles[look?.style]||look?.title||'Готовый образ';}
   function outfitVisibleLooks(){return todayLooks().slice(0,5);}
+  function initLookbookSwipe(){
+    const story=document.querySelector('#outfitsScreen .lookbookStory');
+    if(!story)return;
+    let startX=0,startY=0,tracking=false;
+    story.addEventListener('touchstart',event=>{
+      if(event.touches.length!==1){tracking=false;return;}
+      startX=event.touches[0].clientX;startY=event.touches[0].clientY;tracking=true;
+    },{passive:true});
+    story.addEventListener('touchend',event=>{
+      if(!tracking||!event.changedTouches.length)return;
+      tracking=false;
+      const dx=event.changedTouches[0].clientX-startX,dy=event.changedTouches[0].clientY-startY;
+      if(Math.abs(dx)<55||Math.abs(dx)<Math.abs(dy)*1.35)return;
+      if(event.cancelable)event.preventDefault();
+      if(dx<0)appAction('outfitNext');else appAction('outfitPrev');
+    },{passive:false});
+    story.addEventListener('touchcancel',()=>{tracking=false;},{passive:true});
+  }
   function renderOutfits(){
  const looks=outfitVisibleLooks(),count=looks.length;
  state.outfitIndex=Math.max(0,Math.min(state.outfitIndex||0,count-1));
@@ -1381,7 +1399,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
  <div class='lookbookPhoto' style='background-image:linear-gradient(90deg,rgba(12,16,12,.56),rgba(12,16,12,.04) 77%),url("${lookPhoto(look,index)}")'>
  <div class='lookbookPhotoCopy'><span class='lookbookKicker'>STYLE OS / LOOK ${String(index+1).padStart(2,'0')}</span><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml(getOccLabel(look.occasion))}</p></div>
  <div class='lookbookPagination' aria-label='Образ ${index+1} из ${count}'><span>${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}</span><div class='lookbookProgress'>${looks.map((_,i)=>`<button type='button' aria-label='Образ ${i+1}' class='${i===index?'selected':''}' onclick='window.appAction("setOutfitIndex",${i})'></button>`).join('')}</div></div>
- <div class='lookbookArrows'><button type='button' ${index===0?'disabled':''} aria-label='Предыдущий образ' onclick='window.appAction("outfitPrev")'>‹</button><button type='button' ${index===count-1?'disabled':''} aria-label='Следующий образ' onclick='window.appAction("outfitNext")'>›</button></div></div>
+ <div class='lookbookArrows'><button type='button' ${index===0?'disabled':''} aria-label='Предыдущий образ' onclick='window.appAction("outfitPrev")'><span aria-hidden='true'>←</span></button><button type='button' ${index===count-1?'disabled':''} aria-label='Следующий образ' onclick='window.appAction("outfitNext")'><span aria-hidden='true'>→</span></button></div></div>
  <section class='lookbookDetails'><div class='lookbookOverline'>ОБРАЗ ${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}</div><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml((look.reason||'Продуманное сочетание оттенков и фактур для твоего гардероба.').split('. ')[0].slice(0,160))}</p>
  <div class='lookbookPieces'>${look.parts.map((item,i)=>`<button type='button' class='lookbookPiece' aria-label='Открыть ${escapeHtml(itemTypeLabel(item))}' onclick='window.appAction("openOutfitPart","${look.id}:${i}")'><img src='${productImage(item)}' alt='${escapeHtml(itemTypeLabel(item))}' loading='lazy'><span>${escapeHtml(itemTypeLabel(item))}</span>${item.missing?`<small>Докупить</small>`:''}</button>`).join('')}</div>
  <div class='lookbookAvailability'>${look.missing.length?`<span class='lookbookNeed'>○</span> Нужно докупить: ${look.missing.length}`:`<span class='lookbookCheck'>✓</span> Все вещи есть`}</div><button type='button' class='lookbookOpen' onclick='window.appAction("openLook","${look.id}")'>Открыть образ <span aria-hidden='true'>→</span></button></section></div>
@@ -1389,6 +1407,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
  <button type='button' class='lookbookReload' onclick='window.appAction("shuffle")'>Другой повод ↻</button>`:`<div class='lookbookEmpty'><h2>Пока нет подходящих образов</h2><p>Попробуй другую погоду или разреши предложения вещей из каталога.</p><button type='button' class='lookbookOpen' onclick='window.appAction("openOutfitFilters")'>Изменить настройки</button></div>`}
  </div>`;
  document.getElementById('floatingAdd').classList.add('hidden');
+ initLookbookSwipe();
 }
   function renderCatalog(){
     const cat=state.filters.catalog, q=state.filters.catalogSearch.toLowerCase();
