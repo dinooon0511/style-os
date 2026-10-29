@@ -516,9 +516,9 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .lookDetailProduct{min-width:0;text-align:center;border:0;background:none;padding:0;color:#283028;font:inherit;cursor:pointer}
 .lookDetailProductPhoto{display:block;position:relative;height:clamp(84px,23vw,130px);border-radius:13px;background:#f1f0ed;margin-bottom:7px}
 .lookDetailProductPhoto img{width:100%;height:100%;object-fit:contain;display:block;padding:5px;box-sizing:border-box}
-.lookDetailStatus{display:flex;align-items:center;justify-content:center;position:absolute;right:4px;top:4px;width:23px;height:23px;border-radius:50%;font:bold 14px/1 Helvetica,Arial,sans-serif;box-shadow:0 1px 4px #0002}
+.lookDetailStatus{display:flex;align-items:center;justify-content:center;position:absolute;right:4px;top:4px;width:17px;height:17px;border-radius:50%;font:bold 11px/1 Helvetica,Arial,sans-serif;box-shadow:0 1px 4px #0002}
 .lookDetailStatus.owned{background:#788f77;color:#fff}
-.lookDetailStatus.need{background:#d7c8b0;color:#283027;font-size:17px}
+.lookDetailStatus.need{background:#d7c8b0;color:#283027;font-size:13px}
 .lookDetailProduct strong{display:block;font-size:11px;line-height:1.22;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lookDetailProduct small{display:block;font-size:10px;color:#91938a;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lookDetailInventory{border-radius:17px;background:#ecf0e9;padding:14px 15px}
@@ -1200,9 +1200,9 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     const conditions=[anchorWeather(item),'mild','cold','hot'].filter((x,i,a)=>a.indexOf(x)===i);
     let best=[];
     for(const weather of conditions){
-      const looks=generateLooks({occasion:'everyday',weather,anchorItem:item,limit:5});
+      const looks=generateLooks({occasion:'everyday',weather,anchorItem:item,limit:10});
       if(looks.length>best.length)best=looks;
-      if(best.length===5)break;
+      if(best.length===10)break;
     }
     return best.map((look,index)=>({...look,id:'anchored_'+Date.now()+'_'+index,anchorSource:true}));
   }
@@ -1300,7 +1300,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
       const reason=escapeHtml((look.explanations||[look.reason]).join(' ').replace(/\\s+/g,' ').slice(0,190));
       const title=escapeHtml(outfitDisplayTitle(look));
       html=`<div class='sheetHandle'></div>
-        ${look.anchorSource?`<div class='lookDetailBack'><button type='button' onclick='window.appAction("backToAnchorResults")'>← К пяти образам</button></div>`:''}
+        ${look.anchorSource?`<div class='lookDetailBack'><button type='button' onclick='window.appAction("backToAnchorResults")'>← К десяти образам</button></div>`:''}
         <div class='lookDetailHero' style='background-image:linear-gradient(0deg,rgba(10,14,10,.68),transparent 65%),url("${lookPhoto(look)}")'>
           <div class='lookDetailHeroCopy'><span class='lookDetailOccasion'>${escapeHtml(getOccLabel(look.occasion))}</span><h2>${title}</h2></div>
         </div>
@@ -1422,7 +1422,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     document.getElementById('floatingAdd').classList.remove('hidden');
   }
   function outfitDisplayTitle(look){const titles={minimal:'Городская база',dark_minimal:'Тихий минимализм',smart:'Современный ритм',classic:'Деловая классика',oldmoney:'Сдержанный характер',utility:'Городская практичность',soft_tailoring:'Спокойная элегантность',casual:'На каждый день',summer_relaxed:'Лёгкий силуэт',winter_layered:'Тёплый городской образ'};return titles[look?.style]||look?.title||'Готовый образ';}
-  function outfitVisibleLooks(){return todayLooks().slice(0,5);}
+  function outfitVisibleLooks(){return todayLooks().slice(0,10);}
   function switchLookbook(direction,targetIndex){
     const count=outfitVisibleLooks().length;
     if(count<2||window.lookbookAnimating)return;
