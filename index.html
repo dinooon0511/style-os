@@ -561,6 +561,15 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .anchorHeroPick img{display:block;width:100%;height:100%;object-fit:contain}
 .anchorHeroChange svg{display:block;flex:none;vertical-align:middle}
 .anchorHeroChange{position:absolute;top:-10px;right:-10px;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #e2e7de;border-radius:50%;background:#fff;color:#2e3b2e;font:600 17px/1 Helvetica,Arial,sans-serif;box-shadow:0 2px 9px #0002}
+
+/* Frosted garment details, shared by wardrobe and catalog sheets */
+.sheet.itemDetailSheet{background:#f7f6f1}
+.itemDetailSheet .itemVisual{position:relative;background:linear-gradient(180deg,#eeeee9,#e7e9e3)}
+.itemDetailSheet .itemInfoGlass{position:relative;z-index:2;margin:-64px 0 12px;padding:18px 13px 14px;border:1px solid rgba(255,255,255,.75);border-radius:22px;background:rgba(249,249,246,.62);-webkit-backdrop-filter:blur(9px) saturate(110%);backdrop-filter:blur(9px) saturate(110%);box-shadow:0 8px 24px rgba(31,40,29,.08)}
+.itemDetailSheet .itemInfoGlass .sheetSection{margin-top:0}
+.itemDetailSheet .itemInfoGlass .listRow{background:rgba(255,255,255,.31);border-color:rgba(255,255,255,.43)}
+.sheetClose{display:flex;align-items:center;justify-content:center;padding:0;line-height:1;box-sizing:border-box}
+.sheetClose svg{display:block;flex:none}
 </style>
 </head>
 <body>
@@ -1319,13 +1328,13 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     }
     if(kind==='item'){
       const item=payload;
-      html=`<div class='sheetHandle'></div><div class='itemVisual' style='height:${GROUP[item.type]==='shoes'?268:232}px;border-radius:24px;overflow:hidden'><img alt='' src='${productImage(item,true)}' decoding='async' style='width:100%;height:100%;object-fit:contain;object-position:center center;transform:translateY(${GROUP[item.type]==='shoes'?-17:-7}px) scale(${GROUP[item.type]==='shoes'?1.10:1.03});transform-origin:center center'></div><div class='sheetSection'><h2 class='sheetTitle'>${item.brand ? item.brand+' — ' : ''}${item.name}</h2><p class='sheetSub'>${itemTypeLabel(item)} · ${COLORS[item.color][0]} · ${item.fit||'regular'}</p></div>
+      html=`<div class='sheetHandle'></div><div class='itemVisual' style='height:${GROUP[item.type]==='shoes'?330:300}px;border-radius:24px;overflow:hidden'><img alt='' src='${productImage(item,true)}' decoding='async' style='width:100%;height:100%;object-fit:contain;object-position:center center;transform:translateY(${GROUP[item.type]==='shoes'?-30:-12}px) scale(${GROUP[item.type]==='shoes'?1.12:1.05});transform-origin:center center'></div><div class='itemInfoGlass'><div class='sheetSection'><h2 class='sheetTitle'>${item.brand ? item.brand+' — ' : ''}${item.name}</h2><p class='sheetSub'>${itemTypeLabel(item)} · ${COLORS[item.color][0]} · ${item.fit||'regular'}</p></div>
       <div class='list'>
         <div class='listRow'><span>Категория</span><strong>${itemTypeLabel(item)}</strong></div>
         <div class='listRow'><span>Цвет</span><strong>${COLORS[item.color][0]}</strong></div>
         <div class='listRow'><span>Материал</span><strong>${item.material || 'Не указан'}</strong></div>
         <div class='listRow'><span>Артикул</span><strong>${item.sku || '—'}</strong></div>
-      </div>
+      </div></div>
       <div class='sheetFooter'>
         <button class='btn line' onclick='window.appAction("removeOrCopy","${item.ownedId||item.id}")'>${item.ownedId ? 'Удалить' : 'Копировать артикул'}</button>
         <button class='btn dark' onclick='window.appAction("buildFromItem","${item.ownedId||item.id}")'>Собрать образ</button>
@@ -1333,13 +1342,13 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     }
     if(kind==='product'){
       const p=payload;
-      html=`<div class='sheetHandle'></div><div class='itemVisual' style='height:${GROUP[p.type]==='shoes'?268:232}px;border-radius:24px;overflow:hidden'><img alt='' src='${productImage(p,true)}' decoding='async' style='width:100%;height:100%;object-fit:contain;object-position:center center;transform:translateY(${GROUP[p.type]==='shoes'?-17:-7}px) scale(${GROUP[p.type]==='shoes'?1.10:1.03});transform-origin:center center'></div><div class='sheetSection'><h2 class='sheetTitle'>${p.brand} — ${p.name}</h2><p class='sheetSub'>${itemTypeLabel(p)} · ${COLORS[p.color][0]} · ${formatPrice(p.price)}</p></div>
+      html=`<div class='sheetHandle'></div><div class='itemVisual' style='height:${GROUP[p.type]==='shoes'?330:300}px;border-radius:24px;overflow:hidden'><img alt='' src='${productImage(p,true)}' decoding='async' style='width:100%;height:100%;object-fit:contain;object-position:center center;transform:translateY(${GROUP[p.type]==='shoes'?-30:-12}px) scale(${GROUP[p.type]==='shoes'?1.12:1.05});transform-origin:center center'></div><div class='itemInfoGlass'><div class='sheetSection'><h2 class='sheetTitle'>${p.brand} — ${p.name}</h2><p class='sheetSub'>${itemTypeLabel(p)} · ${COLORS[p.color][0]} · ${formatPrice(p.price)}</p></div>
       <div class='list'>
         <div class='listRow'><span>Посадка</span><strong>${p.fit || 'regular'}</strong></div>
         <div class='listRow'><span>Сезон</span><strong>${p.season === 'all' ? 'Всесезонная' : p.season === 'cold' ? 'Холодный сезон' : 'Тёплый сезон'}</strong></div>
         <div class='listRow'><span>Материал</span><strong>${p.material || 'Не указан'}</strong></div>
         <div class='listRow'><span>Артикул Lamoda</span><strong>${p.sku || '—'}</strong></div>
-      </div>
+      </div></div>
       <div class='sheetFooter'>
         <button class='btn line' onclick='window.appAction("copySku","${p.id}")'>Копировать артикул</button>
         <button class='btn dark' onclick='window.appAction("addFromCatalog","${p.id}")'>Добавить в гардероб</button>
@@ -1413,7 +1422,8 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
       <div class='sheetFooter'><button class='btn line' onclick='window.appAction("openAdd")'>Назад</button><button class='btn dark' onclick='window.appAction("saveManual")'>Сохранить вещь</button></div>`;
     }
     sheet.classList.toggle('lookDetailSheet',kind==='look');
-    sheet.innerHTML=html+'<button type="button" class="sheetClose" aria-label="Закрыть" onclick="window.appAction(&quot;closeSheet&quot;)">×</button>';
+    sheet.classList.toggle('itemDetailSheet',kind==='item'||kind==='product');
+    sheet.innerHTML=html+'<button type="button" class="sheetClose" aria-label="Закрыть" onclick="window.appAction(&quot;closeSheet&quot;)"><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5L19 19M19 5L5 19"/></svg></button>';
     if(kind==='anchorPicker')filterAnchorPicker();
     if(kind==='daily')initDailySwipe();
     document.getElementById('sheetBackdrop').classList.add('show');
