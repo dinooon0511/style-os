@@ -537,6 +537,29 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .lookDetailSave{background:#202920;color:#fff}
 .lookDetailShop{background:#efeee9;color:#202920}
 @media(max-width:360px){.lookDetailProducts{gap:5px}.lookDetailProductPhoto{height:80px}.lookDetailProduct strong{font-size:10px}}
+
+/* Choose-one-item outfit flow */
+.anchorPickerSheet .sheetSub{font-size:12px;line-height:1.5}
+.anchorPickerSearch{display:flex;align-items:center;gap:9px;border:1px solid #dcdfd8;background:#fff;border-radius:15px;padding:0 13px;margin:12px 0 14px}
+.anchorPickerSearch>span{font-size:21px;color:#6e766d;line-height:1}
+.anchorPickerSearch input{flex:1;min-width:0;border:0;outline:0;background:none;height:45px;font:400 14px Helvetica,Arial,sans-serif;color:#252d25}
+.anchorPickerCategories{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:0 0 11px}
+.anchorPickerCategories::-webkit-scrollbar{display:none}
+.anchorPickerCategories button{flex:0 0 auto;border:1px solid #d9ddd5;background:#f8f9f6;color:#495249;padding:9px 13px;border-radius:100px;font:500 12px Helvetica,Arial,sans-serif;cursor:pointer}
+.anchorPickerCategories button.selected{background:#293429;color:#fff;border-color:#293429}
+.anchorPickerList{display:grid;gap:7px;max-height:min(44vh,390px);overflow-y:auto;padding:3px 2px 12px}
+.anchorPickerItem{display:flex;align-items:center;gap:11px;text-align:left;width:100%;border:1px solid #e5e7e2;border-radius:15px;background:#fff;padding:8px;cursor:pointer;color:#2a302a;font:inherit}
+.anchorPickerItem.selected{border-color:#849781;background:#eef3ec}
+.anchorPickerItem img{width:62px;height:67px;object-fit:contain;border-radius:11px;background:#eeefec}
+.anchorPickerItem>span:nth-child(2){display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.anchorPickerItem strong{font-size:13px}
+.anchorPickerItem small{font-size:11px;color:#808780;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.anchorPickerCheck{font-size:18px;color:#59715b;padding:0 7px}
+.anchorPickerNoResults{text-align:center;padding:25px 10px;color:#8c948b;font-size:12px}
+.anchorPickerSheet .sheetFooter{position:sticky;bottom:0;background:#f5f3ee;padding-top:12px}
+.anchorHeroPick{position:absolute;left:20px;bottom:86px;display:flex;align-items:center;justify-content:center;width:84px;height:84px;padding:6px;border:1px solid #ffffffb8;border-radius:15px;background:#e9eae7;box-shadow:0 6px 23px #0004;cursor:pointer;pointer-events:auto}
+.anchorHeroPick img{display:block;width:100%;height:100%;object-fit:contain}
+.anchorHeroChange{position:absolute;top:-9px;right:-9px;display:flex;align-items:center;justify-content:center;width:25px;height:25px;border:1px solid #e2e7de;border-radius:50%;background:#fff;color:#2e3b2e;font:600 17px/1 Helvetica,Arial,sans-serif;box-shadow:0 2px 9px #0002}
 </style>
 </head>
 <body>
@@ -1200,14 +1223,39 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     return current;
   }
   function createAnchorLooks(item){
-    const conditions=[anchorWeather(item),'mild','cold','hot'].filter((x,i,a)=>a.indexOf(x)===i);
-    let best=[];
-    for(const weather of conditions){
-      const looks=generateLooks({occasion:'everyday',weather,anchorItem:item,limit:10});
-      if(looks.length>best.length)best=looks;
-      if(best.length===10)break;
-    }
-    return best.map((look,index)=>({...look,id:'anchored_'+Date.now()+'_'+index,anchorSource:true}));
+    return generateLooks({
+      occasion:state.filters.outfitOccasion,
+      weather:state.filters.outfitWeather,
+      ownedOnly:state.filters.ownedOnly,
+      anchorItem:item,
+      limit:10,
+      mix:true
+    }).map((look,index)=>({...look,id:'anchored_'+(item.ownedId||item.id)+'_'+state.filters.outfitOccasion+'_'+state.filters.outfitWeather+'_'+index,anchorSource:true}));
+  }
+  function activeAnchorItem(){
+    return store.wardrobe.find(item=>(item.ownedId||item.id)===state.anchorItemId);
+  }
+  function refreshAnchorLooks(){
+    const item=activeAnchorItem();
+    state.anchorLooks=item?createAnchorLooks(item):[];
+  }
+  function filterAnchorPicker(){
+    const list=document.getElementById('anchorPickerList');
+    if(!list)return;
+    const category=state.anchorCategory||'all',query=(state.anchorQuery||'').trim().toLowerCase();
+    const selected=state.anchorItemId;
+    const matches=store.wardrobe.filter(item=>
+      (category==='all'||GROUP[item.type]===category||item.type===category)&&
+      (!query||[item.name,item.brand,item.sku,itemTypeLabel(item),COLORS[item.color]?.[0]].join(' ').toLowerCase().includes(query))
+    );
+    list.innerHTML=matches.map(item=>{
+      const id=item.ownedId||item.id;
+      const chosen=id===selected;
+      return `<button type='button' class='anchorPickerItem ${chosen?'selected':''}' aria-pressed='${chosen}' onclick='window.appAction("chooseAnchor",${JSON.stringify(id)})'><img src='${productImage(item)}' alt=''><span><strong>${escapeHtml(itemTypeLabel(item))}</strong><small>${escapeHtml(item.name)}</small></span><span aria-hidden='true' class='anchorPickerCheck'>${chosen?'✓':'○'}</span></button>`;
+    }).join('')||'<p class="anchorPickerNoResults">По этому запросу вещей нет.</p>';
+    document.querySelectorAll('#anchorPickerCategories button').forEach(button=>button.classList.toggle('selected',button.dataset.category===category));
+    const submit=document.getElementById('anchorPickerSubmit');
+    if(submit)submit.disabled=!activeAnchorItem();
   }
   function dailyLooks(){return generateLooks({occasion:'everyday',weather:store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather,ownedOnly:true}).filter(l=>l.missing.length===0&&l.parts.every(p=>store.wardrobe.some(w=>(w.ownedId||w.id)===(p.ownedId||p.id))));}
   function lookPhoto(look,index=0){
@@ -1252,12 +1300,14 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     }
 
     if(kind==='anchorPicker'){
-      const selected=store.wardrobe.find(x=>x.ownedId===state.anchorItemId);
-      html=`<div class='sheetHandle'></div><h2 class='sheetTitle'>Создать образ по одной вещи</h2>
-        <p class='sheetSub'>Выбери вещь из своего гардероба. Мы подберём пять разных комплектов, где она будет основой каждого образа.</p>
-        <div style='display:grid;gap:9px;margin:14px 0'>${store.wardrobe.map(item=>`<button type='button' class='lookItem' style='border:2px solid ${selected?.ownedId===item.ownedId?'#59634c':'#ecebe6'};background:${selected?.ownedId===item.ownedId?'#eff2ec':'#fff'}' onclick='window.appAction("chooseAnchor",${JSON.stringify(item.ownedId||item.id)})'><span class='lookItemImage'><img src='${productImage(item)}' alt=''></span><span class='lookItemInfo'><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(itemTypeLabel(item)||'Вещь')}</small></span><span aria-hidden='true'>${selected?.ownedId===item.ownedId?'✓':'○'}</span></button>`).join('')}</div>
-        ${!store.wardrobe.length?`<div class='empty'>Гардероб пока пуст. Сначала добавь хотя бы одну вещь.</div>`:''}
-        <div class='sheetFooter'><button class='btn line' onclick='window.appAction("switchTab","wardrobe")'>Гардероб</button><button class='btn dark' ${selected?'':'disabled'} onclick='window.appAction("generateAnchorLooks")'>Подобрать образы</button></div>`;
+      const selected=activeAnchorItem();
+      const categories=[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Верхняя одежда']];
+      html=`<div class='sheetHandle'></div><div class='anchorPickerSheet'><h2 class='sheetTitle'>Выбрать вещь</h2><p class='sheetSub'>Выбери одну вещь из гардероба — она будет в каждом из 10 образов.</p>
+        <label class='anchorPickerSearch'><span aria-hidden='true'>⌕</span><input type='search' id='anchorPickerSearch' placeholder='Название, цвет или категория' value='${escapeHtml(state.anchorQuery||'')}' oninput='window.appAction("anchorQuery",this.value)' autocomplete='off' aria-label='Найти вещь'></label>
+        <div class='anchorPickerCategories' id='anchorPickerCategories'>${categories.map(([key,label])=>`<button type='button' data-category='${key}' class='${(state.anchorCategory||'all')===key?'selected':''}' onclick='window.appAction("anchorCategory","${key}")'>${label}</button>`).join('')}</div>
+        <div class='anchorPickerList' id='anchorPickerList'></div>
+        ${!store.wardrobe.length?`<div class='empty'>В гардеробе пока нет вещей. Сначала добавь вещь.</div>`:''}
+        <div class='sheetFooter'><button class='btn line' onclick='window.appAction("switchTab","wardrobe")'>Гардероб</button><button id='anchorPickerSubmit' class='btn dark' ${selected?'':'disabled'} onclick='window.appAction("generateAnchorLooks")'>Подобрать образы</button></div></div>`;
     }
     if(kind==='anchorResults'){
       const looks=state.anchorLooks||[],chosen=store.wardrobe.find(x=>x.ownedId===state.anchorItemId);
@@ -1303,7 +1353,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
       const reason=escapeHtml((look.explanations||[look.reason]).join(' ').replace(/\\s+/g,' ').slice(0,190));
       const title=escapeHtml(outfitDisplayTitle(look));
       html=`<div class='sheetHandle'></div>
-        ${look.anchorSource?`<div class='lookDetailBack'><button type='button' onclick='window.appAction("backToAnchorResults")'>← К десяти образам</button></div>`:''}
+        ${look.anchorSource?`<div class='lookDetailBack'><button type='button' onclick='window.appAction("backToAnchorPage")'>← К образам</button></div>`:''}
         <div class='lookDetailHero' style='background-image:linear-gradient(0deg,rgba(10,14,10,.68),transparent 65%),url("${lookPhoto(look)}")'>
           <div class='lookDetailHeroCopy'><span class='lookDetailOccasion'>${escapeHtml(getOccLabel(look.occasion))}</span><h2>${title}</h2></div>
         </div>
@@ -1363,6 +1413,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     }
     sheet.classList.toggle('lookDetailSheet',kind==='look');
     sheet.innerHTML=html+'<button type="button" class="sheetClose" aria-label="Закрыть" onclick="window.appAction(&quot;closeSheet&quot;)">×</button>';
+    if(kind==='anchorPicker')filterAnchorPicker();
     if(kind==='daily')initDailySwipe();
     document.getElementById('sheetBackdrop').classList.add('show');
     sheet.classList.add('show');
@@ -1425,7 +1476,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     document.getElementById('floatingAdd').classList.remove('hidden');
   }
   function outfitDisplayTitle(look){const titles={minimal:'Городская база',dark_minimal:'Тихий минимализм',smart:'Современный ритм',classic:'Деловая классика',oldmoney:'Сдержанный характер',utility:'Городская практичность',soft_tailoring:'Спокойная элегантность',casual:'На каждый день',summer_relaxed:'Лёгкий силуэт',winter_layered:'Тёплый городской образ'};return titles[look?.style]||look?.title||'Готовый образ';}
-  function outfitVisibleLooks(){return todayLooks().slice(0,10);}
+  function outfitVisibleLooks(){return (state.outfitMode==='anchor'?state.anchorLooks||[]:todayLooks()).slice(0,10);}
   function switchLookbook(direction,targetIndex){
     const count=outfitVisibleLooks().length;
     if(count<2||window.lookbookAnimating)return;
@@ -1490,25 +1541,27 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     },{passive:true});
   }
   function renderOutfits(){
+ const anchored=state.outfitMode==='anchor',anchor=anchored?activeAnchorItem():null;
  const looks=outfitVisibleLooks(),count=looks.length;
  state.outfitIndex=Math.max(0,Math.min(state.outfitIndex||0,count-1));
  const index=state.outfitIndex,look=looks[index],occ=state.filters.outfitOccasion,weather=state.filters.outfitWeather;
  const summary=[getOccLabel(occ),getWeatherLabel(weather),state.filters.ownedOnly?'Только мои вещи':'С докупкой'];
  const screen=document.getElementById('outfitsScreen');
  screen.innerHTML=`<div class='lookbookPage'>
- <header class='lookbookHeader'><h1>Образы</h1><div class='lookbookModes' role='group' aria-label='Способ подбора'><button type='button' class='active' aria-current='page'>Готовые</button><button type='button' onclick='window.appAction("openAnchorPicker")'>По вещи</button></div></header>
+ <header class='lookbookHeader'><h1>Образы</h1><div class='lookbookModes' role='group' aria-label='Способ подбора'><button type='button' class='${anchored?'':'active'}' ${anchored?'':'aria-current="page"'} onclick='window.appAction("showReadyOutfits")'>Готовые</button><button type='button' class='${anchored?'active':''}' ${anchored?'aria-current="page"':''} onclick='window.appAction("openAnchorPicker")'>По вещи</button></div></header>
  <button class='lookbookFilters' onclick='window.appAction("openOutfitFilters")' aria-label='Настроить подбор: ${escapeHtml(summary.join(', '))}'><span class='lookbookFilterIcon' aria-hidden='true'>☷</span><span class='lookbookFilterSummary'>${summary.map(escapeHtml).join('<i>·</i>')}</span><span aria-hidden='true' class='lookbookChevron'>›</span></button>
  ${look?`<div class='lookbookStory'>
  <div class='lookbookPhoto' style='background-image:linear-gradient(90deg,rgba(12,16,12,.56),rgba(12,16,12,.04) 77%),url("${lookPhoto(look,index)}")'>
  <div class='lookbookPhotoCopy'><span class='lookbookKicker'>STYLE OS / LOOK ${String(index+1).padStart(2,'0')}</span><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml(getOccLabel(look.occasion))}</p></div></div>
  <div class='lookbookPhotoControls'>
+ ${anchored&&anchor?`<button type='button' class='anchorHeroPick' onclick='window.appAction("openAnchorPicker")' aria-label='Изменить выбранную вещь'><img src='${productImage(anchor)}' alt='${escapeHtml(itemTypeLabel(anchor))}'><span class='anchorHeroChange' aria-hidden='true'>⟳</span></button>`:''}
  <div class='lookbookPagination' aria-label='Образ ${index+1} из ${count}'><span>${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}</span><div class='lookbookProgress'>${looks.map((_,i)=>`<button type='button' aria-label='Образ ${i+1}' class='${i===index?'selected':''}' onclick='window.appAction("setOutfitIndex",${i})'></button>`).join('')}</div></div>
  <div class='lookbookArrows'><button type='button' ${count<2?'disabled':''} aria-label='Предыдущий образ' onclick='window.appAction("outfitPrev")'><span aria-hidden='true'>←</span></button><button type='button' ${count<2?'disabled':''} aria-label='Следующий образ' onclick='window.appAction("outfitNext")'><span aria-hidden='true'>→</span></button></div></div>
  <section class='lookbookDetails'><div class='lookbookOverline'>ОБРАЗ ${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}</div><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml((look.reason||'Продуманное сочетание оттенков и фактур для твоего гардероба.').split('. ')[0].slice(0,160))}</p>
  <div class='lookbookPieces'>${look.parts.map((item,i)=>`<button type='button' class='lookbookPiece' aria-label='Открыть ${escapeHtml(itemTypeLabel(item))}' onclick='window.appAction("openOutfitPart","${look.id}:${i}")'><img src='${productImage(item)}' alt='${escapeHtml(itemTypeLabel(item))}' loading='lazy'><span>${escapeHtml(itemTypeLabel(item))}</span>${item.missing?`<small>Докупить</small>`:''}</button>`).join('')}</div>
  <div class='lookbookAvailability'>${look.missing.length?`<span class='lookbookNeed'>○</span> Нужно докупить: ${look.missing.length}`:`<span class='lookbookCheck'>✓</span> Все вещи есть`}</div><button type='button' class='lookbookOpen' onclick='window.appAction("openLook","${look.id}")'>Открыть образ <span aria-hidden='true'>→</span></button></section></div>
 
- <button type='button' class='lookbookReload' onclick='window.appAction("shuffle")'>Другой повод ↻</button>`:`<div class='lookbookEmpty'><h2>Пока нет подходящих образов</h2><p>Попробуй другую погоду или разреши предложения вещей из каталога.</p><button type='button' class='lookbookOpen' onclick='window.appAction("openOutfitFilters")'>Изменить настройки</button></div>`}
+ <button type='button' class='lookbookReload' onclick='window.appAction("shuffle")'>Другой повод ↻</button>`:`<div class='lookbookEmpty'><h2>Пока нет подходящих образов</h2><p>${anchored?'Попробуй другие фильтры или выбери другую вещь.':'Попробуй другую погоду или разреши предложения вещей из каталога.'}</p><button type='button' class='lookbookOpen' onclick='window.appAction("openOutfitFilters")'>Изменить настройки</button></div>`}
  </div>`;
  document.getElementById('floatingAdd').classList.add('hidden');
  initLookbookSwipe();
@@ -1623,19 +1676,41 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     if(action==='setOutfitIndex'){const count=outfitVisibleLooks().length;const target=Number(payload)||0;if(count>1&&target!==state.outfitIndex)switchLookbook(target>state.outfitIndex?1:-1,target);}
     if(action==='outfitNext'){switchLookbook(1);}
     if(action==='outfitPrev'){switchLookbook(-1);}
-    if(action==='outfitFilterOccasion'){state.filters.outfitOccasion=payload;state.outfitIndex=0;renderHome();renderOutfits();openSheet('outfitFilters');}
-    if(action==='outfitFilterWeather'){state.filters.outfitWeather=payload;state.outfitIndex=0;renderHome();renderOutfits();openSheet('outfitFilters');}
-    if(action==='outfitFilterOwned'){state.filters.ownedOnly=payload==='true';state.outfitIndex=0;renderOutfits();openSheet('outfitFilters');}
-    if(action==='openAnchorPicker'){state.anchorItemId=null;state.anchorLooks=[];openSheet('anchorPicker');}
-    if(action==='chooseAnchor'){state.anchorItemId=payload;openSheet('anchorPicker');}
+    if(action==='outfitFilterOccasion'){
+      state.filters.outfitOccasion=payload;state.outfitIndex=0;
+      if(state.outfitMode==='anchor')refreshAnchorLooks();
+      renderHome();renderOutfits();openSheet('outfitFilters');
+    }
+    if(action==='outfitFilterWeather'){
+      state.filters.outfitWeather=payload;state.outfitIndex=0;
+      if(state.outfitMode==='anchor')refreshAnchorLooks();
+      renderHome();renderOutfits();openSheet('outfitFilters');
+    }
+    if(action==='outfitFilterOwned'){
+      state.filters.ownedOnly=payload==='true';state.outfitIndex=0;
+      if(state.outfitMode==='anchor')refreshAnchorLooks();
+      renderOutfits();openSheet('outfitFilters');
+    }
+    if(action==='showReadyOutfits'){
+      state.outfitMode='ready';state.outfitIndex=0;closeSheet();renderOutfits();
+    }
+    if(action==='openAnchorPicker'){
+      state.anchorCategory='all';state.anchorQuery='';
+      openSheet('anchorPicker');
+    }
+    if(action==='anchorQuery'){state.anchorQuery=payload;filterAnchorPicker();}
+    if(action==='anchorCategory'){state.anchorCategory=payload;filterAnchorPicker();}
+    if(action==='chooseAnchor'){state.anchorItemId=payload;filterAnchorPicker();}
     if(action==='generateAnchorLooks'){
-      const selected=store.wardrobe.find(item=>(item.ownedId||item.id)===state.anchorItemId);
+      const selected=activeAnchorItem();
       if(!selected){toast('Сначала выбери вещь');return;}
       const looks=createAnchorLooks(selected);
-      if(!looks.length){toast('Не удалось подобрать комплекты для этой вещи. Добавь больше одежды в гардероб.');return;}
-      state.anchorLooks=looks;openSheet('anchorResults');
+      if(!looks.length){toast('Не удалось подобрать образы с этой вещью. Попробуй изменить фильтры.');return;}
+      state.anchorLooks=looks;state.outfitMode='anchor';state.outfitIndex=0;
+      closeSheet();state.screen='outfits';renderScreens();
     }
-    if(action==='backToAnchorResults'){openSheet('anchorResults');}
+    if(action==='backToAnchorPage'){closeSheet();state.screen='outfits';renderScreens();}
+    if(action==='backToAnchorResults'){closeSheet();state.screen='outfits';renderScreens();}
     if(action==='openAnchorLook'){
       const look=state.anchorLooks?.[Number(payload)];
       if(look)openSheet('look',look);
@@ -1697,7 +1772,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     }
     if(action==='openOutfitPart'){
       const [id,index]=String(payload).split(':');
-      const look=todayLooks().find(x=>x.id===id);
+      const look=outfitVisibleLooks().find(x=>x.id===id);
       const part=look?.parts[Number(index)];
       if(part){
         const full=state.catalog.find(x=>x.id===(part.catalogId||part.id));
@@ -1710,7 +1785,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
         store.feedback=store.feedback.slice(-100);saveStore();closeSheet();renderScreens();toast('Спасибо! Учтём в следующих образах.');}
     }
     if(action==='openLeadLook'){const chosen=chosenDaily();if(chosen)openSheet('look',chosen);else openSheet('daily');}
-    if(action==='openLook'){ const look=todayLooks().find(l=>l.id===payload); if(look) openSheet('look',look); }
+    if(action==='openLook'){const look=outfitVisibleLooks().find(l=>l.id===payload);if(look)openSheet('look',look);}
     if(action==='saveLook'){
       const look=state.sheet?.kind==='look'?state.sheet.payload:todayLooks().find(l=>l.id===payload);
       if(look){if(!store.savedLooks.includes(payload))store.savedLooks.push(payload);
@@ -1723,7 +1798,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
       if(owned){ store.wardrobe = store.wardrobe.filter(i=>i.ownedId!==payload); saveStore(); toast('Вещь удалена'); closeSheet(); renderScreens(); }
     }
     if(action==='buildFromItem'){ state.screen='outfits'; closeSheet(); renderScreens(); }
-    if(action==='shuffle'){ const keys=['everyday','office','date','restaurant','travel'];state.filters.outfitOccasion=keys[(keys.indexOf(state.filters.outfitOccasion)+1)%keys.length];renderHome();renderOutfits(); }
+    if(action==='shuffle'){ const keys=['everyday','office','date','restaurant','travel'];state.filters.outfitOccasion=keys[(keys.indexOf(state.filters.outfitOccasion)+1)%keys.length];if(state.outfitMode==='anchor')refreshAnchorLooks();state.outfitIndex=0;renderHome();renderOutfits(); }
     if(action==='editProfile'){ openSheet('editProfile'); }
     if(action==='openSaved'){ openSheet('savedLooks'); }
     if(action==='viewSaved'){const look=findSavedLook(payload);if(look)openSheet('look',look);}
