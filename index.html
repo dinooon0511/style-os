@@ -28,7 +28,7 @@
       --tabbar-h:84px;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;height:100%;font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;color:var(--text);background:
+    html,body{margin:0;height:100%;font-family:Helvetica,Arial,sans-serif;color:var(--text);background:
       radial-gradient(circle at 12% 12%, rgba(232,219,205,.7), transparent 20%),
       radial-gradient(circle at 85% 16%, rgba(208,216,205,.72), transparent 22%),
       linear-gradient(180deg, #f3eee6 0%, #e8e1d5 100%);
@@ -64,7 +64,7 @@
     .hero.small{min-height:190px; padding:16px; background-image:linear-gradient(180deg, rgba(35,38,32,.1), rgba(19,20,17,.52)), var(--hero-image, url('https://drive.google.com/thumbnail?id=1YBjEhD5N82QsQ_j0kYC2UnbIz0Uv1sxJ&sz=w1600'));}
     .hero::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,.06), transparent 35%, transparent 70%, rgba(0,0,0,.08)); pointer-events:none}
     .glassTag{display:inline-flex; align-items:center; gap:6px; width:max-content; padding:8px 12px; border-radius:999px; font-size:11px; font-weight:700; color:#fff; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); backdrop-filter:blur(10px)}
-    .hero h1,.hero h2{position:relative; z-index:2; margin:8px 0 8px; font:400 40px/1.02 Georgia, "Iowan Old Style", serif; letter-spacing:-1.6px; max-width:260px}
+    .hero h1,.hero h2{position:relative; z-index:2; margin:8px 0 8px; font:400 40px/1.02 Helvetica, Arial, sans-serif; letter-spacing:-1.6px; max-width:260px}
     .hero.small h2{font-size:28px; max-width:220px}
     .hero p{position:relative; z-index:2; margin:0 0 14px; color:rgba(245,245,240,.92); max-width:270px}
     .buttonRow{display:flex; gap:10px; flex-wrap:wrap; position:relative; z-index:2}
@@ -77,7 +77,7 @@
     .btn.icon{width:44px; padding:0; min-height:44px}
     .section{margin:18px 0 0}
     .sectionHead{display:flex; align-items:end; justify-content:space-between; gap:10px; margin-bottom:10px}
-    .sectionTitle{font:400 26px/1.05 Georgia, "Iowan Old Style", serif; letter-spacing:-.8px; margin:0}
+    .sectionTitle{font:400 26px/1.05 Helvetica, Arial, sans-serif; letter-spacing:-.8px; margin:0}
     .sectionHint{color:var(--muted); font-size:13px; margin-top:4px}
     .card{background:linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,255,255,.34)); border:1px solid rgba(255,255,255,.72); box-shadow:var(--shadow); border-radius:24px; padding:14px}
     .chips{display:flex; gap:8px; overflow:auto; padding:2px 0 4px; scrollbar-width:none}
@@ -91,7 +91,7 @@
     .styleScroll,.recoScroll{display:grid; grid-auto-flow:column; grid-auto-columns:78%; gap:12px; overflow:auto; padding-bottom:4px; scroll-snap-type:x proximity; scrollbar-width:none}
     .styleCard,.recoCard{scroll-snap-align:start}
     .styleCard{position:relative; overflow:hidden; min-height:200px; border-radius:28px; padding:16px; color:#fff; background:linear-gradient(180deg, rgba(28,30,25,.08), rgba(23,25,20,.48)), center/cover no-repeat var(--img); box-shadow:var(--shadow)}
-    .styleCard h3{position:absolute; left:16px; bottom:38px; margin:0; font:400 28px/1.02 Georgia, "Iowan Old Style", serif}
+    .styleCard h3{position:absolute; left:16px; bottom:38px; margin:0; font:400 28px/1.02 Helvetica, Arial, sans-serif}
     .styleCard p{position:absolute; left:16px; bottom:14px; margin:0; font-size:12px; color:rgba(243,243,240,.9)}
     .styleCard .glassTag{position:absolute; top:14px; left:14px}
     .miniList{display:grid; gap:10px}
@@ -120,7 +120,7 @@
     .sheet{position:fixed; left:50%; transform:translateX(-50%) translateY(110%); bottom:0; width:min(100%, 430px); max-height:86vh; overflow:auto; padding:18px 16px 24px; background:linear-gradient(180deg, #f6f2ea, #e6dfd3); border-radius:30px 30px 0 0; box-shadow:0 -20px 40px rgba(0,0,0,.18); z-index:41; transition:.28s cubic-bezier(.2,.8,.2,1)}
     .sheet.show{transform:translateX(-50%) translateY(0)}
     .sheetHandle{width:42px;height:5px;border-radius:999px;background:rgba(65,72,63,.18); margin:0 auto 14px}
-    .sheetTitle{font:400 28px/1.02 Georgia, "Iowan Old Style", serif; margin:0 0 6px}
+    .sheetTitle{font:400 28px/1.02 Helvetica, Arial, sans-serif; margin:0 0 6px}
     .sheetSub{color:var(--muted); margin:0 0 14px}
     .sheetSection{margin-top:16px}
     .fields{display:grid; gap:10px}
@@ -131,7 +131,7 @@
     .sheetFooter .btn{flex:1}
     .outfitCard{overflow:hidden; border-radius:28px; background:linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,255,255,.34)); border:1px solid rgba(255,255,255,.72); box-shadow:var(--shadow)}
     .outfitHero{position:relative; height:220px; padding:16px; display:flex; flex-direction:column; justify-content:flex-end; color:#fff; background:linear-gradient(180deg, rgba(35,39,33,.08), rgba(20,23,19,.54)), center/cover no-repeat var(--look);}
-    .outfitHero h3{margin:8px 0 4px; font:400 30px/1.02 Georgia, "Iowan Old Style", serif}
+    .outfitHero h3{margin:8px 0 4px; font:400 30px/1.02 Helvetica, Arial, sans-serif}
     .outfitHero p{margin:0; color:rgba(246,245,241,.9)}
     .outfitBody{padding:14px}
     .itemPills{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0}
@@ -142,7 +142,7 @@
     .heroCaption{display:flex; align-items:center; justify-content:space-between; gap:10px}
     .statGrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
     .statCard{padding:14px; border-radius:22px; background:linear-gradient(180deg, rgba(255,255,255,.58), rgba(255,255,255,.34)); border:1px solid rgba(255,255,255,.7); box-shadow:var(--shadow)}
-    .statValue{font:400 30px/1 Georgia, "Iowan Old Style", serif}
+    .statValue{font:400 30px/1 Helvetica, Arial, sans-serif}
     .list{display:grid; gap:10px}
     .listRow{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 14px; border-radius:18px; background:rgba(255,255,255,.5); border:1px solid rgba(255,255,255,.72)}
     .helper{font-size:11px; color:var(--muted)}
@@ -152,7 +152,7 @@
     .onbSlide{display:none; min-height:100%; padding:44px 6px calc(var(--tabbar-h) + 8px)}
     .onbSlide.active{display:flex; flex-direction:column}
     .onbHero{flex:1; border-radius:34px; overflow:hidden; position:relative; padding:18px; color:#fff; background:linear-gradient(180deg, rgba(35,39,33,.08), rgba(20,23,19,.54)), center/cover no-repeat var(--onb-img); box-shadow:var(--shadow)}
-    .onbHero h2{position:absolute; left:18px; bottom:74px; right:18px; margin:0; font:400 44px/1.02 Georgia, "Iowan Old Style", serif; letter-spacing:-1.6px}
+    .onbHero h2{position:absolute; left:18px; bottom:74px; right:18px; margin:0; font:400 44px/1.02 Helvetica, Arial, sans-serif; letter-spacing:-1.6px}
     .onbHero p{position:absolute; left:18px; bottom:28px; right:18px; margin:0; color:rgba(246,245,241,.92)}
     .choiceGrid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px}
     .choiceCard{padding:10px; border-radius:22px; background:rgba(255,255,255,.44); border:1px solid rgba(255,255,255,.72); box-shadow:var(--shadow); cursor:pointer}
@@ -388,7 +388,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
 .profileHero{background:linear-gradient(155deg,#475146,#222a24);color:white;text-align:center;border-radius:28px;padding:24px 18px;box-shadow:0 16px 32px #1a231b25}
 .profileAvatar{border:3px solid #ffffffcd;background:#dce2db;color:#677365;width:112px;height:112px;border-radius:50%;display:grid;place-items:center;overflow:hidden;margin:0 auto 14px;cursor:pointer}
 .profileAvatar img{width:100%;height:100%;object-fit:cover}
-.profileHero h2{font:400 31px Georgia,serif;margin:7px 0}.profileHero p{font-size:13px;color:#dce2da}
+.profileHero h2{font:400 31px Helvetica,Arial,sans-serif;margin:7px 0}.profileHero p{font-size:13px;color:#dce2da}
 .profileStats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.profileStats div{border:1px solid #ffffff35;padding:12px;border-radius:18px}.profileStats strong{display:block;font-size:24px}.profileStats small{font-size:11px;color:#dce2da}
 .profileActions{display:flex;gap:8px}.profileActions button{flex:1}
 .profilePanel{border-radius:24px;background:#ffffffa8;padding:18px;margin-top:14px;border:1px solid white}
@@ -439,6 +439,64 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   }
   input,textarea,select{max-width:100%;min-width:0}
 }
+
+/* STYLE OS Lookbook — selected editorial design, Helvetica throughout */
+html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-serif!important}
+#outfitsScreen{padding-left:0!important;padding-right:0!important;padding-top:26px!important;background:#f5f4f0}
+.lookbookPage{max-width:640px;margin:0 auto;padding-bottom:30px;color:#20251f}
+.lookbookHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 17px 16px}
+.lookbookHeader h1{font:500 clamp(32px,8vw,43px)/1 Helvetica,Arial,sans-serif;letter-spacing:-1.9px;margin:0}
+.lookbookModes{display:flex;gap:3px;padding:4px;border-radius:999px;background:#eae9e5;min-width:0}
+.lookbookModes button{border:0;background:transparent;color:#6a6c65;border-radius:999px;font-size:12px;font-weight:500;padding:10px 14px;white-space:nowrap;cursor:pointer}
+.lookbookModes button.active{background:#202720;color:#fff}
+.lookbookFilters{display:flex;align-items:center;gap:10px;margin:0 16px 12px;width:calc(100% - 32px);min-height:50px;border:1px solid #e9e8e3;border-radius:15px;padding:11px 13px;background:#eeede9;color:#424840;text-align:left;cursor:pointer}
+.lookbookFilterIcon{font-size:23px;line-height:15px;display:grid;place-items:center;width:23px;flex-shrink:0;color:#333b31}
+.lookbookFilterSummary{font-size:11px;line-height:1.4;display:flex;flex-wrap:wrap;align-items:center;gap:5px;flex:1}
+.lookbookFilterSummary i{font-style:normal;color:#a2a49c}
+.lookbookChevron{font-size:24px;line-height:13px;color:#646d64}
+.lookbookStory{position:relative}
+.lookbookPhoto{height:clamp(285px,86vw,365px);background-size:cover;background-position:center 43%;position:relative;color:#fff;overflow:hidden}
+.lookbookPhotoCopy{position:absolute;left:21px;top:35px;max-width:65%;text-shadow:0 2px 15px #12171055}
+.lookbookKicker{font-size:9px;letter-spacing:2.3px;font-weight:600;color:#e6e8e3}
+.lookbookPhotoCopy h2{font:500 clamp(28px,8vw,40px)/1.05 Helvetica,Arial,sans-serif;letter-spacing:-1.3px;margin:17px 0 12px}
+.lookbookPhotoCopy p{font-size:12px;color:#eeeee9;margin:0}
+.lookbookPagination{position:absolute;bottom:34px;left:20px;display:flex;align-items:center;gap:11px}
+.lookbookPagination>span{font-size:12px;color:#fff;white-space:nowrap}
+.lookbookProgress{display:flex;gap:5px}
+.lookbookProgress button{border:0;background:#ffffff70;border-radius:6px;width:16px;height:4px;padding:0;cursor:pointer}
+.lookbookProgress button.selected{background:white;width:28px}
+.lookbookArrows{position:absolute;bottom:19px;right:19px;display:flex;gap:9px}
+.lookbookArrows button{width:39px;height:39px;border-radius:50%;border:1px solid #ffffff85;background:#22282075;color:#fff;display:grid;place-items:center;font-size:28px;line-height:1;cursor:pointer}
+.lookbookArrows button:last-child{background:#fff;color:#222820}
+.lookbookArrows button:disabled{opacity:.34;cursor:default}
+.lookbookDetails{position:relative;margin:-13px 8px 0;padding:23px 18px 18px;background:#fff;border-radius:25px 25px 20px 20px;box-shadow:0 8px 27px #2428200b}
+.lookbookOverline{font-size:10px;font-weight:600;letter-spacing:2.1px;color:#97998f}
+.lookbookDetails h2{font:500 clamp(25px,6vw,32px)/1.08 Helvetica,Arial,sans-serif;letter-spacing:-.8px;color:#1c241d;margin:8px 0 9px}
+.lookbookDetails>p{font-size:12px;line-height:1.45;color:#80847c;margin:0 0 16px;max-width:520px}
+.lookbookPieces{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.lookbookPiece{position:relative;min-width:0;border:0;border-radius:11px;overflow:hidden;background:#f2f1ee;padding:6px 4px 7px;color:#384034;cursor:pointer}
+.lookbookPiece img{display:block;width:100%;height:clamp(64px,18vw,105px);object-fit:contain;object-position:center}
+.lookbookPiece span{display:block;font-size:9px;line-height:1.2;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.lookbookPiece small{display:block;color:#8f6b3a;font-size:8px;margin-top:2px}
+.lookbookAvailability{display:flex;align-items:center;gap:8px;font-size:12px;color:#444d40;margin:16px 0}
+.lookbookCheck,.lookbookNeed{display:grid;place-items:center;border-radius:50%;width:22px;height:22px;background:#e3eade;color:#456042;font-weight:700}
+.lookbookNeed{background:#f4ebda;color:#9d7540}
+.lookbookOpen{width:100%;min-height:51px;display:flex;align-items:center;justify-content:center;gap:14px;background:#202720;color:#fff;border:0;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer}
+.lookbookOpen span{font-size:22px;line-height:10px;font-weight:400}
+.lookbookNextPreview{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:7px;width:calc(100% - 32px);margin:15px 16px 0;min-height:94px;border:0;border-radius:17px;background-color:#343b33;background-size:cover;background-position:center 40%;padding:16px 19px;text-align:left;color:#fff;cursor:pointer;overflow:hidden}
+.lookbookNextPreview span{font-size:9px;letter-spacing:1.7px;color:#e1e3df}
+.lookbookNextPreview strong{font-size:20px;font-weight:500;max-width:80%}
+.lookbookNextPreview b{position:absolute;right:16px;top:24px;display:grid;place-items:center;width:35px;height:35px;border-radius:50%;border:1px solid #ffffff88;font-size:27px;font-weight:400}
+.lookbookReload{display:block;border:0;background:transparent;color:#686e64;font-size:12px;text-decoration:underline;margin:17px auto;cursor:pointer}
+.lookbookEmpty{padding:35px 22px;text-align:center}.lookbookEmpty h2{font-size:22px}.lookbookEmpty p{font-size:13px;color:#797b74;line-height:1.5}
+.lookbookFilterSheet{padding:6px 4px 18px}.lookbookFilterSheet h2{font-size:27px;font-weight:600;letter-spacing:-.7px;margin:8px 0}.lookbookFilterSheet>p{color:#80857c;font-size:13px;line-height:1.5;margin-bottom:24px}
+.lookbookFilterGroup{margin:20px 0}.lookbookFilterGroup>strong{display:block;font-size:14px;color:#31382f;margin-bottom:12px}
+.lookbookFilterChoices{display:flex;flex-wrap:wrap;gap:8px}.lookbookFilterChoices button{border:1px solid #e8e8e1;background:#eeefeb;padding:11px 13px;border-radius:11px;font-size:12px;color:#5f675d;cursor:pointer}
+.lookbookFilterChoices button.selected{background:#222b22;color:#fff;border-color:#222b22}
+.lookbookFilterOwned{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 0;margin:10px 0 22px;border-top:1px solid #e4e5df;cursor:pointer}
+.lookbookFilterOwned span{display:grid;gap:5px}.lookbookFilterOwned strong{font-size:13px}.lookbookFilterOwned small{color:#858b82;font-size:11px}
+.lookbookFilterOwned input{width:21px;height:21px;accent-color:#303a2f}
+@media(max-width:370px){.lookbookHeader{padding:0 13px 12px}.lookbookHeader h1{font-size:30px}.lookbookModes button{font-size:11px;padding:9px 10px}.lookbookFilterSummary{font-size:10px}.lookbookDetails{padding:19px 13px 15px}.lookbookPhoto{height:295px}}
 </style>
 </head>
 <body>
@@ -1119,6 +1177,14 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   function openSheet(kind,payload){ state.sheet={kind,payload}; renderSheet(); }
   function closeSheet(){ state.sheet=null; document.getElementById('sheetBackdrop').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); }
   document.getElementById('sheetBackdrop').onclick=closeSheet;
+  function outfitFiltersMarkup(){
+ const occ=state.filters.outfitOccasion,weather=state.filters.outfitWeather;
+ return `<div class='sheetHandle'></div><div class='lookbookFilterSheet'><div class='lookbookOverline'>STYLE OS / НАСТРОЙКИ</div><h2>Подбор образов</h2><p>Укажи повод и погоду — образы подстроятся под твой день.</p>
+ <div class='lookbookFilterGroup'><strong>Повод</strong><div class='lookbookFilterChoices'>${[['everyday','Повседневность'],['office','Офис'],['date','Свидание'],['restaurant','Ужин'],['travel','Поездка']].map(([k,v])=>`<button type='button' class='${occ===k?'selected':''}' aria-pressed='${occ===k}' onclick='window.appAction("outfitFilterOccasion","${k}")'>${v}</button>`).join('')}</div></div>
+ <div class='lookbookFilterGroup'><strong>Погода</strong><div class='lookbookFilterChoices'>${[['hot','Тепло'],['mild','Прохладно'],['cold','Холодно']].map(([k,v])=>`<button type='button' class='${weather===k?'selected':''}' aria-pressed='${weather===k}' onclick='window.appAction("outfitFilterWeather","${k}")'>${v}</button>`).join('')}</div></div>
+ <label class='lookbookFilterOwned'><span><strong>Только мой гардероб</strong><small>Без вещей, которые нужно докупить</small></span><input type='checkbox' ${state.filters.ownedOnly?'checked':''} onchange='window.appAction("outfitFilterOwned",this.checked?"true":"false")'></label>
+ <button type='button' class='lookbookOpen' onclick='window.appAction("closeSheet")'>Показать образы →</button></div>`;
+}
   function renderSheet(){
     const sheet=document.getElementById('sheet');
     if(!state.sheet){ sheet.className='sheet'; sheet.innerHTML=''; return; }
@@ -1126,6 +1192,7 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
     let html='';
 
 
+    if(kind==='outfitFilters'){html=outfitFiltersMarkup();}
     if(kind==='city'){
       html=`<div class='sheetHandle'></div><div class='sheetSection'><h2 class='sheetTitle'>Город и погода</h2><p class='helper'>Начни вводить название города и выбери его из подсказок. Прогноз берётся из Open-Meteo.</p><div style='display:flex;gap:7px;margin-top:16px'><input id='citySearch' oninput='window.appAction("cityInput",this.value)' placeholder='Например, Санкт-Петербург' style='min-width:0;flex:1;padding:10px;border:1px solid #ddd;border-radius:10px'><button class='btn dark small' onclick='window.appAction("setCityManual")'>Найти</button></div><div id='citySuggestions' class='citySuggestions' role='listbox'></div><button class='btn line' style='width:100%;margin-top:10px' onclick='window.appAction("setCityGps")'>Определить местоположение</button></div>`;
     }
@@ -1299,18 +1366,30 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
       <section class='section'>${items.length ? `<div class='grid2'>${items.map(item=>`<article class='itemCard catalogProductCard' onclick='window.appAction("openOwned","${item.ownedId}")'><div class='itemVisual catalogProductVisual'><img alt='${item.name}' src='${productImage(item)}' loading='lazy' decoding='async'></div><div class='itemBody catalogProductBody'><div class='catalogProductEyebrow'>${item.source==='reference'?'STYLE OS / ОБРАЗЕЦ':(item.brand||itemTypeLabel(item))}</div><div class='catalogProductName'>${item.name}</div><div class='catalogProductFoot'><span class='catalogProductColor'><i style='background:${colorHex(item.color)}'></i>${COLORS[item.color]?.[0]||'Цвет не указан'}</span></div></div></article>`).join('')}</div>` : `<div class='card empty'><div style='font-size:38px'>⌂</div><h3 style='margin:8px 0'>Пока пусто</h3><p>Добавь первые вещи — из каталога Lamoda или вручную.</p><button class='btn dark' onclick='window.appAction("openAdd")'>Добавить вещь</button></div>`}</section><div class='fabSpacer'></div>`;
     document.getElementById('floatingAdd').classList.remove('hidden');
   }
+  function outfitDisplayTitle(look){const titles={minimal:'Городская база',dark_minimal:'Тихий минимализм',smart:'Современный ритм',classic:'Деловая классика',oldmoney:'Сдержанный характер',utility:'Городская практичность',soft_tailoring:'Спокойная элегантность',casual:'На каждый день',summer_relaxed:'Лёгкий силуэт',winter_layered:'Тёплый городской образ'};return titles[look?.style]||look?.title||'Готовый образ';}
+  function outfitVisibleLooks(){return todayLooks().slice(0,5);}
   function renderOutfits(){
-    const occ=state.filters.outfitOccasion, weather=state.filters.outfitWeather;
-    const looks=todayLooks();
-    const screen=document.getElementById('outfitsScreen');
-    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>build your look</div><div class='brand'>Образы</div></div><button class='btn line small' onclick='window.appAction("shuffle")'>Обновить</button></div>
-      <div class='section'><button class='btn dark' style='width:100%;padding:16px;border-radius:17px' onclick='window.appAction("openAnchorPicker")'>＋ Создать образ по одной вещи</button></div>
-      <div class='section'><div class='sectionHint'>Повод</div><div class='chips'>${[['everyday','Повседневность'],['office','Офис'],['date','Свидание'],['restaurant','Ужин'],['travel','Поездка']].map(([k,v])=>`<button class='chip ${occ===k?'active':''}' onclick='window.appAction("setOccasion","${k}")'>${v}</button>`).join('')}</div></div>
-      <div class='section'><div class='sectionHint'>Погода</div><div class='chips'>${[['hot','Тепло'],['mild','Прохладно'],['cold','Холодно']].map(([k,v])=>`<button class='chip ${weather===k?'active':''}' onclick='window.appAction("setWeather","${k}")'>${v}</button>`).join('')}</div></div>
-      <div class='section'><label class='outfitOnlyToggle'><span><strong>Только мой гардероб</strong><small>Не предлагать вещи, которые нужно докупить</small></span><input type='checkbox' ${state.filters.ownedOnly?'checked':''} onchange='window.appAction("setOwnedOnly",this.checked?"true":"false")'><i></i></label></div>
-      <section class='section'>${looks.length ? looks.map(look=>`<article class='outfitCard' style='margin-bottom:14px'><div class='outfitFlatlay'><div class='outfitFlatlayGrid'>${look.parts.map((item,i)=>`<button type='button' class='outfitFlatlayItem' onclick='window.appAction("openOutfitPart","${look.id}:${i}")' aria-label='Посмотреть ${itemTypeLabel(item)}'><img src='${productImage(item)}' alt='${itemTypeLabel(item)}'><span>${itemTypeLabel(item)}${item.missing?' · докупить':''}</span></button>`).join('')}</div></div><div class='outfitIntro'><span class='subtle'>${getOccLabel(look.occasion)}</span><h3>${look.title}</h3><p>${look.reason}</p></div><div class='outfitBody'><div class='itemPills'>${look.parts.map(item=>`<span class='pill'>${itemTypeLabel(item)}${item.missing?' · купить':''}</span>`).join('')}</div><div class='heroCaption'><span class='${look.missing.length?'stateNeed':'stateGood'}'>${look.missing.length ? 'Не хватает '+look.missing.length : 'Полный комплект'}</span><button class='btn dark small' onclick='window.appAction("openLook","${look.id}")'>Открыть</button></div></div></article>`).join('') : `<div class='card empty'><div style='font-size:38px'>✦</div><h3 style='margin:8px 0'>Пока мало вещей</h3><p>${state.filters.ownedOnly?'В гардеробе пока нет полного комплекта для выбранной погоды. Добавь подходящий верх, низ, обувь и при необходимости куртку или пальто.':'Добавь больше одежды в гардероб, чтобы собрать полноценные образы под выбранный повод.'}</p><button class='btn dark' onclick='window.appAction("switchTab","catalog")'>Открыть каталог</button></div>`}</section>`;
-    document.getElementById('floatingAdd').classList.add('hidden');
-  }
+ const looks=outfitVisibleLooks(),count=looks.length;
+ state.outfitIndex=Math.max(0,Math.min(state.outfitIndex||0,count-1));
+ const index=state.outfitIndex,look=looks[index],occ=state.filters.outfitOccasion,weather=state.filters.outfitWeather;
+ const summary=[getOccLabel(occ),getWeatherLabel(weather),state.filters.ownedOnly?'Только мои вещи':'С докупкой'];
+ const screen=document.getElementById('outfitsScreen');
+ screen.innerHTML=`<div class='lookbookPage'>
+ <header class='lookbookHeader'><h1>Образы</h1><div class='lookbookModes' role='group' aria-label='Способ подбора'><button type='button' class='active' aria-current='page'>Готовые</button><button type='button' onclick='window.appAction("openAnchorPicker")'>По вещи</button></div></header>
+ <button class='lookbookFilters' onclick='window.appAction("openOutfitFilters")' aria-label='Настроить подбор: ${escapeHtml(summary.join(', '))}'><span class='lookbookFilterIcon' aria-hidden='true'>☷</span><span class='lookbookFilterSummary'>${summary.map(escapeHtml).join('<i>·</i>')}</span><span aria-hidden='true' class='lookbookChevron'>›</span></button>
+ ${look?`<div class='lookbookStory'>
+ <div class='lookbookPhoto' style='background-image:linear-gradient(90deg,rgba(12,16,12,.56),rgba(12,16,12,.04) 77%),url("${lookPhoto(look,index)}")'>
+ <div class='lookbookPhotoCopy'><span class='lookbookKicker'>STYLE OS / LOOK ${String(index+1).padStart(2,'0')}</span><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml(getOccLabel(look.occasion))}</p></div>
+ <div class='lookbookPagination' aria-label='Образ ${index+1} из ${count}'><span>${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}</span><div class='lookbookProgress'>${looks.map((_,i)=>`<button type='button' aria-label='Образ ${i+1}' class='${i===index?'selected':''}' onclick='window.appAction("setOutfitIndex",${i})'></button>`).join('')}</div></div>
+ <div class='lookbookArrows'><button type='button' ${index===0?'disabled':''} aria-label='Предыдущий образ' onclick='window.appAction("outfitPrev")'>‹</button><button type='button' ${index===count-1?'disabled':''} aria-label='Следующий образ' onclick='window.appAction("outfitNext")'>›</button></div></div>
+ <section class='lookbookDetails'><div class='lookbookOverline'>ОБРАЗ ${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}</div><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml((look.reason||'Продуманное сочетание оттенков и фактур для твоего гардероба.').split('. ')[0].slice(0,160))}</p>
+ <div class='lookbookPieces'>${look.parts.map((item,i)=>`<button type='button' class='lookbookPiece' aria-label='Открыть ${escapeHtml(itemTypeLabel(item))}' onclick='window.appAction("openOutfitPart","${look.id}:${i}")'><img src='${productImage(item)}' alt='${escapeHtml(itemTypeLabel(item))}' loading='lazy'><span>${escapeHtml(itemTypeLabel(item))}</span>${item.missing?`<small>Докупить</small>`:''}</button>`).join('')}</div>
+ <div class='lookbookAvailability'>${look.missing.length?`<span class='lookbookNeed'>○</span> Нужно докупить: ${look.missing.length}`:`<span class='lookbookCheck'>✓</span> Все вещи есть`}</div><button type='button' class='lookbookOpen' onclick='window.appAction("openLook","${look.id}")'>Открыть образ <span aria-hidden='true'>→</span></button></section></div>
+ ${count>1?`<button type='button' class='lookbookNextPreview' onclick='window.appAction("setOutfitIndex",${(index+1)%count})' style='background-image:linear-gradient(90deg,rgba(0,0,0,.7),rgba(0,0,0,.1)),url("${lookPhoto(looks[(index+1)%count],(index+1)%count)}")'><span>СЛЕДУЮЩИЙ ОБРАЗ</span><strong>${escapeHtml(outfitDisplayTitle(looks[(index+1)%count]))}</strong><b aria-hidden='true'>›</b></button>`:''}
+ <button type='button' class='lookbookReload' onclick='window.appAction("shuffle")'>Другой повод ↻</button>`:`<div class='lookbookEmpty'><h2>Пока нет подходящих образов</h2><p>Попробуй другую погоду или разреши предложения вещей из каталога.</p><button type='button' class='lookbookOpen' onclick='window.appAction("openOutfitFilters")'>Изменить настройки</button></div>`}
+ </div>`;
+ document.getElementById('floatingAdd').classList.add('hidden');
+}
   function renderCatalog(){
     const cat=state.filters.catalog, q=state.filters.catalogSearch.toLowerCase();
     let list=state.catalog.filter(item=> !q || `${item.brand} ${item.name} ${item.sku}`.toLowerCase().includes(q));
@@ -1417,6 +1496,13 @@ button,.btn,.chip,.pill,.tab,.tabbar,.glassTag,.heroPiece,.iconBadge,.field inpu
   }
   function appAction(action,payload){
     if(action==='closeSheet'){ closeSheet(); }
+    if(action==='openOutfitFilters'){openSheet('outfitFilters');}
+    if(action==='setOutfitIndex'){state.outfitIndex=Number(payload)||0;renderOutfits();}
+    if(action==='outfitNext'){state.outfitIndex=Math.min(4,(state.outfitIndex||0)+1);renderOutfits();}
+    if(action==='outfitPrev'){state.outfitIndex=Math.max(0,(state.outfitIndex||0)-1);renderOutfits();}
+    if(action==='outfitFilterOccasion'){state.filters.outfitOccasion=payload;state.outfitIndex=0;renderHome();renderOutfits();openSheet('outfitFilters');}
+    if(action==='outfitFilterWeather'){state.filters.outfitWeather=payload;state.outfitIndex=0;renderHome();renderOutfits();openSheet('outfitFilters');}
+    if(action==='outfitFilterOwned'){state.filters.ownedOnly=payload==='true';state.outfitIndex=0;renderOutfits();openSheet('outfitFilters');}
     if(action==='openAnchorPicker'){state.anchorItemId=null;state.anchorLooks=[];openSheet('anchorPicker');}
     if(action==='chooseAnchor'){state.anchorItemId=payload;openSheet('anchorPicker');}
     if(action==='generateAnchorLooks'){
