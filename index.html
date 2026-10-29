@@ -661,8 +661,10 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .dailyEditorialBars{display:flex;gap:5px;align-items:center;flex:1;max-width:140px}
 .dailyEditorialBars i{height:4px;background:#dfdfda;border-radius:99px;flex:1}.dailyEditorialBars i.filled{background:#374337}
 .dailySwipeStage{position:relative;min-height:0;margin-bottom:8px}
-.dailySwipeCard.dailyEditorialCard{margin:0;position:relative;overflow:hidden;border-radius:23px;background:#fff;box-shadow:0 6px 24px rgba(34,37,32,.07);touch-action:pan-y;z-index:2;animation:dailyEditorialEnter .24s ease-out both}
+.dailySwipeCard.dailyEditorialCard{margin:0;position:relative;overflow:hidden;border-radius:23px;background:#fff;box-shadow:0 6px 24px rgba(34,37,32,.07);touch-action:pan-y;z-index:2;transform:translate3d(0,0,0);will-change:transform,opacity}
 @keyframes dailyEditorialEnter{from{opacity:.76;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+.dailyEditorialCard.dailyDragging{box-shadow:0 18px 48px rgba(34,37,32,.19);cursor:grabbing}
+.dailySwipeStage{isolation:isolate;overflow:visible}
 .dailyEditorialPicture{height:clamp(252px,43dvh,380px);background-position:center 40%;background-size:cover;position:relative;border-radius:21px 21px 0 0;padding:14px}
 .dailyEditorialCategory{background:rgba(31,34,29,.48);color:#fff;border-radius:999px;padding:8px 11px;font:600 10px/1 Helvetica,Arial,sans-serif;letter-spacing:.11em;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .dailyEditorialInfo{padding:13px 15px 13px}
@@ -1347,46 +1349,83 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
   }
   function animateDailyVote(value){
     const card=document.getElementById('dailySwipe');
-    if(!card||card.dataset.leaving==='yes'){return;}
+    if(!card||card.dataset.leaving==='yes')return;
     card.dataset.leaving='yes';
-    card.style.transition='transform 330ms cubic-bezier(.22,.8,.2,1),opacity 330ms ease';
-    card.style.transform='translateX('+(value==='like'?110:-110)+'vw) rotate('+(value==='like'?18:-18)+'deg)';
+    card.classList.remove('dailyDragging');
+    const direction=value==='like'?1:-1;
+    const left=card.querySelector('.dailySwipeNo'),right=card.querySelector('.dailySwipeYes');
+    if(left)left.style.opacity=direction<0?'1':'0';
+    if(right)right.style.opacity=direction>0?'1':'0';
+    card.style.transition='transform 350ms cubic-bezier(.2,.76,.2,1),opacity 350ms ease';
+    card.style.transform='translate3d('+(direction*120)+'vw,0,0) rotate('+(direction*14)+'deg)';
     card.style.opacity='0';
     document.querySelectorAll('.dailyVoteActions button').forEach(b=>b.disabled=true);
-    window.setTimeout(()=>dailyVote(value),340);
+    window.setTimeout(()=>dailyVote(value),355);
   }
   function initDailySwipe(){
     const card=document.getElementById('dailySwipe');if(!card)return;
-    let startX=0,startY=0,active=false,dragging=false;
+    let startX=0,startY=0,lastX=0,active=false,dragging=false,axis=null;
+    let pointerId=null;
+    function begin(x,y){
+      if(card.dataset.leaving==='yes')return;
+      startX=lastX=x;startY=y;active=true;dragging=false;axis=null;
+      card.style.transition='none';card.style.opacity='1';
+    }
+    function move(x,y){
+      if(!active||card.dataset.leaving==='yes')return false;
+      const dx=x-startX,dy=y-startY;
+      if(!axis&&Math.max(Math.abs(dx),Math.abs(dy))>6)axis=Math.abs(dx)>Math.abs(dy)*1.05?'horizontal':'vertical';
+      if(axis!=='horizontal')return false;
+      dragging=true;lastX=x;
+      const angle=Math.max(-12,Math.min(12,dx*.065));
+      card.classList.add('dailyDragging');
+      card.style.transform='translate3d('+dx+'px,0,0) rotate('+angle+'deg)';
+      const left=card.querySelector('.dailySwipeNo'),right=card.querySelector('.dailySwipeYes');
+      if(left)left.style.opacity=String(Math.min(1,Math.max(0,-dx/70)));
+      if(right)right.style.opacity=String(Math.min(1,Math.max(0,dx/70)));
+      return true;
+    }
+    function finish(x){
+      if(!active)return;active=false;
+      const dx=(typeof x==='number'?x:lastX)-startX;
+      if(dragging&&Math.abs(dx)>=72){animateDailyVote(dx>0?'like':'dislike');return;}
+      card.classList.remove('dailyDragging');
+      card.style.transition='transform 280ms cubic-bezier(.2,.75,.2,1)';
+      card.style.transform='translate3d(0,0,0) rotate(0deg)';
+      for(const badge of card.querySelectorAll('.dailySwipeNo,.dailySwipeYes'))badge.style.opacity='0';
+      dragging=false;axis=null;
+    }
+    // Explicit Touch Events prevent the iOS Safari scroll container swallowing horizontal drags.
+    card.addEventListener('touchstart',e=>{
+      if(e.touches.length!==1)return;
+      begin(e.touches[0].clientX,e.touches[0].clientY);
+    },{passive:true});
+    card.addEventListener('touchmove',e=>{
+      if(e.touches.length!==1||!active)return;
+      if(move(e.touches[0].clientX,e.touches[0].clientY)&&e.cancelable)e.preventDefault();
+    },{passive:false});
+    card.addEventListener('touchend',e=>{finish(e.changedTouches[0]?.clientX);},{passive:true});
+    card.addEventListener('touchcancel',()=>finish(lastX),{passive:true});
+    // Mouse and stylus support use Pointer Events without duplicating touch gestures.
     card.addEventListener('pointerdown',e=>{
-      if(e.button!==0||card.dataset.leaving==='yes')return;
-      active=true;dragging=false;startX=e.clientX;startY=e.clientY;
-      card.style.transition='none';
-      card.setPointerCapture(e.pointerId);
+      if(e.pointerType==='touch'||(e.button!==0&&e.pointerType!=='pen'))return;
+      pointerId=e.pointerId;begin(e.clientX,e.clientY);
+      if(card.setPointerCapture)card.setPointerCapture(e.pointerId);
     });
     card.addEventListener('pointermove',e=>{
-      if(!active)return;
-      const dx=e.clientX-startX,dy=e.clientY-startY;
-      if(Math.abs(dy)>Math.abs(dx)*1.5&&!dragging)return;
-      if(Math.abs(dx)>7)dragging=true;
-      if(!dragging)return;
-      card.style.transform='translateX('+dx+'px) rotate('+(dx/22)+'deg)';
-      const left=card.querySelector('.dailySwipeNo'),right=card.querySelector('.dailySwipeYes');
-      if(left)left.style.opacity=String(Math.min(1,Math.max(0,-dx/90)));
-      if(right)right.style.opacity=String(Math.min(1,Math.max(0,dx/90)));
+      if(e.pointerType==='touch'||pointerId!==e.pointerId)return;
+      move(e.clientX,e.clientY);
     });
-    const finish=e=>{
-      if(!active)return;active=false;
-      const dx=e.clientX-startX;
-      if(dragging&&Math.abs(dx)>85){animateDailyVote(dx>0?'like':'dislike');return;}
-      card.style.transition='transform 220ms ease';
-      card.style.transform='translateX(0) rotate(0)';
-      for(const x of card.querySelectorAll('.dailySwipeNo,.dailySwipeYes'))x.style.opacity='0';
-    };
-    card.addEventListener('pointerup',finish);
-    card.addEventListener('pointercancel',()=>{active=false;card.style.transition='transform 220ms ease';card.style.transform='';});
+    card.addEventListener('pointerup',e=>{
+      if(e.pointerType==='touch'||pointerId!==e.pointerId)return;
+      pointerId=null;finish(e.clientX);
+    });
+    card.addEventListener('pointercancel',e=>{
+      if(e.pointerType==='touch'||pointerId!==e.pointerId)return;
+      pointerId=null;finish(lastX);
+    });
   }
-  function todayLooks(){ return generateLooks({occasion:state.filters.outfitOccasion, weather:state.filters.outfitWeather,ownedOnly:state.filters.ownedOnly,limit:10,mix:true}); }
+    function todayLooks(){ return generateLooks({occasion:state.filters.outfitOccasion, weather:state.filters.outfitWeather,ownedOnly:state.filters.ownedOnly,limit:10,mix:true}); }
 
   function anchorWeather(item){
     const current=store.forecast?.day===dayKey()?store.forecast.mode:'mild';
