@@ -1368,23 +1368,68 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
   }
   function outfitDisplayTitle(look){const titles={minimal:'Городская база',dark_minimal:'Тихий минимализм',smart:'Современный ритм',classic:'Деловая классика',oldmoney:'Сдержанный характер',utility:'Городская практичность',soft_tailoring:'Спокойная элегантность',casual:'На каждый день',summer_relaxed:'Лёгкий силуэт',winter_layered:'Тёплый городской образ'};return titles[look?.style]||look?.title||'Готовый образ';}
   function outfitVisibleLooks(){return todayLooks().slice(0,5);}
+  function switchLookbook(direction,targetIndex){
+    const count=outfitVisibleLooks().length;
+    if(count<2||window.lookbookAnimating)return;
+    window.lookbookAnimating=true;
+    const story=document.querySelector('#outfitsScreen .lookbookStory');
+    const finish=()=>{
+      state.outfitIndex=targetIndex===undefined?((state.outfitIndex||0)+direction+count)%count:Math.max(0,Math.min(count-1,targetIndex));
+      renderOutfits();
+      const incoming=document.querySelector('#outfitsScreen .lookbookStory');
+      if(incoming){
+        incoming.style.transition='none';
+        incoming.style.transform='translate3d('+(-direction*45)+'px,0,0)';
+        incoming.style.opacity='.65';
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+          incoming.style.transition='transform 260ms cubic-bezier(.2,.75,.2,1),opacity 260ms ease';
+          incoming.style.transform='translate3d(0,0,0)';
+          incoming.style.opacity='1';
+          setTimeout(()=>{incoming.style.transition='';incoming.style.transform='';incoming.style.opacity='';window.lookbookAnimating=false;},280);
+        }));
+      }else window.lookbookAnimating=false;
+    };
+    if(!story){finish();return;}
+    story.style.transition='transform 190ms ease-in,opacity 190ms ease-in';
+    story.style.transform='translate3d('+(-direction*110)+'%,0,0)';
+    story.style.opacity='0';
+    setTimeout(finish,195);
+  }
   function initLookbookSwipe(){
     const story=document.querySelector('#outfitsScreen .lookbookStory');
     if(!story)return;
-    let startX=0,startY=0,tracking=false;
+    let startX=0,startY=0,lastX=0,tracking=false,horizontal=false;
     story.addEventListener('touchstart',event=>{
-      if(event.touches.length!==1){tracking=false;return;}
-      startX=event.touches[0].clientX;startY=event.touches[0].clientY;tracking=true;
+      if(event.touches.length!==1||window.lookbookAnimating){tracking=false;return;}
+      startX=lastX=event.touches[0].clientX;
+      startY=event.touches[0].clientY;
+      tracking=true;horizontal=false;
+      story.style.transition='none';
     },{passive:true});
-    story.addEventListener('touchend',event=>{
-      if(!tracking||!event.changedTouches.length)return;
-      tracking=false;
-      const dx=event.changedTouches[0].clientX-startX,dy=event.changedTouches[0].clientY-startY;
-      if(Math.abs(dx)<55||Math.abs(dx)<Math.abs(dy)*1.35)return;
+    story.addEventListener('touchmove',event=>{
+      if(!tracking||event.touches.length!==1)return;
+      const dx=event.touches[0].clientX-startX,dy=event.touches[0].clientY-startY;
+      if(!horizontal&&Math.abs(dx)>9&&Math.abs(dx)>Math.abs(dy)*1.2)horizontal=true;
+      if(!horizontal)return;
       if(event.cancelable)event.preventDefault();
-      if(dx<0)appAction('outfitNext');else appAction('outfitPrev');
+      lastX=event.touches[0].clientX;
+      story.style.transform='translate3d('+Math.max(-120,Math.min(120,dx))+'px,0,0)';
     },{passive:false});
-    story.addEventListener('touchcancel',()=>{tracking=false;},{passive:true});
+    story.addEventListener('touchend',event=>{
+      if(!tracking)return;
+      tracking=false;
+      const dx=(event.changedTouches[0]?.clientX??lastX)-startX;
+      if(horizontal&&Math.abs(dx)>45){
+        story.style.transform='';
+        switchLookbook(dx<0?1:-1);
+      }else{
+        story.style.transition='transform 230ms ease-out';
+        story.style.transform='translate3d(0,0,0)';
+      }
+    },{passive:true});
+    story.addEventListener('touchcancel',()=>{
+      tracking=false;story.style.transition='transform 230ms ease-out';story.style.transform='translate3d(0,0,0)';
+    },{passive:true});
   }
   function renderOutfits(){
  const looks=outfitVisibleLooks(),count=looks.length;
@@ -1399,11 +1444,11 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
  <div class='lookbookPhoto' style='background-image:linear-gradient(90deg,rgba(12,16,12,.56),rgba(12,16,12,.04) 77%),url("${lookPhoto(look,index)}")'>
  <div class='lookbookPhotoCopy'><span class='lookbookKicker'>STYLE OS / LOOK ${String(index+1).padStart(2,'0')}</span><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml(getOccLabel(look.occasion))}</p></div>
  <div class='lookbookPagination' aria-label='Образ ${index+1} из ${count}'><span>${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}</span><div class='lookbookProgress'>${looks.map((_,i)=>`<button type='button' aria-label='Образ ${i+1}' class='${i===index?'selected':''}' onclick='window.appAction("setOutfitIndex",${i})'></button>`).join('')}</div></div>
- <div class='lookbookArrows'><button type='button' ${index===0?'disabled':''} aria-label='Предыдущий образ' onclick='window.appAction("outfitPrev")'><span aria-hidden='true'>←</span></button><button type='button' ${index===count-1?'disabled':''} aria-label='Следующий образ' onclick='window.appAction("outfitNext")'><span aria-hidden='true'>→</span></button></div></div>
+ <div class='lookbookArrows'><button type='button' ${count<2?'disabled':''} aria-label='Предыдущий образ' onclick='window.appAction("outfitPrev")'><span aria-hidden='true'>←</span></button><button type='button' ${count<2?'disabled':''} aria-label='Следующий образ' onclick='window.appAction("outfitNext")'><span aria-hidden='true'>→</span></button></div></div>
  <section class='lookbookDetails'><div class='lookbookOverline'>ОБРАЗ ${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}</div><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml((look.reason||'Продуманное сочетание оттенков и фактур для твоего гардероба.').split('. ')[0].slice(0,160))}</p>
  <div class='lookbookPieces'>${look.parts.map((item,i)=>`<button type='button' class='lookbookPiece' aria-label='Открыть ${escapeHtml(itemTypeLabel(item))}' onclick='window.appAction("openOutfitPart","${look.id}:${i}")'><img src='${productImage(item)}' alt='${escapeHtml(itemTypeLabel(item))}' loading='lazy'><span>${escapeHtml(itemTypeLabel(item))}</span>${item.missing?`<small>Докупить</small>`:''}</button>`).join('')}</div>
  <div class='lookbookAvailability'>${look.missing.length?`<span class='lookbookNeed'>○</span> Нужно докупить: ${look.missing.length}`:`<span class='lookbookCheck'>✓</span> Все вещи есть`}</div><button type='button' class='lookbookOpen' onclick='window.appAction("openLook","${look.id}")'>Открыть образ <span aria-hidden='true'>→</span></button></section></div>
- ${count>1?`<button type='button' class='lookbookNextPreview' onclick='window.appAction("setOutfitIndex",${(index+1)%count})' style='background-image:linear-gradient(90deg,rgba(0,0,0,.7),rgba(0,0,0,.1)),url("${lookPhoto(looks[(index+1)%count],(index+1)%count)}")'><span>СЛЕДУЮЩИЙ ОБРАЗ</span><strong>${escapeHtml(outfitDisplayTitle(looks[(index+1)%count]))}</strong><b aria-hidden='true'>›</b></button>`:''}
+
  <button type='button' class='lookbookReload' onclick='window.appAction("shuffle")'>Другой повод ↻</button>`:`<div class='lookbookEmpty'><h2>Пока нет подходящих образов</h2><p>Попробуй другую погоду или разреши предложения вещей из каталога.</p><button type='button' class='lookbookOpen' onclick='window.appAction("openOutfitFilters")'>Изменить настройки</button></div>`}
  </div>`;
  document.getElementById('floatingAdd').classList.add('hidden');
@@ -1516,9 +1561,9 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
   function appAction(action,payload){
     if(action==='closeSheet'){ closeSheet(); }
     if(action==='openOutfitFilters'){openSheet('outfitFilters');}
-    if(action==='setOutfitIndex'){state.outfitIndex=Number(payload)||0;renderOutfits();}
-    if(action==='outfitNext'){state.outfitIndex=Math.min(4,(state.outfitIndex||0)+1);renderOutfits();}
-    if(action==='outfitPrev'){state.outfitIndex=Math.max(0,(state.outfitIndex||0)-1);renderOutfits();}
+    if(action==='setOutfitIndex'){const count=outfitVisibleLooks().length;const target=Number(payload)||0;if(count>1&&target!==state.outfitIndex)switchLookbook(target>state.outfitIndex?1:-1,target);}
+    if(action==='outfitNext'){switchLookbook(1);}
+    if(action==='outfitPrev'){switchLookbook(-1);}
     if(action==='outfitFilterOccasion'){state.filters.outfitOccasion=payload;state.outfitIndex=0;renderHome();renderOutfits();openSheet('outfitFilters');}
     if(action==='outfitFilterWeather'){state.filters.outfitWeather=payload;state.outfitIndex=0;renderHome();renderOutfits();openSheet('outfitFilters');}
     if(action==='outfitFilterOwned'){state.filters.ownedOnly=payload==='true';state.outfitIndex=0;renderOutfits();openSheet('outfitFilters');}
