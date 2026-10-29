@@ -1372,11 +1372,11 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     const count=outfitVisibleLooks().length;
     if(count<2||window.lookbookAnimating)return;
     window.lookbookAnimating=true;
-    const story=document.querySelector('#outfitsScreen .lookbookStory');
+    const photo=document.querySelector('#outfitsScreen .lookbookPhoto');
     const finish=()=>{
       state.outfitIndex=targetIndex===undefined?((state.outfitIndex||0)+direction+count)%count:Math.max(0,Math.min(count-1,targetIndex));
       renderOutfits();
-      const incoming=document.querySelector('#outfitsScreen .lookbookStory');
+      const incoming=document.querySelector('#outfitsScreen .lookbookPhoto');
       if(incoming){
         incoming.style.transition='none';
         incoming.style.transform='translate3d('+(-direction*45)+'px,0,0)';
@@ -1389,46 +1389,46 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
         }));
       }else window.lookbookAnimating=false;
     };
-    if(!story){finish();return;}
-    story.style.transition='transform 190ms ease-in,opacity 190ms ease-in';
-    story.style.transform='translate3d('+(-direction*110)+'%,0,0)';
-    story.style.opacity='0';
+    if(!photo){finish();return;}
+    photo.style.transition='transform 190ms ease-in,opacity 190ms ease-in';
+    photo.style.transform='translate3d('+(-direction*110)+'%,0,0)';
+    photo.style.opacity='0';
     setTimeout(finish,195);
   }
   function initLookbookSwipe(){
-    const story=document.querySelector('#outfitsScreen .lookbookStory');
-    if(!story)return;
+    const photo=document.querySelector('#outfitsScreen .lookbookPhoto');
+    if(!photo)return;
     let startX=0,startY=0,lastX=0,tracking=false,horizontal=false;
-    story.addEventListener('touchstart',event=>{
+    photo.addEventListener('touchstart',event=>{
       if(event.touches.length!==1||window.lookbookAnimating){tracking=false;return;}
       startX=lastX=event.touches[0].clientX;
       startY=event.touches[0].clientY;
       tracking=true;horizontal=false;
-      story.style.transition='none';
+      photo.style.transition='none';
     },{passive:true});
-    story.addEventListener('touchmove',event=>{
+    photo.addEventListener('touchmove',event=>{
       if(!tracking||event.touches.length!==1)return;
       const dx=event.touches[0].clientX-startX,dy=event.touches[0].clientY-startY;
       if(!horizontal&&Math.abs(dx)>9&&Math.abs(dx)>Math.abs(dy)*1.2)horizontal=true;
       if(!horizontal)return;
       if(event.cancelable)event.preventDefault();
       lastX=event.touches[0].clientX;
-      story.style.transform='translate3d('+Math.max(-120,Math.min(120,dx))+'px,0,0)';
+      photo.style.transform='translate3d('+Math.max(-120,Math.min(120,dx))+'px,0,0)';
     },{passive:false});
-    story.addEventListener('touchend',event=>{
+    photo.addEventListener('touchend',event=>{
       if(!tracking)return;
       tracking=false;
       const dx=(event.changedTouches[0]?.clientX??lastX)-startX;
       if(horizontal&&Math.abs(dx)>45){
-        story.style.transform='';
+        photo.style.transform='';
         switchLookbook(dx<0?1:-1);
       }else{
-        story.style.transition='transform 230ms ease-out';
-        story.style.transform='translate3d(0,0,0)';
+        photo.style.transition='transform 230ms ease-out';
+        photo.style.transform='translate3d(0,0,0)';
       }
     },{passive:true});
-    story.addEventListener('touchcancel',()=>{
-      tracking=false;story.style.transition='transform 230ms ease-out';story.style.transform='translate3d(0,0,0)';
+    photo.addEventListener('touchcancel',()=>{
+      tracking=false;photo.style.transition='transform 230ms ease-out';photo.style.transform='translate3d(0,0,0)';
     },{passive:true});
   }
   function renderOutfits(){
