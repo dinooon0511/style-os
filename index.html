@@ -521,6 +521,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .lookDetailStatus{display:flex;align-items:center;justify-content:center;position:absolute;right:4px;top:4px;width:17px;height:17px;border-radius:50%;font:bold 11px/1 Helvetica,Arial,sans-serif;box-shadow:0 1px 4px #0002}
 .lookDetailStatus.owned{background:#788f77;color:#fff}
 .lookDetailStatus.need{background:#d7c8b0;color:#283027;font-size:13px}
+.lookDetailStatus.need>span{display:block;line-height:1;transform:translateY(-1px)}
 .lookDetailProduct strong{display:block;font-size:11px;line-height:1.22;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lookDetailProduct small{display:block;font-size:10px;color:#91938a;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lookDetailInventory{border-radius:17px;background:#ecf0e9;padding:14px 15px}
@@ -1312,7 +1313,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
           ${(look.warnings||[]).length?`<p class='lookDetailWarning'>${escapeHtml(look.warnings.join(' '))}</p>`:''}
           <div class='lookDetailProducts' style='--look-cols:${Math.min(4,count)}'>
             ${look.parts.map((p,i)=>`<button type='button' class='lookDetailProduct' aria-label='${escapeHtml(itemTypeLabel(p))}. ${p.missing?'Нужно докупить':'Есть в гардеробе'}. Открыть карточку вещи' onclick='window.appAction("openLookPart",${i})'>
-              <span class='lookDetailProductPhoto'><img src='${productImage(p)}' alt='${escapeHtml(itemTypeLabel(p))}' loading='lazy'><span class='lookDetailStatus ${p.missing?'need':'owned'}' aria-hidden='true'>${p.missing?'−':'✓'}</span></span>
+              <span class='lookDetailProductPhoto'><img src='${productImage(p)}' alt='${escapeHtml(itemTypeLabel(p))}' loading='lazy'><span class='lookDetailStatus ${p.missing?'need':'owned'}' aria-hidden='true'><span>${p.missing?'−':'✓'}</span></span></span>
               <strong>${escapeHtml(itemTypeLabel(p))}</strong>
               <small>${escapeHtml(COLORS[p.color]?.[0]||p.name||'')}</small>
             </button>`).join('')}
