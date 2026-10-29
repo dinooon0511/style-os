@@ -637,6 +637,16 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .homeEditorialCollection{flex-basis:45%;aspect-ratio:1/1.12}
 @media(max-width:370px){.homeEditorialHeader h1{font-size:28px}.homeEditorialFeatureBody{padding:12px}.homeEditorialMainAction{min-width:108px;padding:11px 9px;font-size:11px}.homeEditorialQuickItem{padding:10px 7px}.homeEditorialQuickItem strong{font-size:11px}}
 
+
+/* Wardrobe aligns with the editorial catalog while retaining its existing filters, inventory and FAB */
+#wardrobeScreen.screen{padding-left:8px;padding-right:8px}
+.wardrobeEditorial.catalogEditorial{padding-top:0}
+.wardrobeEditorial .catalogEditorialHeader{padding-bottom:21px}
+.wardrobeEditorial .wardrobeEditorialChips{margin-bottom:17px}
+.wardrobeEditorialEmpty{margin-top:10px;padding:25px 18px;text-align:center;background:rgba(255,255,255,.8);box-shadow:none}
+.wardrobeEditorialEmpty h3{margin:0 0 8px;font:600 22px/1.1 Helvetica,Arial,sans-serif}
+.wardrobeEditorialEmpty p{color:#777b73;font:400 13px/1.45 Helvetica,Arial,sans-serif;margin:0 0 16px}
+
 </style>
 </head>
 <body>
@@ -1220,11 +1230,46 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
       store.forecast=null;saveStore();closeSheet();updateForecast();renderHome();
     }catch(e){toast('Не удалось найти город');}
   }
+  let gpsCityLookupKey='';
+  async function resolveGpsCity(lat,lon){
+    const valid=(v)=>typeof v==='string'&&v.trim()&&v!=='Моё местоположение';
+    try{
+      const response=await fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude='+encodeURIComponent(lat)+'&longitude='+encodeURIComponent(lon)+'&localityLanguage=ru');
+      if(response.ok){
+        const data=await response.json();
+        const label=[data.city,data.locality,data.principalSubdivision].find(valid);
+        if(label)return label;
+      }
+    }catch(e){}
+    try{
+      const response=await fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&accept-language=ru&lat='+encodeURIComponent(lat)+'&lon='+encodeURIComponent(lon));
+      if(response.ok){
+        const data=await response.json(),a=data.address||{};
+        const label=[a.city,a.town,a.village,a.municipality,a.county,a.state].find(valid);
+        if(label)return label;
+      }
+    }catch(e){}
+    return null;
+  }
+  async function updateGpsCityName(lat,lon){
+    const key=lat+','+lon;
+    if(gpsCityLookupKey===key)return;
+    gpsCityLookupKey=key;
+    const label=await resolveGpsCity(lat,lon);
+    if(!store.city||store.city.lat!==lat||store.city.lon!==lon)return;
+    store.city.label=label||'Город не определён';
+    saveStore();
+    renderHome();
+    if(!label)toast('Не удалось определить название города. Выбери город вручную.');
+  }
   function setCityGps(){
     if(!navigator.geolocation){toast('Геолокация не поддерживается');return;}
     navigator.geolocation.getCurrentPosition(position=>{
-      store.city={label:'Моё местоположение',lat:position.coords.latitude,lon:position.coords.longitude};
+      const lat=position.coords.latitude,lon=position.coords.longitude;
+      gpsCityLookupKey='';
+      store.city={label:'Определяем город…',lat,lon};
       store.forecast=null;saveStore();closeSheet();updateForecast();renderHome();
+      updateGpsCityName(lat,lon);
     },()=>toast('Геолокация не разрешена — выбери город вручную'),{enableHighAccuracy:false,timeout:12000});
   }
   function dayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -1501,6 +1546,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';t.style.transition='.24s';},1700); setTimeout(()=>t.remove(),2100);
   }
   function renderHome(){
+    if(store.city?.label==='Моё местоположение'&&Number.isFinite(store.city.lat)&&Number.isFinite(store.city.lon))updateGpsCityName(store.city.lat,store.city.lon);
     const looks=todayLooks();
     const picked=chosenDaily();
     const lead=picked||dailyLooks()[0]||looks[0]||null;
@@ -1532,12 +1578,15 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     const cat=state.filters.wardrobe;
     const items=cat==='all' ? store.wardrobe : store.wardrobe.filter(i=>GROUP[i.type]===cat || i.type===cat);
     const screen=document.getElementById('wardrobeScreen');
-    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>my clothing system</div><div class='brand'>Гардероб</div></div><div class='count'>${store.wardrobe.length} вещей</div></div>
-      <div class='chips'>${[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Слои']].map(([k,v])=>`<button class='chip ${cat===k?'active':''}' onclick='window.appAction("setWardrobeFilter","${k}")'>${v}</button>`).join('')}</div>
-      <section class='section'>${items.length ? `<div class='grid2'>${items.map(item=>`<article class='itemCard catalogProductCard' onclick='window.appAction("openOwned","${item.ownedId}")'><div class='itemVisual catalogProductVisual'><img alt='${item.name}' src='${productImage(item)}' loading='lazy' decoding='async'></div><div class='itemBody catalogProductBody'><div class='catalogProductEyebrow'>${item.source==='reference'?'STYLE OS / ОБРАЗЕЦ':(item.brand||itemTypeLabel(item))}</div><div class='catalogProductName'>${item.name}</div><div class='catalogProductFoot'><span class='catalogProductColor'><i style='background:${colorHex(item.color)}'></i>${COLORS[item.color]?.[0]||'Цвет не указан'}</span></div></div></article>`).join('')}</div>` : `<div class='card empty'><div style='font-size:38px'>⌂</div><h3 style='margin:8px 0'>Пока пусто</h3><p>Добавь первые вещи — из каталога Lamoda или вручную.</p><button class='btn dark' onclick='window.appAction("openAdd")'>Добавить вещь</button></div>`}</section><div class='fabSpacer'></div>`;
+    screen.innerHTML=`<div class='wardrobeEditorial catalogEditorial'>
+      <header class='catalogEditorialHeader'><div><div class='catalogEditorialKicker'>STYLE OS / MY WARDROBE</div><h1>Гардероб</h1></div><span class='catalogEditorialCount'>${store.wardrobe.length} вещей</span></header>
+      <div class='wardrobeEditorialChips catalogEditorialChips chips'>${[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Слои']].map(([k,v])=>`<button class='chip ${cat===k?'active':''}' onclick='window.appAction("setWardrobeFilter","${k}")'>${v}</button>`).join('')}</div>
+      ${items.length?`<div class='catalogEditorialGrid grid2'>${items.map(item=>`<article class='catalogEditorialItem' role='button' tabindex='0' onclick='window.appAction("openOwned","${item.ownedId}")' onkeydown='if(event.key==="Enter"||event.key===" "){event.preventDefault();window.appAction("openOwned","${item.ownedId}")}'><div class='catalogEditorialVisual'><img alt='${escapeHtml(item.name)}' src='${productImage(item)}' loading='lazy' decoding='async'></div><div class='catalogEditorialDetails'><div class='catalogEditorialName'>${escapeHtml(item.name)}</div><div class='catalogEditorialSeason'>${catalogSeasonLabel(item.season)}</div><div class='catalogEditorialColor'><i style='background:${colorHex(item.color)}'></i><span>${COLORS[item.color]?.[0]||'Цвет не указан'}</span></div></div></article>`).join('')}</div>`:`<div class='card empty wardrobeEditorialEmpty'><h3>Пока пусто</h3><p>Добавь первые вещи — из каталога или вручную.</p><button class='btn dark' onclick='window.appAction("openAdd")'>Добавить вещь</button></div>`}
+      <div class='fabSpacer'></div>
+    </div>`;
     document.getElementById('floatingAdd').classList.remove('hidden');
   }
-  function outfitDisplayTitle(look){const titles={minimal:'Городская база',dark_minimal:'Тихий минимализм',smart:'Современный ритм',classic:'Деловая классика',oldmoney:'Сдержанный характер',utility:'Городская практичность',soft_tailoring:'Спокойная элегантность',casual:'На каждый день',summer_relaxed:'Лёгкий силуэт',winter_layered:'Тёплый городской образ'};return titles[look?.style]||look?.title||'Готовый образ';}
+    function outfitDisplayTitle(look){const titles={minimal:'Городская база',dark_minimal:'Тихий минимализм',smart:'Современный ритм',classic:'Деловая классика',oldmoney:'Сдержанный характер',utility:'Городская практичность',soft_tailoring:'Спокойная элегантность',casual:'На каждый день',summer_relaxed:'Лёгкий силуэт',winter_layered:'Тёплый городской образ'};return titles[look?.style]||look?.title||'Готовый образ';}
   function outfitVisibleLooks(){return (state.outfitMode==='anchor'?state.anchorLooks||[]:todayLooks()).slice(0,10);}
   function switchLookbook(direction,targetIndex){
     const count=outfitVisibleLooks().length;
