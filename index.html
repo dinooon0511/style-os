@@ -497,6 +497,43 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .lookbookFilterOwned span{display:grid;gap:5px}.lookbookFilterOwned strong{font-size:13px}.lookbookFilterOwned small{color:#858b82;font-size:11px}
 .lookbookFilterOwned input{width:21px;height:21px;accent-color:#303a2f}
 @media(max-width:370px){.lookbookHeader{padding:0 13px 12px}.lookbookHeader h1{font-size:30px}.lookbookModes button{font-size:11px;padding:9px 10px}.lookbookFilterSummary{font-size:10px}.lookbookDetails{padding:19px 13px 15px}.lookbookPhoto{height:295px}}
+
+/* Editorial outfit details: photo-led layout and tappable garment gallery */
+.sheet.lookDetailSheet{padding:12px 12px 0;background:#faf9f6;max-height:90dvh;max-height:90vh;border-radius:28px 28px 0 0}
+.lookDetailSheet .sheetHandle{margin:3px auto 12px}
+.lookDetailSheet .sheetClose{background:#faf9f6;color:#273028;box-shadow:0 3px 16px #0002}
+.lookDetailBack{padding:0 10px 11px}
+.lookDetailBack button{border:0;background:none;font:500 12px Helvetica,Arial,sans-serif;color:#404b3d}
+.lookDetailHero{min-height:clamp(265px,78vw,370px);border-radius:22px;position:relative;background-size:cover;background-position:center 40%;overflow:hidden}
+.lookDetailHeroCopy{position:absolute;bottom:23px;left:22px;right:22px;color:#fff;text-shadow:0 2px 16px #0005}
+.lookDetailOccasion{display:inline-block;padding:8px 11px;border-radius:14px;background:#f5f4f047;backdrop-filter:blur(10px);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;font-weight:600}
+.lookDetailHeroCopy h2{font:600 clamp(30px,9vw,42px)/1.02 Helvetica,Arial,sans-serif;letter-spacing:-1.5px;margin:13px 0 0;max-width:320px}
+.lookDetailBody{padding:22px 9px 7px}
+.lookDetailBody h3{font:650 clamp(22px,6vw,27px)/1.15 Helvetica,Arial,sans-serif;letter-spacing:-.7px;margin:0 0 7px;color:#1e261d}
+.lookDetailReason{font-size:13px;line-height:1.5;color:#83877e;margin:0 0 23px}
+.lookDetailWarning{color:#9b7446;font-size:12px;line-height:1.45;margin:-10px 0 17px}
+.lookDetailProducts{display:grid;grid-template-columns:repeat(var(--look-cols,4),minmax(0,1fr));gap:10px;margin:0 0 22px}
+.lookDetailProduct{min-width:0;text-align:center;border:0;background:none;padding:0;color:#283028;font:inherit;cursor:pointer}
+.lookDetailProductPhoto{display:block;position:relative;height:clamp(84px,23vw,130px);border-radius:13px;background:#f1f0ed;margin-bottom:7px}
+.lookDetailProductPhoto img{width:100%;height:100%;object-fit:contain;display:block;padding:5px;box-sizing:border-box}
+.lookDetailStatus{display:flex;align-items:center;justify-content:center;position:absolute;right:4px;top:4px;width:23px;height:23px;border-radius:50%;font:bold 14px/1 Helvetica,Arial,sans-serif;box-shadow:0 1px 4px #0002}
+.lookDetailStatus.owned{background:#788f77;color:#fff}
+.lookDetailStatus.need{background:#d7c8b0;color:#283027;font-size:17px}
+.lookDetailProduct strong{display:block;font-size:11px;line-height:1.22;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lookDetailProduct small{display:block;font-size:10px;color:#91938a;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lookDetailInventory{border-radius:17px;background:#ecf0e9;padding:14px 15px}
+.lookDetailInventoryHead{display:flex;align-items:center;gap:10px;color:#263126;font-size:13px;font-weight:650}
+.lookDetailInventoryIcon{width:27px;height:27px;border-radius:50%;background:#455d46;color:white;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.lookDetailTrack{height:6px;border-radius:999px;background:#d1d6cd;overflow:hidden;margin:12px 0 0 37px}
+.lookDetailTrack>span{display:block;height:100%;background:#7f987e;border-radius:inherit}
+.lookDetailRating{display:flex;align-items:center;gap:7px;margin-top:15px;font-size:11px;color:#8b8e86}
+.lookDetailRating span{margin-right:auto}
+.lookDetailRating button{border:1px solid #ddded7;background:#fff;border-radius:999px;padding:6px 15px;font-size:11px;color:#4a5447}
+.lookDetailActions{position:sticky;bottom:0;display:grid;grid-template-columns:1.2fr 1fr;gap:9px;padding:12px 6px calc(14px + env(safe-area-inset-bottom));background:#faf9f6;z-index:2}
+.lookDetailActions button{min-height:48px;border:0;border-radius:15px;font:600 13px Helvetica,Arial,sans-serif}
+.lookDetailSave{background:#202920;color:#fff}
+.lookDetailShop{background:#efeee9;color:#202920}
+@media(max-width:360px){.lookDetailProducts{gap:5px}.lookDetailProductPhoto{height:80px}.lookDetailProduct strong{font-size:10px}}
 </style>
 </head>
 <body>
@@ -1258,13 +1295,30 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     if(kind==='look'){
       const look=payload;
       const missing=look.missing.length;
-      html=`<div class='sheetHandle'></div>${look.anchorSource?`<div class='sheetSection'><button class='btn line small' onclick='window.appAction("backToAnchorResults")'>← К пяти образам</button></div>`:''}<div class='hero small' style='--hero-image:url(${lookPhoto(look)})'><span class='glassTag'>${getOccLabel(look.occasion)}</span><h2>${look.title}</h2><p>${look.reason}</p></div>
-      <div class='sheetSection'><h3 class='sectionTitle' style='margin-bottom:8px'>Почему сочетается</h3><p class='helper'>${(look.explanations||[look.reason]).join(' ')}</p>${(look.warnings||[]).length?`<p class='helper' style='color:#916b39'>${look.warnings.join(' ')}</p>`:''}</div><div class='sheetSection'><div class='sectionHead'><div><h3 class='sectionTitle'>Состав образа</h3><div class='sectionHint'>${missing ? 'Не хватает вещей: '+missing : 'Все вещи уже в гардеробе'}</div></div></div>
-      <div class='lookItems'>${look.parts.map((p,i)=>`<button type='button' class='lookItem' onclick='window.appAction("openLookPart",${i})'><span class='lookItemImage'><img src='${productImage(p)}' alt=''></span><span class='lookItemInfo'><strong>${itemTypeLabel(p)}</strong><small>${p.brand ? p.brand+' · ' : ''}${p.name}</small><small class='lookItemDetail'>${p.missing?'Посмотреть товар и артикул':'Открыть карточку вещи'} →</small></span><span class='${p.missing?'stateNeed':'stateGood'}'>${p.missing?'Докупить':'Есть'}</span></button>`).join('')}</div></div>
-      <div class='sheetSection'><div class='sectionHint'>Оцени рекомендацию — следующие подборки учтут твой выбор</div><div style='display:flex;gap:8px;margin-top:10px'><button class='btn line small' onclick='window.appAction("rateLook","like")'>Нравится</button><button class='btn line small' onclick='window.appAction("rateLook","dislike")'>Не нравится</button></div></div><div class='sheetFooter'>
-        <button class='btn line' onclick='window.appAction("saveLook","${look.id}")'>Сохранить</button>
-        <button class='btn dark' onclick='window.appAction("shoppingFromLook","${look.id}")'>Что докупить</button>
-      </div>`;
+      const count=look.parts.length;
+      const owned=count-missing;
+      const reason=escapeHtml((look.explanations||[look.reason]).join(' ').replace(/\\s+/g,' ').slice(0,190));
+      const title=escapeHtml(outfitDisplayTitle(look));
+      html=`<div class='sheetHandle'></div>
+        ${look.anchorSource?`<div class='lookDetailBack'><button type='button' onclick='window.appAction("backToAnchorResults")'>← К пяти образам</button></div>`:''}
+        <div class='lookDetailHero' style='background-image:linear-gradient(0deg,rgba(10,14,10,.68),transparent 65%),url("${lookPhoto(look)}")'>
+          <div class='lookDetailHeroCopy'><span class='lookDetailOccasion'>${escapeHtml(getOccLabel(look.occasion))}</span><h2>${title}</h2></div>
+        </div>
+        <section class='lookDetailBody'>
+          <h3>Почему сочетается</h3>
+          <p class='lookDetailReason'>${reason}</p>
+          ${(look.warnings||[]).length?`<p class='lookDetailWarning'>${escapeHtml(look.warnings.join(' '))}</p>`:''}
+          <div class='lookDetailProducts' style='--look-cols:${Math.min(4,count)}'>
+            ${look.parts.map((p,i)=>`<button type='button' class='lookDetailProduct' aria-label='${escapeHtml(itemTypeLabel(p))}. ${p.missing?'Нужно докупить':'Есть в гардеробе'}. Открыть карточку вещи' onclick='window.appAction("openLookPart",${i})'>
+              <span class='lookDetailProductPhoto'><img src='${productImage(p)}' alt='${escapeHtml(itemTypeLabel(p))}' loading='lazy'><span class='lookDetailStatus ${p.missing?'need':'owned'}' aria-hidden='true'>${p.missing?'−':'✓'}</span></span>
+              <strong>${escapeHtml(itemTypeLabel(p))}</strong>
+              <small>${escapeHtml(COLORS[p.color]?.[0]||p.name||'')}</small>
+            </button>`).join('')}
+          </div>
+          <div class='lookDetailInventory'><div class='lookDetailInventoryHead'><span class='lookDetailInventoryIcon' aria-hidden='true'>${missing?'−':'✓'}</span><span>${missing?`${owned} ${owned===1?'вещь':owned>=2&&owned<=4?'вещи':'вещей'} в гардеробе · ${missing} докупить`:'Все вещи есть в гардеробе'}</span></div><div class='lookDetailTrack' role='progressbar' aria-valuemin='0' aria-valuemax='${count}' aria-valuenow='${owned}' aria-label='Вещи в гардеробе'><span style='width:${count?Math.round(owned/count*100):0}%'></span></div></div>
+          <div class='lookDetailRating' aria-label='Оценить рекомендацию'><span>Подходит тебе?</span><button type='button' onclick='window.appAction("rateLook","like")'>Да</button><button type='button' onclick='window.appAction("rateLook","dislike")'>Нет</button></div>
+        </section>
+        <div class='lookDetailActions'><button type='button' class='lookDetailSave' onclick='window.appAction("saveLook","${look.id}")'>Сохранить образ</button><button type='button' class='lookDetailShop' onclick='window.appAction("shoppingFromLook","${look.id}")'>Что докупить</button></div>`;
     }
     if(kind==='addItem'){
       const q=(state.addQuery||'').toLowerCase().trim(), cat=state.addCategory||'all';
@@ -1304,6 +1358,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
       </div>
       <div class='sheetFooter'><button class='btn line' onclick='window.appAction("openAdd")'>Назад</button><button class='btn dark' onclick='window.appAction("saveManual")'>Сохранить вещь</button></div>`;
     }
+    sheet.classList.toggle('lookDetailSheet',kind==='look');
     sheet.innerHTML=html+'<button type="button" class="sheetClose" aria-label="Закрыть" onclick="window.appAction(&quot;closeSheet&quot;)">×</button>';
     if(kind==='daily')initDailySwipe();
     document.getElementById('sheetBackdrop').classList.add('show');
