@@ -700,6 +700,21 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .dailyEditorialFinalChoose{background:#29392b;color:#fff;border:0;border-radius:11px;font:600 11px/1 Helvetica,Arial,sans-serif;padding:12px;cursor:pointer}
 @media(max-height:720px){.dailyEditorialScreen{padding-top:15px}.dailyEditorialHeader{margin-bottom:10px}.dailyEditorialHeader h2{margin-bottom:8px}.dailyEditorialPicture{height:34dvh}.dailyEditorialInfo{padding:10px 12px}.dailyEditorialPiece{max-width:75px}.dailyEditorialVoteActions{padding-top:6px}.dailyEditorialVoteActions button span{width:48px;height:48px}}
 
+
+/* Profile identity card: approved pure-black portrait with matte charcoal actions */
+.profileHero.profileHeroBlack{background:#101010;box-shadow:none;border:0;border-radius:28px;padding:23px 17px 19px;text-align:center;color:#fff;font-family:Helvetica,Arial,sans-serif}
+.profileHeroBlack .profilePortraitRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(92px,112px) minmax(0,1fr);align-items:center;gap:4px;max-width:390px;margin:0 auto 11px}
+.profileHeroBlack .profileAvatar{width:clamp(92px,26vw,112px);height:clamp(92px,26vw,112px);margin:0 auto;border:2px solid #f4f4f1;box-shadow:0 0 0 3px #101010,0 0 0 4px #a5a6a1;background:#292e2a;color:#f4f4f1}
+.profileHeroBlack .profilePortraitMetric{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.profileHeroBlack .profilePortraitMetric strong{font:600 clamp(24px,7vw,30px)/1 Helvetica,Arial,sans-serif;letter-spacing:-.5px;color:#fff}
+.profileHeroBlack .profilePortraitMetric small{font:400 clamp(9px,2.6vw,11px)/1.3 Helvetica,Arial,sans-serif;color:#b2b3af;max-width:100%;overflow-wrap:anywhere}
+.profileHeroBlack h2{font:500 clamp(27px,8vw,34px)/1.05 Helvetica,Arial,sans-serif;letter-spacing:-.6px;margin:12px 0 5px}
+.profileHeroBlack p{font:400 12px/1.3 Helvetica,Arial,sans-serif;color:#a7a8a5;margin:0}
+.profileHeroBlack .profileActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:21px}
+.profileHeroBlack .profileActions button{min-height:42px;min-width:0;padding:10px 8px;border:1px solid rgba(225,227,224,.49);border-radius:999px;color:#f5f5f3;background:rgba(118,121,119,.25);backdrop-filter:blur(16px) saturate(70%);-webkit-backdrop-filter:blur(16px) saturate(70%);box-shadow:inset 0 1px 0 rgba(255,255,255,.07);font:500 clamp(11px,3.1vw,13px)/1.15 Helvetica,Arial,sans-serif;cursor:pointer}
+.profileHeroBlack .profileActions button:active{background:rgba(147,150,148,.33)}
+@media(max-width:355px){.profileHero.profileHeroBlack{padding-left:11px;padding-right:11px}.profileHeroBlack .profilePortraitRow{grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr)}}
+
 </style>
 </head>
 <body>
@@ -1802,12 +1817,16 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     const p=store.profile;
     const screen=document.getElementById('profileScreen');
     screen.innerHTML=`<div class='topbar'><div><div class='subtle'>STYLE OS / ACCOUNT</div><div class='brand'>Мой профиль</div></div><button class='btn line small' onclick='window.styleAuth.logout()'>Выйти</button></div>
-      <section class='profileHero'>
-        <button class='profileAvatar' aria-label='Добавить фото' onclick='window.appAction("chooseAvatar")'>${avatarMarkup()}</button>
+      <section class='profileHero profileHeroBlack'>
+        <div class='profilePortraitRow'>
+          <div class='profilePortraitMetric'><strong>${store.wardrobe.length}</strong><small>вещей в гардеробе</small></div>
+          <button class='profileAvatar' aria-label='Изменить фото профиля' onclick='window.appAction("chooseAvatar")'>${avatarMarkup()}</button>
+          <div class='profilePortraitMetric'><strong>${store.savedLooks.length}</strong><small>сохранённых образов</small></div>
+        </div>
         <input type='file' id='profileAvatarFile' accept='image/*' hidden onchange='window.uploadStyleAvatar(this.files[0])'>
-        <h2>${escapeHtml(p.name||'Пользователь')}</h2><p>Твой персональный стиль, собранный в одном месте</p>
-        <div class='profileStats'><div><strong>${store.wardrobe.length}</strong><small>вещей в гардеробе</small></div><div><strong>${store.savedLooks.length}</strong><small>сохранённых образов</small></div></div>
-        <div class='profileActions'><button class='btn line' onclick='window.appAction("editProfile")'>Редактировать</button><button class='btn line' onclick='window.appAction("chooseAvatar")'>Изменить фото</button></div>
+        <h2>${escapeHtml(p.name||'Пользователь')}</h2>
+        <p>Твой персональный стиль</p>
+        <div class='profileActions'><button type='button' onclick='window.appAction("editProfile")'>Редактировать</button><button type='button' onclick='window.appAction("chooseAvatar")'>Изменить фото</button></div>
       </section>
       <section class='profilePanel'><div class='sectionHead'><div><h2 class='sectionTitle'>Моя коллекция</h2><div class='sectionHint'>Всё, что делает стиль твоим</div></div></div>
         <div class='listRow' onclick='window.appAction("openSaved")'><div><strong>♡ Сохранённые образы</strong><div class='helper'>${store.savedLooks.length} сохранено · открыть подборку</div></div><span>›</span></div>
