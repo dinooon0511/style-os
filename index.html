@@ -1532,6 +1532,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     }
     if(kind==='look'){
       const look=payload;
+      const isDailySelection=chosenDaily()?.identity===look.identity;
       const missing=look.missing.length;
       const count=look.parts.length;
       const owned=count-missing;
@@ -1556,7 +1557,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
           <div class='lookDetailInventory'><div class='lookDetailInventoryHead'><span class='lookDetailInventoryIcon' aria-hidden='true'>${missing?'−':'✓'}</span><span>${missing?`${owned} ${owned===1?'вещь':owned>=2&&owned<=4?'вещи':'вещей'} в гардеробе · ${missing} докупить`:'Все вещи есть в гардеробе'}</span></div><div class='lookDetailTrack' role='progressbar' aria-valuemin='0' aria-valuemax='${count}' aria-valuenow='${owned}' aria-label='Вещи в гардеробе'><span style='width:${count?Math.round(owned/count*100):0}%'></span></div></div>
           <div class='lookDetailRating' aria-label='Оценить рекомендацию'><span>Подходит тебе?</span><button type='button' onclick='window.appAction("rateLook","like")'>Да</button><button type='button' onclick='window.appAction("rateLook","dislike")'>Нет</button></div>
         </section>
-        <div class='lookDetailActions'><button type='button' class='lookDetailSave' onclick='window.appAction("saveLook","${look.id}")'>Сохранить образ</button><button type='button' class='lookDetailShop' onclick='window.appAction("shoppingFromLook","${look.id}")'>Что докупить</button></div>`;
+        <div class='lookDetailActions'><button type='button' class='lookDetailSave' onclick='window.appAction("saveLook","${look.id}")'>Сохранить образ</button><button type='button' class='lookDetailShop' onclick='window.appAction("${isDailySelection?'rechooseDaily':'shoppingFromLook'}"${isDailySelection?'':',"'+look.id+'"'})'>${isDailySelection?'Выбрать образ заново':'Что докупить'}</button></div>`;
     }
     if(kind==='addItem'){
       const q=(state.addQuery||'').toLowerCase().trim(), cat=state.addCategory||'all';
