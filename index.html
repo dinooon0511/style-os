@@ -570,6 +570,32 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .itemDetailSheet .itemInfoGlass .listRow{background:rgba(255,255,255,.31);border-color:rgba(255,255,255,.43)}
 .sheetClose{display:flex;align-items:center;justify-content:center;padding:0;line-height:1;box-sizing:border-box}
 .sheetClose svg{display:block;flex:none}
+
+/* Catalog: STYLE OS editorial shelf — only catalog screen */
+.catalogEditorial{padding:0 16px 26px;max-width:640px;margin:0 auto;color:#20241f}
+.catalogEditorialHeader{display:flex;align-items:end;justify-content:space-between;gap:10px;padding:10px 0 19px}
+.catalogEditorialKicker{font:600 10px/1.3 Helvetica,Arial,sans-serif;letter-spacing:.19em;color:#81837d;margin-bottom:9px}
+.catalogEditorialHeader h1{font:500 clamp(33px,8vw,43px)/1 Helvetica,Arial,sans-serif;letter-spacing:-1.9px;margin:0}
+.catalogEditorialCount{font:400 12px/1.2 Helvetica,Arial,sans-serif;color:#787b73;white-space:nowrap;padding-bottom:3px}
+.catalogEditorialHero{position:relative;height:215px;border-radius:20px;background-size:cover;background-position:center 45%;overflow:hidden;display:flex;align-items:end;padding:17px 17px 17px;margin-bottom:13px}
+.catalogEditorialHero h2{font:600 clamp(21px,5.4vw,26px)/1.02 Helvetica,Arial,sans-serif;letter-spacing:-.7px;color:#fff;margin:0;text-shadow:0 1px 10px rgba(0,0,0,.18)}
+.catalogEditorialSearch.search{margin:0 0 14px;border-radius:17px;background:#efefeb;border:0;box-shadow:none;min-height:49px}
+.catalogEditorialSearch input{font:400 14px/1.3 Helvetica,Arial,sans-serif}
+.catalogEditorialChips.chips{display:flex;flex-wrap:nowrap;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:3px;margin-bottom:18px}
+.catalogEditorialChips.chips::-webkit-scrollbar{display:none}
+.catalogEditorialChips .chip{white-space:nowrap;flex:none;border-radius:13px;background:#edede9;color:#3b3e38;border:0;box-shadow:none;min-height:37px;padding:9px 13px;font:600 12px/1 Helvetica,Arial,sans-serif}
+.catalogEditorialChips .chip.active{background:#232a23;color:#fff}
+.catalogEditorialGrid.grid2{gap:13px 11px;align-items:start}
+.catalogEditorialItem{min-width:0;cursor:pointer;outline-offset:3px}
+.catalogEditorialVisual{width:100%;aspect-ratio:1/1.1;border-radius:17px;background:#f0efeb;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.catalogEditorialVisual img{width:100%;height:100%;object-fit:contain;display:block}
+.catalogEditorialDetails{padding:10px 3px 4px;display:flex;flex-direction:column;gap:5px}
+.catalogEditorialName{font:600 14px/1.22 Helvetica,Arial,sans-serif;letter-spacing:-.025em;color:#252924;overflow-wrap:anywhere}
+.catalogEditorialSeason{font:400 12px/1.25 Helvetica,Arial,sans-serif;color:#878982}
+.catalogEditorialColor{display:flex;align-items:center;gap:7px;color:#777b74;font:400 12px/1.25 Helvetica,Arial,sans-serif}
+.catalogEditorialColor i{width:10px;height:10px;flex:0 0 10px;border-radius:50%;border:1px solid rgba(66,68,61,.24);display:block}
+@media(max-width:370px){.catalogEditorial{padding:0 12px 26px}.catalogEditorialHero{height:195px}.catalogEditorialName{font-size:13px}.catalogEditorialChips .chip{padding:9px 11px}}
+
 </style>
 </head>
 <body>
@@ -1577,16 +1603,21 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
  document.getElementById('floatingAdd').classList.add('hidden');
  initLookbookSwipe();
 }
+  function catalogSeasonLabel(season){
+    return ({all:'Все сезоны',warm:'Весна · Лето',mild:'Весна · Осень',cold:'Осень · Зима',hot:'Лето'})[season]||'Все сезоны';
+  }
   function renderCatalog(){
     const cat=state.filters.catalog, q=state.filters.catalogSearch.toLowerCase();
     let list=state.catalog.filter(item=> !q || `${item.brand} ${item.name} ${item.sku}`.toLowerCase().includes(q));
     if(cat!=='all') list=list.filter(item=> GROUP[item.type]===cat || item.type===cat);
     const screen=document.getElementById('catalogScreen');
-    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>curated from lamoda</div><div class='brand'>Каталог</div></div><div class='count'>${state.catalog.length} вещей</div></div>
-      <div class='photoBanner'><span class='glassTag'>Lamoda base</span><h3 style='font:600 28px/1.02 Helvetica,Arial,sans-serif; margin:8px 0 2px'>Быстрое наполнение гардероба</h3><p style='margin:0; color:rgba(246,245,241,.9)'>Чтобы пользователь не загружал свои вещи вручную, можно выбрать похожие из готового каталога.</p></div>
-      <section class='section'><div class='search'><span>⌕</span><input value='${state.filters.catalogSearch}' oninput='window.appAction("searchCatalog", this.value)' placeholder='Поиск по бренду, вещи или артикулу'></div></section>
-      <section class='section'><div class='chips'>${[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Слои']].map(([k,v])=>`<button class='chip ${cat===k?'active':''}' onclick='window.appAction("setCatalogFilter","${k}")'>${v}</button>`).join('')}</div></section>
-      <section class='section'><div class='grid2'>${list.map(item=>`<article class='itemCard catalogProductCard' onclick='window.appAction("openProduct","${item.id}")'><div class='itemVisual catalogProductVisual'><img alt='${item.name}' src='${productImage(item)}' loading='lazy' decoding='async'></div><div class='itemBody catalogProductBody'><div class='catalogProductEyebrow'>${item.source==='reference'?'STYLE OS / ОБРАЗЕЦ':item.brand}</div><div class='catalogProductName'>${item.name}</div><div class='catalogProductFoot'><span class='catalogProductColor'><i style='background:${colorHex(item.color)}'></i>${COLORS[item.color]?.[0]||'Цвет не указан'}</span></div>${item.source!=='reference' && item.price!=null? `<div class='catalogProductPrice'>${formatPrice(item.price)}</div>`:''}</div></article>`).join('')}</div></section>`;
+    screen.innerHTML=`<div class='catalogEditorial'>
+      <header class='catalogEditorialHeader'><div><div class='catalogEditorialKicker'>STYLE OS / EDITED SELECTION</div><h1>Каталог</h1></div><span class='catalogEditorialCount'>${state.catalog.length} вещей</span></header>
+      <div class='catalogEditorialHero' style='background-image:linear-gradient(90deg,rgba(16,19,16,.45),rgba(16,19,16,.03) 80%),url("${catalogHero}")'><h2>Вещи,<br>которые<br>сочетаются</h2></div>
+      <div class='catalogEditorialSearch search'><span aria-hidden='true'>⌕</span><input value='${escapeHtml(state.filters.catalogSearch)}' oninput='window.appAction("searchCatalog", this.value)' placeholder='Поиск по вещам' aria-label='Поиск по вещам'></div>
+      <div class='catalogEditorialChips chips'>${[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Слои']].map(([k,v])=>`<button class='chip ${cat===k?'active':''}' onclick='window.appAction("setCatalogFilter","${k}")'>${v}</button>`).join('')}</div>
+      <div class='catalogEditorialGrid grid2'>${list.map(item=>`<article class='catalogEditorialItem' onclick='window.appAction("openProduct","${item.id}")' role='button' tabindex='0' onkeydown='if(event.key==="Enter"||event.key===" "){event.preventDefault();window.appAction("openProduct","${item.id}")}'><div class='catalogEditorialVisual'><img alt='${escapeHtml(item.name)}' src='${productImage(item)}' loading='lazy' decoding='async'></div><div class='catalogEditorialDetails'><div class='catalogEditorialName'>${escapeHtml(item.name)}</div><div class='catalogEditorialSeason'>${catalogSeasonLabel(item.season)}</div><div class='catalogEditorialColor'><i style='background:${colorHex(item.color)}'></i><span>${COLORS[item.color]?.[0]||'Цвет не указан'}</span></div></div></article>`).join('')}</div>
+    </div>`;
     document.getElementById('floatingAdd').classList.add('hidden');
   }
   function renderProfile(){
