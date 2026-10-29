@@ -572,7 +572,8 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .sheetClose svg{display:block;flex:none}
 
 /* Catalog: STYLE OS editorial shelf — only catalog screen */
-.catalogEditorial{padding:0 16px 26px;max-width:640px;margin:0 auto;color:#20241f}
+#catalogScreen.screen{padding-left:8px;padding-right:8px}
+.catalogEditorial{padding:0 4px 26px;max-width:640px;margin:0 auto;color:#20241f}
 .catalogEditorialHeader{display:flex;align-items:end;justify-content:space-between;gap:10px;padding:10px 0 19px}
 .catalogEditorialKicker{font:600 10px/1.3 Helvetica,Arial,sans-serif;letter-spacing:.19em;color:#81837d;margin-bottom:9px}
 .catalogEditorialHeader h1{font:500 clamp(33px,8vw,43px)/1 Helvetica,Arial,sans-serif;letter-spacing:-1.9px;margin:0}
@@ -580,6 +581,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .catalogEditorialHero{position:relative;height:215px;border-radius:20px;background-size:cover;background-position:center 45%;overflow:hidden;display:flex;align-items:end;padding:17px 17px 17px;margin-bottom:13px}
 .catalogEditorialHero h2{font:600 clamp(21px,5.4vw,26px)/1.02 Helvetica,Arial,sans-serif;letter-spacing:-.7px;color:#fff;margin:0;text-shadow:0 1px 10px rgba(0,0,0,.18)}
 .catalogEditorialSearch.search{margin:0 0 14px;border-radius:17px;background:#efefeb;border:0;box-shadow:none;min-height:49px}
+.catalogEditorialSearch.search > span{font:400 27px/1 Helvetica,Arial,sans-serif;flex:0 0 28px;display:flex;align-items:center;justify-content:center;color:#70766e}
 .catalogEditorialSearch input{font:400 14px/1.3 Helvetica,Arial,sans-serif}
 .catalogEditorialChips.chips{display:flex;flex-wrap:nowrap;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:3px;margin-bottom:18px}
 .catalogEditorialChips.chips::-webkit-scrollbar{display:none}
@@ -594,7 +596,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .catalogEditorialSeason{font:400 12px/1.25 Helvetica,Arial,sans-serif;color:#878982}
 .catalogEditorialColor{display:flex;align-items:center;gap:7px;color:#777b74;font:400 12px/1.25 Helvetica,Arial,sans-serif}
 .catalogEditorialColor i{width:10px;height:10px;flex:0 0 10px;border-radius:50%;border:1px solid rgba(66,68,61,.24);display:block}
-@media(max-width:370px){.catalogEditorial{padding:0 12px 26px}.catalogEditorialHero{height:195px}.catalogEditorialName{font-size:13px}.catalogEditorialChips .chip{padding:9px 11px}}
+@media(max-width:370px){.catalogEditorial{padding:0 4px 26px}.catalogEditorialHero{height:195px}.catalogEditorialName{font-size:13px}.catalogEditorialChips .chip{padding:9px 11px}}
 
 </style>
 </head>
