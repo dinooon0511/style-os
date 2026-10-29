@@ -598,6 +598,45 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .catalogEditorialColor i{width:10px;height:10px;flex:0 0 10px;border-radius:50%;border:1px solid rgba(66,68,61,.24);display:block}
 @media(max-width:370px){.catalogEditorial{padding:0 4px 26px}.catalogEditorialHero{height:195px}.catalogEditorialName{font-size:13px}.catalogEditorialChips .chip{padding:9px 11px}}
 
+
+/* STYLE OS home editorial / refined daily focus */
+#homeScreen.screen{padding-left:10px;padding-right:10px}
+.homeEditorial{max-width:640px;margin:0 auto;padding:0 2px 28px;font-family:Helvetica,Arial,sans-serif;color:#222721}
+.homeEditorialHeader{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:18px;padding:3px 3px 0}
+.homeEditorialKicker{font:600 9px/1.2 Helvetica,Arial,sans-serif;letter-spacing:.17em;color:#85877f;margin-bottom:6px}
+.homeEditorialHeader h1{font:400 clamp(30px,8vw,38px)/1 Helvetica,Arial,sans-serif;letter-spacing:.11em;margin:0}
+.homeEditorialHeaderRight{display:flex;gap:10px;align-items:center}
+.homeEditorialWeather{border:0;background:transparent;text-align:right;padding:3px;color:#242922;cursor:pointer;display:flex;flex-direction:column;gap:4px;font:400 12px/1.2 Helvetica,Arial,sans-serif}
+.homeEditorialWeather small{font:400 11px/1.2 Helvetica,Arial,sans-serif;color:#73786f}
+.homeEditorialHeader .avatar{width:38px;height:38px;flex:none}
+.homeEditorialFeatured{overflow:hidden;border-radius:24px;background:rgba(255,255,255,.83);box-shadow:0 6px 24px rgba(30,34,29,.055)}
+.homeEditorialPhoto{height:clamp(270px,83vw,390px);background-position:center 44%;background-size:cover;position:relative;padding:16px;display:flex;align-items:start}
+.homeEditorialPhotoTag{padding:10px 13px;border-radius:999px;background:rgba(40,44,39,.51);color:#fff;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font:600 10px/1 Helvetica,Arial,sans-serif;letter-spacing:.13em}
+.homeEditorialFeatureBody{padding:16px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+.homeEditorialFeatureCopy{min-width:0;flex:1}
+.homeEditorialFeatureCopy h2{font:600 clamp(21px,5.6vw,28px)/1.1 Helvetica,Arial,sans-serif;letter-spacing:-.6px;margin:0 0 5px}
+.homeEditorialFeatureCopy p{margin:0;color:#777a72;font:400 12px/1.35 Helvetica,Arial,sans-serif}
+.homeEditorialMainAction{border:0;border-radius:16px;background:#242b24;color:#fff;padding:13px 12px;font:600 12px/1.25 Helvetica,Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:9px;min-width:125px;cursor:pointer;text-align:left}
+.homeEditorialMainAction span{font-size:18px;font-weight:400}
+.homeEditorialQuick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}
+.homeEditorialQuickItem{background:rgba(255,255,255,.76);border:1px solid rgba(255,255,255,.8);border-radius:18px;padding:13px 9px;display:flex;flex-direction:column;gap:9px;min-width:0;position:relative;cursor:pointer;text-align:left;color:#20251f}
+.homeEditorialQuickIcon{width:33px;height:33px;border-radius:50%;display:grid;place-items:center;background:#f0efeb;font:500 20px/1 Helvetica,Arial,sans-serif}
+.homeEditorialQuickItem strong{display:block;font:600 12px/1.18 Helvetica,Arial,sans-serif}
+.homeEditorialQuickItem small{display:block;margin-top:5px;color:#85877f;font:400 10px/1.2 Helvetica,Arial,sans-serif}
+.homeEditorialQuickItem i{position:absolute;right:9px;top:15px;font:400 18px/1 Helvetica,Arial,sans-serif;color:#757a71;font-style:normal}
+.homeEditorialSection{margin-top:23px}
+.homeEditorialSectionHeading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.homeEditorialSectionHeading h2{font:600 clamp(22px,6vw,27px)/1.1 Helvetica,Arial,sans-serif;letter-spacing:-.8px;margin:0}
+.homeEditorialSectionHeading button{background:transparent;border:0;font-size:26px;line-height:1;cursor:pointer;color:#333b32;padding:2px 6px}
+.homeEditorialSuggestions,.homeEditorialCollections{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:3px}
+.homeEditorialSuggestions::-webkit-scrollbar,.homeEditorialCollections::-webkit-scrollbar{display:none}
+.homeEditorialSuggestion,.homeEditorialCollection{flex:0 0 48%;min-width:0;aspect-ratio:1.05;background-size:cover;background-position:center;border:0;border-radius:19px;overflow:hidden;color:#fff;scroll-snap-align:start;text-align:left;padding:13px;display:flex;flex-direction:column;justify-content:end;gap:4px}
+.homeEditorialSuggestion{cursor:pointer}
+.homeEditorialSuggestion span,.homeEditorialCollection span{font:600 15px/1.1 Helvetica,Arial,sans-serif}
+.homeEditorialSuggestion small{font:400 11px/1.25 Helvetica,Arial,sans-serif;color:rgba(255,255,255,.88)}
+.homeEditorialCollection{flex-basis:45%;aspect-ratio:1/1.12}
+@media(max-width:370px){.homeEditorialHeader h1{font-size:28px}.homeEditorialFeatureBody{padding:12px}.homeEditorialMainAction{min-width:108px;padding:11px 9px;font-size:11px}.homeEditorialQuickItem{padding:10px 7px}.homeEditorialQuickItem strong{font-size:11px}}
+
 </style>
 </head>
 <body>
@@ -1464,46 +1503,30 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
   function renderHome(){
     const looks=todayLooks();
     const picked=chosenDaily();
-    const lead=picked||dailyLooks()[0];
-    const wardrobeCount=store.wardrobe.length;
-    const savedCount=store.savedLooks.length;
+    const lead=picked||dailyLooks()[0]||looks[0]||null;
+    const city=store.city?escapeHtml(store.city.label):'Город не выбран';
+    const weather=store.forecast?.day===dayKey()?' · '+Math.round(store.forecast.low)+'…'+Math.round(store.forecast.high)+'°':'';
+    const heroImage=lead?lookPhoto(lead,0):editorialPhotos.img8939;
+    const heroTitle=lead?escapeHtml(lead.title):'Твой первый образ';
+    const heroDescription=lead?(lead.missing?.length?'Нужно докупить '+lead.missing.length+' вещ. · '+lead.parts.length+' вещи в образе':lead.parts.length+' вещи · готов к носке'):'Добавь вещи в гардероб — и мы подберём сочетания';
     const screen=document.getElementById('homeScreen');
-    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>personal style system</div><div class='brand'>STYLE OS</div></div><button class='avatar' aria-label='Мой профиль' onclick='window.appAction("switchTab","profile")'>${avatarMarkup()}</button></div>
-      <div class='dailyWeatherBar'><span>${store.city?store.city.label:'Город не выбран'}${store.forecast?.day===dayKey()?' · '+Math.round(store.forecast.low)+'…'+Math.round(store.forecast.high)+'°C · завтра '+Math.round(store.forecast.tomorrowLow)+'…'+Math.round(store.forecast.tomorrowHigh)+'°C':''}</span><button onclick='window.appAction("openCity")'>${store.city?'Изменить':'Указать город'} ↗</button></div>
-      <section class='hero'>
-        <span class='glassTag'>Образ дня</span>
-        <h1>${lead ? lead.title : 'Соберём твой первый образ'}</h1>
-        <p>${lead ? lead.reason : 'Добавь несколько вещей — и приложение покажет готовые сочетания на каждый день.'}</p>
-        ${picked?`<div class='dailyHomePieces'>${picked.parts.map(p=>`<div><img src='${productImage(p)}' alt='${itemTypeLabel(p)}'></div>`).join('')}</div>`:''}
-        ${picked?`<button class='dailyAgain' onclick='window.appAction("rechooseDaily")'>Пересмотреть варианты со свайпами →</button>`:''}
-        <div class='buttonRow'>
-          <button class='btn primary' onclick='window.appAction("openLeadLook")'>${picked?'Смотреть выбранный образ':'Выбрать образ дня'}</button>
-          <button class='btn soft' onclick='window.appAction("switchTab","wardrobe")'>Мой гардероб</button>
-        </div>
+    screen.innerHTML=`<div class='homeEditorial'>
+      <header class='homeEditorialHeader'>
+        <div><div class='homeEditorialKicker'>PERSONAL STYLE SYSTEM</div><h1>STYLE OS</h1></div>
+        <div class='homeEditorialHeaderRight'><button type='button' class='homeEditorialWeather' onclick='window.appAction("openCity")' aria-label='Выбрать город'><span>${city}</span><small>${weather||'Указать погоду'}</small></button><button class='avatar' aria-label='Мой профиль' onclick='window.appAction("switchTab","profile")'>${avatarMarkup()}</button></div>
+      </header>
+      <section class='homeEditorialFeatured'>
+        <div class='homeEditorialPhoto' style='background-image:linear-gradient(180deg,rgba(12,15,12,.12),rgba(12,15,12,.02) 60%,rgba(12,15,12,.12)),url("${heroImage}")'><span class='homeEditorialPhotoTag'>ОБРАЗ ДНЯ</span></div>
+        <div class='homeEditorialFeatureBody'><div class='homeEditorialFeatureCopy'><h2>${heroTitle}</h2><p>${escapeHtml(heroDescription)}</p></div><button type='button' class='homeEditorialMainAction' onclick='window.appAction("openLeadLook")'>${picked?'Смотреть образ':'Выбрать образ'} <span aria-hidden='true'>→</span></button></div>
       </section>
-      <section class='section'>
-        <div class='quickGrid'>
-          <div class='quickCard' onclick='window.appAction("switchTab","outfits")'><div class='iconBadge'>✦</div><b>Собрать образ</b><span>Для офиса, свидания и повседневности</span></div>
-          <div class='quickCard' onclick='window.appAction("switchTab","catalog")'><div class='iconBadge'>⌕</div><b>Что докупить</b><span>Lamoda-подборка под твой гардероб</span></div>
-          <div class='quickCard' onclick='window.appAction("openAdd")'><div class='iconBadge'>＋</div><b>Добавить вещь</b><span>Из каталога или вручную</span></div>
-        </div>
-      </section>
-      <section class='section'>
-        <div class='sectionHead'><div><h2 class='sectionTitle'>Сегодня тебе подойдут</h2><div class='sectionHint'>Персональные варианты под погоду и планы</div></div></div>
-        <div class='recoScroll'>${looks.map((look,index)=>`<article class='recoCard outfitCard'><div class='outfitHero' style='--look:url(${lookPhoto(look,index)})'><span class='glassTag'>${getOccLabel(look.occasion)}</span><h3>${look.title}</h3><p>${look.missing.length? 'Нужно докупить: '+look.missing.length : 'Всё есть в гардеробе'}</p></div><div class='outfitBody'><div class='itemPills'>${look.parts.slice(0,4).map(i=>`<span class='pill'>${TYPES[i.type]}</span>`).join('')}</div><div class='heroCaption'><span class='${look.missing.length?'stateNeed':'stateGood'}'>${look.missing.length?'Комплект неполный':'Готов к носке'}</span><button class='btn dark small' onclick='window.appAction("openLook","${look.id}")'>Подробнее</button></div></div></article>`).join('')}</div>
-      </section>
-      <section class='section'>
-        <div class='sectionHead'><div><h2 class='sectionTitle'>Коллекции стиля</h2><div class='sectionHint'>Готовые направления, на которые будет ориентироваться подбор</div></div></div>
-        <div class='styleScroll'>
-          <div class='styleCard' style='--img:url(${stylePhotos.minimal})'><span class='glassTag'>Minimal</span><h3>Минимализм</h3><p>Чистые формы, нейтральная база, уверенная простота.</p></div>
-          <div class='styleCard' style='--img:url(${stylePhotos.oldmoney})'><span class='glassTag'>Old money</span><h3>Old money</h3><p>Сдержанная роскошь и благородные оттенки.</p></div>
-          <div class='styleCard' style='--img:url(${stylePhotos.smart})'><span class='glassTag'>Smart casual</span><h3>Smart casual</h3><p>Собранные образы для города, встреч и ужинов.</p></div>
-        </div>
-      </section>
-      <section class='section'>
-        <div class='sectionHead'><div><h2 class='sectionTitle'>Статус системы</h2><div class='sectionHint'>Сколько вещей уже есть и насколько собран гардероб</div></div></div>
-        <div class='statGrid'><div class='statCard'><div class='helper'>Вещи в гардеробе</div><div class='statValue'>${wardrobeCount}</div></div><div class='statCard'><div class='helper'>Сохранённые образы</div><div class='statValue'>${savedCount}</div></div><div class='statCard'><div class='helper'>Бренды Lamoda</div><div class='statValue'>${uniq(state.catalog.map(x=>x.brand)).length}</div></div></div>
-      </section>`;
+      <div class='homeEditorialQuick' aria-label='Быстрые действия'>
+        <button type='button' class='homeEditorialQuickItem' onclick='window.appAction("switchTab","outfits")'><span class='homeEditorialQuickIcon' aria-hidden='true'>✦</span><span><strong>Собрать образ</strong><small>Для любого случая</small></span><i aria-hidden='true'>›</i></button>
+        <button type='button' class='homeEditorialQuickItem' onclick='window.appAction("switchTab","catalog")'><span class='homeEditorialQuickIcon' aria-hidden='true'>⌕</span><span><strong>Что докупить</strong><small>Подобрать вещи</small></span><i aria-hidden='true'>›</i></button>
+        <button type='button' class='homeEditorialQuickItem' onclick='window.appAction("openAdd")'><span class='homeEditorialQuickIcon' aria-hidden='true'>＋</span><span><strong>Добавить вещь</strong><small>В свой гардероб</small></span><i aria-hidden='true'>›</i></button>
+      </div>
+      ${looks.length?`<section class='homeEditorialSection'><div class='homeEditorialSectionHeading'><h2>Сегодня тебе подойдут</h2><button type='button' aria-label='Смотреть все образы' onclick='window.appAction("switchTab","outfits")'>›</button></div><div class='homeEditorialSuggestions'>${looks.slice(0,4).map((look,index)=>`<button type='button' class='homeEditorialSuggestion' onclick='window.appAction("openLook","${look.id}")' style='background-image:linear-gradient(180deg,transparent 35%,rgba(12,14,11,.68)),url("${lookPhoto(look,index)}")'><span>${escapeHtml(look.title)}</span><small>${look.missing.length?'Нужно докупить: '+look.missing.length:'Готов к носке'}</small></button>`).join('')}</div></section>`:''}
+      <section class='homeEditorialSection'><div class='homeEditorialSectionHeading'><h2>Коллекции стиля</h2></div><div class='homeEditorialCollections'><div class='homeEditorialCollection' style='background-image:linear-gradient(180deg,transparent 30%,rgba(12,14,11,.65)),url("${stylePhotos.minimal}")'><span>Минимализм</span></div><div class='homeEditorialCollection' style='background-image:linear-gradient(180deg,transparent 30%,rgba(12,14,11,.65)),url("${stylePhotos.oldmoney}")'><span>Old money</span></div><div class='homeEditorialCollection' style='background-image:linear-gradient(180deg,transparent 30%,rgba(12,14,11,.65)),url("${stylePhotos.smart}")'><span>Smart casual</span></div></div></section>
+    </div>`;
   }
   function renderWardrobe(){
     const cat=state.filters.wardrobe;
@@ -1829,7 +1852,7 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
         store.feedback=store.feedback.slice(-100);saveStore();closeSheet();renderScreens();toast('Спасибо! Учтём в следующих образах.');}
     }
     if(action==='openLeadLook'){const chosen=chosenDaily();if(chosen)openSheet('look',chosen);else openSheet('daily');}
-    if(action==='openLook'){const look=outfitVisibleLooks().find(l=>l.id===payload);if(look)openSheet('look',look);}
+    if(action==='openLook'){const look=outfitVisibleLooks().find(l=>l.id===payload)||todayLooks().find(l=>l.id===payload);if(look)openSheet('look',look);}
     if(action==='saveLook'){
       const look=state.sheet?.kind==='look'?state.sheet.payload:todayLooks().find(l=>l.id===payload);
       if(look){if(!store.savedLooks.includes(payload))store.savedLooks.push(payload);
