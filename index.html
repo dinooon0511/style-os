@@ -456,6 +456,8 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 .lookbookChevron{font-size:24px;line-height:13px;color:#646d64}
 .lookbookStory{position:relative;touch-action:pan-y;overscroll-behavior-x:contain}
 .lookbookPhoto{height:clamp(285px,86vw,365px);background-size:cover;background-position:center 43%;position:relative;color:#fff;overflow:hidden}
+.lookbookPhotoControls{position:absolute;top:0;left:0;right:0;height:clamp(285px,86vw,365px);pointer-events:none;z-index:2}
+.lookbookPhotoControls button{pointer-events:auto}
 .lookbookPhotoCopy{position:absolute;left:21px;top:35px;max-width:65%;text-shadow:0 2px 15px #12171055}
 .lookbookKicker{font-size:9px;letter-spacing:2.3px;font-weight:600;color:#e6e8e3}
 .lookbookPhotoCopy h2{font:500 clamp(28px,8vw,40px)/1.05 Helvetica,Arial,sans-serif;letter-spacing:-1.3px;margin:17px 0 12px}
@@ -1497,7 +1499,8 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
  <button class='lookbookFilters' onclick='window.appAction("openOutfitFilters")' aria-label='Настроить подбор: ${escapeHtml(summary.join(', '))}'><span class='lookbookFilterIcon' aria-hidden='true'>☷</span><span class='lookbookFilterSummary'>${summary.map(escapeHtml).join('<i>·</i>')}</span><span aria-hidden='true' class='lookbookChevron'>›</span></button>
  ${look?`<div class='lookbookStory'>
  <div class='lookbookPhoto' style='background-image:linear-gradient(90deg,rgba(12,16,12,.56),rgba(12,16,12,.04) 77%),url("${lookPhoto(look,index)}")'>
- <div class='lookbookPhotoCopy'><span class='lookbookKicker'>STYLE OS / LOOK ${String(index+1).padStart(2,'0')}</span><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml(getOccLabel(look.occasion))}</p></div>
+ <div class='lookbookPhotoCopy'><span class='lookbookKicker'>STYLE OS / LOOK ${String(index+1).padStart(2,'0')}</span><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml(getOccLabel(look.occasion))}</p></div></div>
+ <div class='lookbookPhotoControls'>
  <div class='lookbookPagination' aria-label='Образ ${index+1} из ${count}'><span>${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}</span><div class='lookbookProgress'>${looks.map((_,i)=>`<button type='button' aria-label='Образ ${i+1}' class='${i===index?'selected':''}' onclick='window.appAction("setOutfitIndex",${i})'></button>`).join('')}</div></div>
  <div class='lookbookArrows'><button type='button' ${count<2?'disabled':''} aria-label='Предыдущий образ' onclick='window.appAction("outfitPrev")'><span aria-hidden='true'>←</span></button><button type='button' ${count<2?'disabled':''} aria-label='Следующий образ' onclick='window.appAction("outfitNext")'><span aria-hidden='true'>→</span></button></div></div>
  <section class='lookbookDetails'><div class='lookbookOverline'>ОБРАЗ ${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}</div><h2>${escapeHtml(outfitDisplayTitle(look))}</h2><p>${escapeHtml((look.reason||'Продуманное сочетание оттенков и фактур для твоего гардероба.').split('. ')[0].slice(0,160))}</p>
