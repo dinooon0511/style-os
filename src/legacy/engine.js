@@ -1090,13 +1090,19 @@
   function renderWardrobe(){
     const cat=state.filters.wardrobe;
     const items=cat==='all' ? store.wardrobe : store.wardrobe.filter(i=>GROUP[i.type]===cat || i.type===cat);
-    const screen=document.getElementById('wardrobeScreen');
-    screen.innerHTML=`<div class='wardrobeEditorial catalogEditorial'>
-      <header class='catalogEditorialHeader'><div><div class='catalogEditorialKicker'>STYLE OS / MY WARDROBE</div><h1>Гардероб</h1></div><span class='catalogEditorialCount'>${store.wardrobe.length} вещей</span></header>
-      <div class='wardrobeEditorialChips catalogEditorialChips chips'>${[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Слои']].map(([k,v])=>`<button class='chip ${cat===k?'active':''}' onclick='window.appAction("setWardrobeFilter","${k}")'>${v}</button>`).join('')}</div>
-      ${items.length?`<div class='catalogEditorialGrid grid2'>${items.map(item=>`<article class='catalogEditorialItem' role='button' tabindex='0' onclick='window.appAction("openOwned","${item.ownedId}")' onkeydown='if(event.key==="Enter"||event.key===" "){event.preventDefault();window.appAction("openOwned","${item.ownedId}")}'><div class='catalogEditorialVisual'><img alt='${escapeHtml(item.name)}' src='${productImage(item)}' loading='lazy' decoding='async'></div><div class='catalogEditorialDetails'><div class='catalogEditorialName'>${escapeHtml(item.name)}</div><div class='catalogEditorialSeason'>${catalogSeasonLabel(item.season)}</div><div class='catalogEditorialColor'><i style='background:${colorHex(item.color)}'></i><span>${COLORS[item.color]?.[0]||'Цвет не указан'}</span></div></div></article>`).join('')}</div>`:`<div class='card empty wardrobeEditorialEmpty'><h3>Пока пусто</h3><p>Добавь первые вещи — из каталога или вручную.</p><button class='btn dark' onclick='window.appAction("openAdd")'>Добавить вещь</button></div>`}
-      <div class='fabSpacer'></div>
-    </div>`;
+    // React owns the wardrobe DOM; existing item actions and cloud persistence remain unchanged.
+    window.dispatchEvent(new CustomEvent('styleos:wardrobe',{detail:{
+      category:cat,
+      total:store.wardrobe.length,
+      products:items.map(item=>({
+        ownedId:item.ownedId,
+        name:item.name,
+        season:catalogSeasonLabel(item.season),
+        colorHex:colorHex(item.color),
+        colorName:COLORS[item.color]?.[0]||'Цвет не указан',
+        image:productImage(item)
+      }))
+    }}));
     document.getElementById('floatingAdd').classList.remove('hidden');
   }
     function outfitDisplayTitle(look){const titles={minimal:'Городская база',dark_minimal:'Тихий минимализм',smart:'Современный ритм',classic:'Деловая классика',oldmoney:'Сдержанный характер',utility:'Городская практичность',soft_tailoring:'Спокойная элегантность',casual:'На каждый день',summer_relaxed:'Лёгкий силуэт',winter_layered:'Тёплый городской образ'};return titles[look?.style]||look?.title||'Готовый образ';}
