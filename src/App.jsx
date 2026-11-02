@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import AuthScreen from './components/AuthScreen.jsx';
+import CatalogScreen from './components/CatalogScreen.jsx';
 
 const tabs = [
   ['home', '⌂', 'Главная'],
@@ -20,7 +21,9 @@ export default function App() {
     <div className="app">
       <div className="shell">
         <div id="onboarding" className="onboarding show" />
-        {tabs.map(([id]) => <main key={id} id={`${id}Screen`} className={`screen${id === 'home' ? ' active' : ''}`} />)}
+        {tabs.map(([id]) => <main key={id} id={`${id}Screen`} className={`screen${id === 'home' ? ' active' : ''}`}>
+          {id === 'catalog' && <CatalogScreen />}
+        </main>)}
         <button id="floatingAdd" className="floatBtn hidden" aria-label="Добавить вещь">+</button>
         <nav className="tabbar" aria-label="Основная навигация">
           {tabs.map(([id, icon, name]) => <button key={id} className={`tab${id === 'home' ? ' active' : ''}`} data-screen={id}><span>{icon}</span><span>{name}</span></button>)}
