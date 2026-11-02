@@ -2,6 +2,9 @@ import React, { useEffect } from 'react';
 import AuthScreen from './components/AuthScreen.jsx';
 import CatalogScreen from './components/CatalogScreen.jsx';
 import WardrobeScreen from './components/WardrobeScreen.jsx';
+import HomeScreen from './components/HomeScreen.jsx';
+import ProfileScreen from './components/ProfileScreen.jsx';
+import OutfitsScreen from './components/OutfitsScreen.jsx';
 
 const tabs = [
   ['home', '⌂', 'Главная'],
@@ -23,8 +26,11 @@ export default function App() {
       <div className="shell">
         <div id="onboarding" className="onboarding show" />
         {tabs.map(([id]) => <main key={id} id={`${id}Screen`} className={`screen${id === 'home' ? ' active' : ''}`}>
+          {id === 'home' && <HomeScreen />}
           {id === 'catalog' && <CatalogScreen />}
           {id === 'wardrobe' && <WardrobeScreen />}
+          {id === 'profile' && <ProfileScreen />}
+          {id === 'outfits' && <OutfitsScreen />}
         </main>)}
         <button id="floatingAdd" className="floatBtn hidden" aria-label="Добавить вещь">+</button>
         <nav className="tabbar" aria-label="Основная навигация">

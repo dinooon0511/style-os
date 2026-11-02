@@ -1063,29 +1063,24 @@
     const looks=todayLooks();
     const picked=chosenDaily();
     const lead=picked||dailyLooks()[0]||looks[0]||null;
-    const city=store.city?escapeHtml(store.city.label):'Город не выбран';
+    const city=store.city?.label||'Город не выбран';
     const weather=store.forecast?.day===dayKey()?' · '+Math.round(store.forecast.low)+'…'+Math.round(store.forecast.high)+'°':'';
     const heroImage=lead?lookPhoto(lead,0):editorialPhotos.img8939;
-    const heroTitle=lead?escapeHtml(lead.title):'Твой первый образ';
+    const heroTitle=lead?lead.title:'Твой первый образ';
     const heroDescription=lead?(lead.missing?.length?'Нужно докупить '+lead.missing.length+' вещ. · '+lead.parts.length+' вещи в образе':lead.parts.length+' вещи · готов к носке'):'Добавь вещи в гардероб — и мы подберём сочетания';
-    const screen=document.getElementById('homeScreen');
-    screen.innerHTML=`<div class='homeEditorial'>
-      <header class='homeEditorialHeader'>
-        <div><div class='homeEditorialKicker'>PERSONAL STYLE SYSTEM</div><h1>STYLE OS</h1></div>
-        <div class='homeEditorialHeaderRight'><button type='button' class='homeEditorialWeather' onclick='window.appAction("openCity")' aria-label='Выбрать город'><span>${city}</span><small>${weather||'Указать погоду'}</small></button><button class='avatar' aria-label='Мой профиль' onclick='window.appAction("switchTab","profile")'>${avatarMarkup()}</button></div>
-      </header>
-      <section class='homeEditorialFeatured'>
-        <div class='homeEditorialPhoto' style='background-image:linear-gradient(180deg,rgba(12,15,12,.12),rgba(12,15,12,.02) 60%,rgba(12,15,12,.12)),url("${heroImage}")'><span class='homeEditorialPhotoTag'>ОБРАЗ ДНЯ</span></div>
-        <div class='homeEditorialFeatureBody'><div class='homeEditorialFeatureCopy'><h2>${heroTitle}</h2><p>${escapeHtml(heroDescription)}</p></div><button type='button' class='homeEditorialMainAction' onclick='window.appAction("openLeadLook")'>${picked?'Смотреть образ':'Выбрать образ'} <span aria-hidden='true'>→</span></button></div>
-      </section>
-      <div class='homeEditorialQuick' aria-label='Быстрые действия'>
-        <button type='button' class='homeEditorialQuickItem' onclick='window.appAction("switchTab","outfits")'><span class='homeEditorialQuickIcon' aria-hidden='true'>✦</span><span><strong>Собрать образ</strong><small>Для любого случая</small></span><i aria-hidden='true'>›</i></button>
-        <button type='button' class='homeEditorialQuickItem' onclick='window.appAction("switchTab","catalog")'><span class='homeEditorialQuickIcon' aria-hidden='true'>⌕</span><span><strong>Что докупить</strong><small>Подобрать вещи</small></span><i aria-hidden='true'>›</i></button>
-        <button type='button' class='homeEditorialQuickItem' onclick='window.appAction("openAdd")'><span class='homeEditorialQuickIcon' aria-hidden='true'>＋</span><span><strong>Добавить вещь</strong><small>В свой гардероб</small></span><i aria-hidden='true'>›</i></button>
-      </div>
-      ${looks.length?`<section class='homeEditorialSection'><div class='homeEditorialSectionHeading'><h2>Сегодня тебе подойдут</h2><button type='button' aria-label='Смотреть все образы' onclick='window.appAction("switchTab","outfits")'>›</button></div><div class='homeEditorialSuggestions'>${looks.slice(0,4).map((look,index)=>`<button type='button' class='homeEditorialSuggestion' onclick='window.appAction("openLook","${look.id}")' style='background-image:linear-gradient(180deg,transparent 35%,rgba(12,14,11,.68)),url("${lookPhoto(look,index)}")'><span>${escapeHtml(look.title)}</span><small>${look.missing.length?'Нужно докупить: '+look.missing.length:'Готов к носке'}</small></button>`).join('')}</div></section>`:''}
-      <section class='homeEditorialSection'><div class='homeEditorialSectionHeading'><h2>Коллекции стиля</h2></div><div class='homeEditorialCollections'><div class='homeEditorialCollection' style='background-image:linear-gradient(180deg,transparent 30%,rgba(12,14,11,.65)),url("${stylePhotos.minimal}")'><span>Минимализм</span></div><div class='homeEditorialCollection' style='background-image:linear-gradient(180deg,transparent 30%,rgba(12,14,11,.65)),url("${stylePhotos.oldmoney}")'><span>Old money</span></div><div class='homeEditorialCollection' style='background-image:linear-gradient(180deg,transparent 30%,rgba(12,14,11,.65)),url("${stylePhotos.smart}")'><span>Smart casual</span></div></div></section>
-    </div>`;
+    window.dispatchEvent(new CustomEvent('styleos:home',{detail:{
+      city,weather,picked:!!picked,avatar:store.profile?.avatar||null,
+      hero:{image:heroImage,title:heroTitle,description:heroDescription},
+      suggestions:looks.slice(0,4).map((look,index)=>({
+        id:look.id,title:look.title,image:lookPhoto(look,index),
+        subtitle:look.missing.length?'Нужно докупить: '+look.missing.length:'Готов к носке'
+      })),
+      collections:[
+        {title:'Минимализм',image:stylePhotos.minimal},
+        {title:'Old money',image:stylePhotos.oldmoney},
+        {title:'Smart casual',image:stylePhotos.smart}
+      ]
+    }}));
   }
   function renderWardrobe(){
     const cat=state.filters.wardrobe;
@@ -1109,30 +1104,9 @@
   function outfitVisibleLooks(){return (state.outfitMode==='anchor'?state.anchorLooks||[]:todayLooks()).slice(0,10);}
   function switchLookbook(direction,targetIndex){
     const count=outfitVisibleLooks().length;
-    if(count<2||window.lookbookAnimating)return;
-    window.lookbookAnimating=true;
-    const photo=document.querySelector('#outfitsScreen .lookbookPhoto');
-    const finish=()=>{
-      state.outfitIndex=targetIndex===undefined?((state.outfitIndex||0)+direction+count)%count:Math.max(0,Math.min(count-1,targetIndex));
-      renderOutfits();
-      const incoming=document.querySelector('#outfitsScreen .lookbookPhoto');
-      if(incoming){
-        incoming.style.transition='none';
-        incoming.style.transform='translate3d('+(-direction*45)+'px,0,0)';
-        incoming.style.opacity='.65';
-        requestAnimationFrame(()=>requestAnimationFrame(()=>{
-          incoming.style.transition='transform 260ms cubic-bezier(.2,.75,.2,1),opacity 260ms ease';
-          incoming.style.transform='translate3d(0,0,0)';
-          incoming.style.opacity='1';
-          setTimeout(()=>{incoming.style.transition='';incoming.style.transform='';incoming.style.opacity='';window.lookbookAnimating=false;},280);
-        }));
-      }else window.lookbookAnimating=false;
-    };
-    if(!photo){finish();return;}
-    photo.style.transition='transform 190ms ease-in,opacity 190ms ease-in';
-    photo.style.transform='translate3d('+(-direction*110)+'%,0,0)';
-    photo.style.opacity='0';
-    setTimeout(finish,195);
+    if(count<2)return;
+    state.outfitIndex=targetIndex===undefined?((state.outfitIndex||0)+direction+count)%count:Math.max(0,Math.min(count-1,targetIndex));
+    renderOutfits();
   }
   function initLookbookSwipe(){
     const photo=document.querySelector('#outfitsScreen .lookbookPhoto');
@@ -1171,6 +1145,28 @@
     },{passive:true});
   }
   function renderOutfits(){
+ const anchoredReact=state.outfitMode==='anchor',anchorReact=anchoredReact?activeAnchorItem():null;
+ const availableReact=outfitVisibleLooks(),countReact=availableReact.length;
+ state.outfitIndex=Math.max(0,Math.min(state.outfitIndex||0,countReact-1));
+ const activeReact=availableReact[state.outfitIndex];
+ window.dispatchEvent(new CustomEvent('styleos:outfits',{detail:{
+   anchored:anchoredReact,
+   anchor:anchorReact?{label:itemTypeLabel(anchorReact),image:productImage(anchorReact)}:null,
+   index:state.outfitIndex,
+   count:countReact,
+   summary:[getOccLabel(state.filters.outfitOccasion),getWeatherLabel(state.filters.outfitWeather),state.filters.ownedOnly?'Только мои вещи':'С докупкой'],
+   look:activeReact?{
+     id:activeReact.id,
+     image:lookPhoto(activeReact,state.outfitIndex),
+     title:outfitDisplayTitle(activeReact),
+     occasion:getOccLabel(activeReact.occasion),
+     reason:(activeReact.reason||'Продуманное сочетание оттенков и фактур для твоего гардероба.').split('. ')[0].slice(0,160),
+     missing:activeReact.missing.length,
+     parts:activeReact.parts.map(part=>({id:part.id,label:itemTypeLabel(part),image:productImage(part),missing:!!part.missing}))
+   }:null
+ }}));
+ document.getElementById('floatingAdd').classList.add('hidden');
+ return;
  const anchored=state.outfitMode==='anchor',anchor=anchored?activeAnchorItem():null;
  const looks=outfitVisibleLooks(),count=looks.length;
  state.outfitIndex=Math.max(0,Math.min(state.outfitIndex||0,count-1));
@@ -1222,30 +1218,11 @@
   }
   function renderProfile(){
     const p=store.profile;
-    const screen=document.getElementById('profileScreen');
-    screen.innerHTML=`<div class='topbar'><div><div class='subtle'>STYLE OS / ACCOUNT</div><div class='brand'>Мой профиль</div></div><button class='btn line small' onclick='window.styleAuth.logout()'>Выйти</button></div>
-      <section class='profileHero profileHeroBlack'>
-        <div class='profilePortraitRow'>
-          <div class='profilePortraitMetric'><strong>${store.wardrobe.length}</strong><small>вещей в гардеробе</small></div>
-          <button class='profileAvatar' aria-label='Изменить фото профиля' onclick='window.appAction("chooseAvatar")'>${avatarMarkup()}</button>
-          <div class='profilePortraitMetric'><strong>${store.savedLooks.length}</strong><small>сохранённых образов</small></div>
-        </div>
-        <input type='file' id='profileAvatarFile' accept='image/*' hidden onchange='window.uploadStyleAvatar(this.files[0])'>
-        <h2>${escapeHtml(p.name||'Пользователь')}</h2>
-        <p>Твой персональный стиль</p>
-        <div class='profileActions'><button type='button' onclick='window.appAction("editProfile")'>Редактировать</button><button type='button' onclick='window.appAction("chooseAvatar")'>Изменить фото</button></div>
-      </section>
-      <section class='profilePanel'><div class='sectionHead'><div><h2 class='sectionTitle'>Моя коллекция</h2><div class='sectionHint'>Всё, что делает стиль твоим</div></div></div>
-        <div class='listRow' onclick='window.appAction("openSaved")'><div><strong>♡ Сохранённые образы</strong><div class='helper'>${store.savedLooks.length} сохранено · открыть подборку</div></div><span>›</span></div>
-        <div class='listRow' onclick='window.appAction("switchTab","wardrobe")'><div><strong>Мой гардероб</strong><div class='helper'>${store.wardrobe.length} вещей</div></div><span>›</span></div>
-      </section>
-      <section class='profilePanel'><div class='sectionHead'><div><h2 class='sectionTitle'>Параметры стиля</h2><div class='sectionHint'>Используются при составлении образов</div></div></div>
-        <div class='listRow'><span>Основной стиль</span><strong>${escapeHtml(p.style)}</strong></div>
-        <div class='listRow'><span>Верх / низ</span><strong>${escapeHtml(p.topSize)} / ${escapeHtml(p.bottomSize)}</strong></div>
-        <div class='listRow'><span>Размер обуви</span><strong>${escapeHtml(p.shoeSize)}</strong></div>
-        <div class='listRow'><span>Бюджет</span><strong>${escapeHtml(p.budget)}</strong></div>
-        <button class='btn line' style='width:100%;margin-top:12px' onclick='window.appAction("editProfile")'>Изменить параметры</button>
-      </section>`;
+    window.dispatchEvent(new CustomEvent('styleos:profile',{detail:{
+      profile:{...p},
+      wardrobeCount:store.wardrobe.length,
+      savedCount:store.savedLooks.length
+    }}));
     document.getElementById('floatingAdd').classList.add('hidden');
   }
   function findSavedLook(id){
