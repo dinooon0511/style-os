@@ -1197,14 +1197,21 @@
     const cat=state.filters.catalog, q=state.filters.catalogSearch.toLowerCase();
     let list=state.catalog.filter(item=> !q || `${item.brand} ${item.name} ${item.sku}`.toLowerCase().includes(q));
     if(cat!=='all') list=list.filter(item=> GROUP[item.type]===cat || item.type===cat);
-    const screen=document.getElementById('catalogScreen');
-    screen.innerHTML=`<div class='catalogEditorial'>
-      <header class='catalogEditorialHeader'><div><div class='catalogEditorialKicker'>STYLE OS / EDITED SELECTION</div><h1>Каталог</h1></div><span class='catalogEditorialCount'>${state.catalog.length} вещей</span></header>
-      <div class='catalogEditorialHero' style='background-image:linear-gradient(90deg,rgba(16,19,16,.45),rgba(16,19,16,.03) 80%),url("${catalogHero}")'><h2>Вещи,<br>которые<br>сочетаются</h2></div>
-      <div class='catalogEditorialSearch search'><span aria-hidden='true'>⌕</span><input value='${escapeHtml(state.filters.catalogSearch)}' oninput='window.appAction("searchCatalog", this.value)' placeholder='Поиск по вещам' aria-label='Поиск по вещам'></div>
-      <div class='catalogEditorialChips chips'>${[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Слои']].map(([k,v])=>`<button class='chip ${cat===k?'active':''}' onclick='window.appAction("setCatalogFilter","${k}")'>${v}</button>`).join('')}</div>
-      <div class='catalogEditorialGrid grid2'>${list.map(item=>`<article class='catalogEditorialItem' onclick='window.appAction("openProduct","${item.id}")' role='button' tabindex='0' onkeydown='if(event.key==="Enter"||event.key===" "){event.preventDefault();window.appAction("openProduct","${item.id}")}'><div class='catalogEditorialVisual'><img alt='${escapeHtml(item.name)}' src='${productImage(item)}' loading='lazy' decoding='async'></div><div class='catalogEditorialDetails'><div class='catalogEditorialName'>${escapeHtml(item.name)}</div><div class='catalogEditorialSeason'>${catalogSeasonLabel(item.season)}</div><div class='catalogEditorialColor'><i style='background:${colorHex(item.color)}'></i><span>${COLORS[item.color]?.[0]||'Цвет не указан'}</span></div></div></article>`).join('')}</div>
-    </div>`;
+    // React owns catalogScreen DOM. Legacy logic only produces immutable view data.
+    window.dispatchEvent(new CustomEvent('styleos:catalog',{detail:{
+      total:state.catalog.length,
+      hero:catalogHero,
+      category:cat,
+      query:state.filters.catalogSearch,
+      products:list.map(item=>({
+        id:item.id,
+        name:item.name,
+        season:catalogSeasonLabel(item.season),
+        colorHex:colorHex(item.color),
+        colorName:COLORS[item.color]?.[0]||'Цвет не указан',
+        image:productImage(item)
+      }))
+    }}));
     document.getElementById('floatingAdd').classList.add('hidden');
   }
   function renderProfile(){
