@@ -1,3 +1,5 @@
+import React from 'react';
+
 const auth = () => window.styleAuth;
 
 export default function AuthScreen() {
