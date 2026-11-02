@@ -5,6 +5,8 @@ import WardrobeScreen from './components/WardrobeScreen.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
 import ProfileScreen from './components/ProfileScreen.jsx';
 import OutfitsScreen from './components/OutfitsScreen.jsx';
+import Onboarding from './components/Onboarding.jsx';
+import SettingsSheets from './components/SettingsSheets.jsx';
 
 const tabs = [
   ['home', '⌂', 'Главная'],
@@ -24,7 +26,7 @@ export default function App() {
   return <>
     <div className="app">
       <div className="shell">
-        <div id="onboarding" className="onboarding show" />
+        <Onboarding />
         {tabs.map(([id]) => <main key={id} id={`${id}Screen`} className={`screen${id === 'home' ? ' active' : ''}`}>
           {id === 'home' && <HomeScreen />}
           {id === 'catalog' && <CatalogScreen />}
@@ -40,6 +42,7 @@ export default function App() {
     </div>
     <div id="sheetBackdrop" className="sheetBackdrop" />
     <div id="sheet" className="sheet" />
+    <SettingsSheets />
     <AuthScreen />
     <div id="styleSyncStatus" role="status" aria-live="polite" hidden />
   </>;

@@ -884,7 +884,7 @@
     return options[index%options.length];
   }
   function openSheet(kind,payload){ state.sheet={kind,payload}; renderSheet(); }
-  function closeSheet(){ state.sheet=null; document.getElementById('sheetBackdrop').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); }
+  function closeSheet(){ state.sheet=null; document.getElementById('sheetBackdrop').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); window.dispatchEvent(new CustomEvent('styleos:settings-sheet')); }
   document.getElementById('sheetBackdrop').onclick=closeSheet;
   function outfitFiltersMarkup(){
  const occ=state.filters.outfitOccasion,weather=state.filters.outfitWeather;
@@ -898,6 +898,13 @@
     const sheet=document.getElementById('sheet');
     if(!state.sheet){ sheet.className='sheet'; sheet.innerHTML=''; return; }
     const {kind,payload}=state.sheet;
+    if(kind==='outfitFilters'||kind==='editProfile'){
+      sheet.className='sheet';sheet.innerHTML='';
+      window.dispatchEvent(new CustomEvent('styleos:settings-sheet',{detail:kind==='editProfile'?{kind,profile:{...store.profile}}:{kind,values:{occasion:state.filters.outfitOccasion,weather:state.filters.outfitWeather,ownedOnly:state.filters.ownedOnly}}}));
+      document.getElementById('sheetBackdrop').classList.add('show');
+      return;
+    }
+    window.dispatchEvent(new CustomEvent('styleos:settings-sheet'));
     let html='';
 
 
@@ -1293,7 +1300,17 @@
     window.appAction = appAction;
     state.onboardingController={showStep,get current(){return current;}};
   }
+  function buildReactOnboarding(){
+    let current=0;
+    state.onboardingController={
+      showStep(index){ current=index; window.dispatchEvent(new CustomEvent('styleos:onboarding-step',{detail:{step:index}})); },
+      get current(){return current;}
+    };
+    window.dispatchEvent(new CustomEvent('styleos:onboarding-ready',{detail:{photos:stylePhotos}}));
+  }
   function appAction(action,payload){
+    if(action==='onboardingStyle'){store.profile.style=payload;}
+    if(action==='onboardingBudget'){store.profile.budget=payload;}
     if(action==='closeSheet'){ closeSheet(); }
     if(action==='openOutfitFilters'){openSheet('outfitFilters');}
     if(action==='setOutfitIndex'){const count=outfitVisibleLooks().length;const target=Number(payload)||0;if(count>1&&target!==state.outfitIndex)switchLookbook(target>state.outfitIndex?1:-1,target);}
@@ -1437,7 +1454,7 @@
     store=newUserStore();
     state.catalog=embeddedCatalog;
     document.getElementById('onboarding').classList.remove('show');
-    buildOnboarding();
+    buildReactOnboarding();
     if(store.forecast?.day===dayKey())state.filters.outfitWeather=store.forecast.mode;
     document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{state.screen=btn.dataset.screen; closeSheet(); renderScreens();}));
     document.getElementById('floatingAdd').onclick=()=>openSheet('addItem');
