@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from 'react';
-
-const filters = [
-  ['all', 'Все'],
-  ['top', 'Верх'],
-  ['bottom', 'Низ'],
-  ['shoes', 'Обувь'],
-  ['layer', 'Слои'],
-];
+import CategoryChips from './CategoryChips.jsx';
+import ItemCard from './ItemCard.jsx';
 
 export default function CatalogScreen() {
   const [catalog, setCatalog] = useState(null);
@@ -33,20 +27,9 @@ export default function CatalogScreen() {
       <span aria-hidden="true">⌕</span>
       <input value={query} onChange={event => action('searchCatalog', event.target.value)} placeholder="Поиск по вещам" aria-label="Поиск по вещам" />
     </div>
-    <div className="catalogEditorialChips chips">
-      {filters.map(([key, label]) => <button key={key} type="button" className={`chip ${category === key ? 'active' : ''}`} onClick={() => action('setCatalogFilter', key)}>{label}</button>)}
-    </div>
+    <CategoryChips active={category} onSelect={value => action('setCatalogFilter', value)} />
     <div className="catalogEditorialGrid grid2">
-      {products.map(item => <article key={item.id} className="catalogEditorialItem" role="button" tabIndex={0} onClick={() => action('openProduct', item.id)} onKeyDown={event => {
-        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); action('openProduct', item.id); }
-      }}>
-        <div className="catalogEditorialVisual"><img alt={item.name} src={item.image} loading="lazy" decoding="async" /></div>
-        <div className="catalogEditorialDetails">
-          <div className="catalogEditorialName">{item.name}</div>
-          <div className="catalogEditorialSeason">{item.season}</div>
-          <div className="catalogEditorialColor"><i style={{ background: item.colorHex }} /><span>{item.colorName}</span></div>
-        </div>
-      </article>)}
+      {products.map(item => <ItemCard key={item.id} item={item} onOpen={selected => action('openProduct', selected.id)} />)}
     </div>
   </div>;
 }
