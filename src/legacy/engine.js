@@ -884,7 +884,7 @@
     return options[index%options.length];
   }
   function openSheet(kind,payload){ state.sheet={kind,payload}; renderSheet(); }
-  function closeSheet(){ state.sheet=null; document.getElementById('sheetBackdrop').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); window.dispatchEvent(new CustomEvent('styleos:settings-sheet')); }
+  function closeSheet(){ state.sheet=null; document.getElementById('sheetBackdrop').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); window.dispatchEvent(new CustomEvent('styleos:settings-sheet')); window.dispatchEvent(new CustomEvent('styleos:detail-sheet')); }
   document.getElementById('sheetBackdrop').onclick=closeSheet;
   function outfitFiltersMarkup(){
  const occ=state.filters.outfitOccasion,weather=state.filters.outfitWeather;
@@ -898,6 +898,33 @@
     const sheet=document.getElementById('sheet');
     if(!state.sheet){ sheet.className='sheet'; sheet.innerHTML=''; return; }
     const {kind,payload}=state.sheet;
+    if(['item','product','look','manualForm','savedLooks','addItem','daily','dailyPreview'].includes(kind)){
+      let data={};
+      if(kind==='item'||kind==='product'){
+        data={item:payload,image:productImage(payload,true),shoes:GROUP[payload.type]==='shoes',type:itemTypeLabel(payload),color:COLORS[payload.color]?.[0]||'',price:formatPrice(payload.price),season:payload.season==='all'?'Всесезонная':payload.season==='cold'?'Холодный сезон':'Тёплый сезон'};
+      }else if(kind==='look'){
+        const look=payload;
+        data={look,image:lookPhoto(look),occasion:getOccLabel(look.occasion),title:outfitDisplayTitle(look),reason:(look.explanations||[look.reason]).join(' ').replace(/\s+/g,' ').slice(0,190),isDaily:chosenDaily()?.identity===look.identity,missing:look.missing.length,owned:look.parts.length-look.missing.length,parts:look.parts.map(p=>({id:p.id,label:itemTypeLabel(p),image:productImage(p),missing:p.missing,color:COLORS[p.color]?.[0]||p.name||''}))};
+      }else if(kind==='manualForm'){
+        data={types:Object.entries(TYPES),colors:Object.entries(COLORS).map(([key,value])=>[key,value[0]])};
+      }else if(kind==='daily'){
+        const d=dailyData(),looks=dailyOptions(),likes=looks.filter(l=>d.votes[l.identity]==='like'),options=d.selected?looks:(likes.length?likes:looks);
+        const toView=(look,index)=>look?{id:look.id,identity:look.identity,title:look.title,occasion:getOccLabel(look.occasion),image:lookPhoto(look,index),parts:look.parts.map(p=>({label:itemTypeLabel(p),image:productImage(p)}))}:null;
+        data={index:d.index,count:looks.length,current:d.selected?null:toView(looks[d.index],d.index),next:toView(looks[d.index+1],d.index+1),options:options.map(toView),likes:likes.length>0,noCandidates:looks.length===0};
+      }else if(kind==='dailyPreview'){
+        data={identity:payload.identity,title:payload.title,reason:payload.reason,parts:payload.parts.map(p=>({image:productImage(p),label:itemTypeLabel(p),missing:p.missing}))};
+      }else if(kind==='addItem'){
+        data={query:state.addQuery||'',category:state.addCategory||'all',items:state.catalog.map(p=>({id:p.id,group:GROUP[p.type],name:p.name,brand:p.brand,image:productImage(p),color:COLORS[p.color]?.[0]||'Цвет не указан',colorHex:colorHex(p.color),search:[p.brand,p.name,p.sku,itemTypeLabel(p),TYPES[p.type],COLORS[p.color]?.[0]].join(' ').toLowerCase()}))};
+      }else if(kind==='savedLooks'){
+        data={looks:store.savedLooks.map(id=>{const look=findSavedLook(id);return{id,title:look?.title||'Сохранённый образ',count:look?.parts?.length||0,image:look?.parts?.[0]?productImage(look.parts[0]):lookPhotos.everyday};})};
+      }
+      sheet.className='sheet';sheet.innerHTML='';
+      window.dispatchEvent(new CustomEvent('styleos:settings-sheet'));
+      window.dispatchEvent(new CustomEvent('styleos:detail-sheet',{detail:{kind,data}}));
+      document.getElementById('sheetBackdrop').classList.add('show');
+      return;
+    }
+    window.dispatchEvent(new CustomEvent('styleos:detail-sheet'));
     if(kind==='outfitFilters'||kind==='editProfile'){
       sheet.className='sheet';sheet.innerHTML='';
       window.dispatchEvent(new CustomEvent('styleos:settings-sheet',{detail:kind==='editProfile'?{kind,profile:{...store.profile}}:{kind,values:{occasion:state.filters.outfitOccasion,weather:state.filters.outfitWeather,ownedOnly:state.filters.ownedOnly}}}));
@@ -1360,7 +1387,7 @@
     if(action==='cityInput'){onCityInput(payload);}
     if(action==='chooseCity'){chooseCity(Number(payload));}
     if(action==='setCityGps'){setCityGps();}
-    if(action==='dailyVote'){animateDailyVote(payload);}
+    if(action==='dailyVote'){if(state.sheet?.kind==='daily')dailyVote(payload);else animateDailyVote(payload);}
     if(action==='dailyPreview'){const l=dailyOptions().find(x=>x.identity===payload);if(l)openSheet('dailyPreview',l);}
     if(action==='dailyBack'){openSheet('daily');}
     if(action==='dailyChoose'){dailyChoose(payload);}

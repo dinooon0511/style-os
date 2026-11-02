@@ -7,6 +7,7 @@ import ProfileScreen from './components/ProfileScreen.jsx';
 import OutfitsScreen from './components/OutfitsScreen.jsx';
 import Onboarding from './components/Onboarding.jsx';
 import SettingsSheets from './components/SettingsSheets.jsx';
+import DetailSheets from './components/DetailSheets.jsx';
 
 const tabs = [
   ['home', '⌂', 'Главная'],
@@ -43,6 +44,7 @@ export default function App() {
     <div id="sheetBackdrop" className="sheetBackdrop" />
     <div id="sheet" className="sheet" />
     <SettingsSheets />
+    <DetailSheets />
     <AuthScreen />
     <div id="styleSyncStatus" role="status" aria-live="polite" hidden />
   </>;
