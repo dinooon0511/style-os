@@ -748,6 +748,11 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
 @media(max-height:650px){#styleAuth .authCanvas{justify-content:flex-start;gap:16px;padding-top:25px;padding-bottom:25px}#styleAuth .authPanel{padding-top:22px;padding-bottom:20px}}
 @media(prefers-reduced-motion:reduce){#styleAuth *{scroll-behavior:auto!important}}
 
+
+#styleSyncStatus{position:fixed;z-index:99998;left:50%;bottom:max(100px,calc(env(safe-area-inset-bottom) + 92px));transform:translateX(-50%);max-width:min(370px,calc(100vw - 28px));padding:10px 15px;border-radius:999px;background:rgba(30,43,32,.93);color:#fff;box-shadow:0 8px 28px #0002;text-align:center;font:500 12px/1.3 Helvetica,Arial,sans-serif;pointer-events:none}
+#styleSyncStatus[data-kind="error"],#styleSyncStatus[data-kind="conflict"]{background:#553a31}
+#styleSyncStatus[hidden]{display:none!important}
+
 </style>
 </head>
 <body>
@@ -939,6 +944,8 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
   const SUPABASE_URL='https://maqhxkhltckttfwhyoqn.supabase.co';
   const SUPABASE_PUBLISHABLE='sb_publishable_PI-la72WM_8vQClRljs1NQ__O4I4FRp';
   let sb=null,authUser=null,cloudTimer=null,cloudPending=false,cloudWriting=false,cloudRevision=0,recoveringPassword=false;
+  const SYNC_SECTIONS=['profile','wardrobe','savedLooks','savedLookDetails','wish','feedback','daily','onboarded','city','forecast'];
+  let syncMode='legacy',syncVersions={},syncBaseline={},syncDirty={},syncBlocked={},cloudWritePromise=null,syncStatusTimer=null;
   function newUserStore(){return {onboarded:false,wardrobe:[],savedLooks:[],savedLookDetails:{},wish:[],feedback:[],profile:{...defaultProfile}};}
   function authMessage(message){const el=document.getElementById('authMessage');if(el)el.textContent=message||'';}
   function authDisplay(mode='login'){
@@ -1014,16 +1021,33 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     if(!user)return;
     if(authUser?.id===user.id){if(!recoveringPassword)authHide();return;}
     authUser=user;clearTimeout(cloudTimer);cloudPending=false;cloudRevision++;
+    syncVersions={};syncBaseline={};syncDirty={};syncBlocked={};
     const {data,error}=await sb.from('user_state').select('data').eq('user_id',user.id).maybeSingle();
-    if(error){authUser=null;authDisplay('login');authMessage('Не удалось открыть личные данные. Примени SQL из supabase/migrations в SQL Editor: '+authFriendly(error));return;}
-    if(data?.data&&typeof data.data==='object'){store={...newUserStore(),...data.data};}
-    else {
-      store=newUserStore();
+    if(error){authUser=null;authDisplay('login');authMessage('Не удалось открыть личные данные: '+authFriendly(error));return;}
+    store=data?.data&&typeof data.data==='object'?{...newUserStore(),...data.data}:newUserStore();
+    const {data:sectionRows,error:sectionError}=await sb.from('user_state_sections').select('section,data,version').eq('user_id',user.id);
+    syncMode=sectionError?'legacy':'sections';
+    if(sectionError)console.warn('Section sync is not enabled yet: apply supabase/migrations/20261102_section_sync.sql',sectionError);
+    if(syncMode==='sections'){
+      for(const row of sectionRows||[]){
+        if(SYNC_SECTIONS.includes(row.section)){store[row.section]=row.data;syncVersions[row.section]=Number(row.version)||0;}
+      }
+      // The database migration backfills legacy records. For an empty new account,
+      // insert initial sections rather than writing a monolithic JSON document.
+      if(!(sectionRows||[]).length&&data?.data){
+        for(const name of SYNC_SECTIONS)if(Object.hasOwn(store,name))syncDirty[name]=JSON.stringify(store[name]);
+      }
+    }else if(!data?.data){
       const legacy=localStorage.getItem(KEY);
       if(legacy&&confirm('На этом устройстве найден прежний локальный гардероб. Перенести его в твой аккаунт?')){
         try{const parsed=JSON.parse(legacy);if(parsed&&typeof parsed==='object')store={...newUserStore(),...parsed};}catch(e){}
       }
-      await sb.from('user_state').upsert({user_id:user.id,data:store},{onConflict:'user_id'});
+    }
+    for(const name of SYNC_SECTIONS)syncBaseline[name]=JSON.stringify(store[name]??null);
+    restoreSyncJournal(user.id);
+    if(syncMode==='sections'&&!(sectionRows||[]).length){
+      for(const name of SYNC_SECTIONS)if(Object.hasOwn(store,name)&&!syncDirty[name])syncDirty[name]=JSON.stringify(store[name]);
+      persistSyncJournal();
     }
     if(!store.profile)store.profile={...defaultProfile};
     if(!Array.isArray(store.wardrobe))store.wardrobe=[];
@@ -1032,32 +1056,132 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
     if(!Array.isArray(store.wish))store.wish=[];
     if(!Array.isArray(store.feedback))store.feedback=[];
     if(normalizeStoredItemNames())scheduleCloudSave();
+    if(Object.keys(syncDirty).length||cloudPending)scheduleCloudSave();
     state.screen='home';state.sheet=null;
     buildOnboarding();
     document.getElementById('onboarding').classList.toggle('show',store.onboarded===false);
     if(store.forecast?.day===dayKey())state.filters.outfitWeather=store.forecast.mode;
     renderScreens();if(!recoveringPassword)authHide();
   }
+  function syncJournalKey(){return authUser?'styleos_sync_journal_v2_'+authUser.id:null;}
+  function persistSyncJournal(){
+    const key=syncJournalKey();if(!key)return;
+    try{
+      if(syncMode==='sections'){
+        const payload={mode:'sections',pending:Object.fromEntries(Object.entries(syncDirty).map(([k,v])=>[k,{value:v,version:syncVersions[k]||0}]))};
+        if(Object.keys(payload.pending).length)localStorage.setItem(key,JSON.stringify(payload));else localStorage.removeItem(key);
+      }else if(cloudPending)localStorage.setItem(key,JSON.stringify({mode:'legacy',pending:JSON.stringify(store)}));
+      else localStorage.removeItem(key);
+    }catch(err){console.error('Local sync journal:',err);syncIndicator('error','Нет места для сохранения. Освободи память устройства.');}
+  }
+  function restoreSyncJournal(userId){
+    let saved=null;
+    try{saved=JSON.parse(localStorage.getItem('styleos_sync_journal_v2_'+userId)||'null');}catch(err){console.warn('Sync journal:',err);}
+    if(!saved)return;
+    if(syncMode==='sections'&&saved.mode==='sections'){
+      for(const [name,item] of Object.entries(saved.pending||{})){
+        if(!SYNC_SECTIONS.includes(name)||typeof item?.value!=='string')continue;
+        try{
+          store[name]=JSON.parse(item.value);
+          syncDirty[name]=item.value;
+          // A version mismatch is a conflict. Never silently overwrite newer server data.
+          if((syncVersions[name]||0)!==(Number(item.version)||0))syncBlocked[name]=true;
+        }catch(err){console.warn('Skipping damaged local section',name,err);}
+      }
+    }else if(syncMode==='legacy'&&saved.mode==='legacy'&&typeof saved.pending==='string'){
+      try{store={...store,...JSON.parse(saved.pending)};cloudPending=true;}catch(err){console.warn('Damaged pending snapshot:',err);}
+    }
+    if(Object.keys(syncBlocked).length)syncIndicator('conflict','Есть изменения с другого устройства. Локальная копия сохранена.');
+    else syncIndicator('pending','Восстанавливаем несохранённые изменения…');
+  }
+  function syncIndicator(kind,message){
+    const el=document.getElementById('styleSyncStatus');if(!el)return;
+    clearTimeout(syncStatusTimer);
+    el.dataset.kind=kind;el.textContent=message;el.hidden=false;
+    if(kind==='saved')syncStatusTimer=setTimeout(()=>{el.hidden=true;},2200);
+  }
+  function hasSyncPending(){return syncMode==='sections'?Object.keys(syncDirty).length>0:cloudPending;}
   function scheduleCloudSave(){
     if(!authUser||!sb)return;
-    cloudPending=true;cloudRevision++;
+    if(syncMode==='sections'){
+      for(const name of SYNC_SECTIONS){
+        const value=JSON.stringify(store[name]??null);
+        if(value!==syncBaseline[name])syncDirty[name]=value;
+      }
+      cloudPending=Object.keys(syncDirty).length>0;
+    }else cloudPending=true;
+    if(!cloudPending)return;
+    cloudRevision++;
+    persistSyncJournal(); // Synchronous durable journal, before any network request.
+    if(Object.keys(syncBlocked).length){
+      syncIndicator('conflict','Конфликт версий. Локальные изменения сохранены на устройстве.');
+      return;
+    }
+    syncIndicator('pending',navigator.onLine===false?'Нет сети · ожидает сохранения':'Сохраняем…');
     clearTimeout(cloudTimer);
-    cloudTimer=setTimeout(flushCloudSave,650);
+    cloudTimer=setTimeout(()=>{flushCloudSave();},0);
   }
   async function flushCloudSave(){
-    if(cloudWriting||!cloudPending||!authUser||!sb)return;
-    cloudWriting=true;cloudPending=false;
-    const userId=authUser.id,rev=cloudRevision,payload=JSON.parse(JSON.stringify(store));
-    const {error}=await sb.from('user_state').upsert({user_id:userId,data:payload},{onConflict:'user_id'});
-    cloudWriting=false;
-    if(error){cloudPending=true;console.error('Cloud save:',error);toast('Не удалось сохранить данные в облаке. Проверь подключение.');}
-    if(authUser?.id===userId&&cloudPending)setTimeout(flushCloudSave,error?4000:50);
+    if(cloudWritePromise)return cloudWritePromise;
+    if(!authUser||!sb||!hasSyncPending())return;
+    if(navigator.onLine===false){syncIndicator('pending','Нет сети · изменения сохранены на устройстве');return;}
+    const userId=authUser.id;
+    cloudWritePromise=(async()=>{
+      cloudWriting=true;
+      try{
+        if(syncMode==='legacy'){
+          const payload=JSON.parse(JSON.stringify(store));
+          const revision=cloudRevision;
+          const {error}=await sb.from('user_state').upsert({user_id:userId,data:payload},{onConflict:'user_id'});
+          if(error)throw error;
+          if(cloudRevision===revision)cloudPending=false;
+        }else{
+          for(const name of Object.keys(syncDirty)){
+            if(syncBlocked[name]||authUser?.id!==userId)continue;
+            const encoded=syncDirty[name],expected=syncVersions[name]||0;
+            const {data,error}=await sb.rpc('styleos_save_section',{p_section:name,p_data:JSON.parse(encoded),p_expected_version:expected});
+            if(error)throw error;
+            if(!data?.ok){
+              syncBlocked[name]=true;
+              syncIndicator('conflict','Конфликт изменений. Локальная версия не удалена.');
+              continue;
+            }
+            syncVersions[name]=Number(data.version);
+            syncBaseline[name]=encoded;
+            if(syncDirty[name]===encoded)delete syncDirty[name];
+            persistSyncJournal();
+          }
+          cloudPending=Object.keys(syncDirty).length>0;
+        }
+        if(authUser?.id===userId){
+          persistSyncJournal();
+          if(!hasSyncPending())syncIndicator('saved','Сохранено в облаке');
+        }
+      }catch(err){
+        console.error('Cloud save:',err);
+        syncIndicator('error','Не удалось сохранить в облаке · повторим автоматически');
+        cloudPending=true;persistSyncJournal();
+        clearTimeout(cloudTimer);
+        cloudTimer=setTimeout(()=>{flushCloudSave();},5000);
+      }finally{cloudWriting=false;}
+    })();
+    try{await cloudWritePromise;}finally{cloudWritePromise=null;}
+    if(authUser?.id===userId&&hasSyncPending()&&!Object.keys(syncBlocked).length&&navigator.onLine!==false){
+      clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>{flushCloudSave();},70);
+    }
   }
   async function logoutAccount(){
     await flushCloudSave();
+    if(hasSyncPending()){
+      syncIndicator('error','Данные ещё не сохранены. Дождись синхронизации перед выходом.');
+      return;
+    }
     const {error}=await sb.auth.signOut();if(error){toast(authFriendly(error));return;}
-    authUser=null;store=newUserStore();document.getElementById('onboarding').classList.remove('show');authDisplay('login');
+    authUser=null;store=newUserStore();syncDirty={};syncBlocked={};
+    document.getElementById('onboarding').classList.remove('show');authDisplay('login');
   }
+  window.addEventListener('online',()=>{if(authUser&&hasSyncPending()){syncIndicator('pending','Соединение восстановлено · сохраняем…');flushCloudSave();}});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&authUser&&hasSyncPending())flushCloudSave();});
   async function startAuth(){
     if(!window.supabase?.createClient){authDisplay();authMessage('Библиотека Supabase не загрузилась. Проверь соединение и обнови страницу.');return;}
     sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -2138,5 +2262,6 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
   }
   init();
 </script>
+<div id="styleSyncStatus" role="status" aria-live="polite" hidden></div>
 </body>
 </html>
