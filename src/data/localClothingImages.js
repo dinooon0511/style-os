@@ -6,7 +6,7 @@ export function applyLocalClothingImages(catalog) {
     return;
   }
   catalog.forEach((item, i) => {
-    item.photo = `/images/clothing/item-${String(clothingPhotoIndices[i]).padStart(3, '0')}.webp`;
+    item.photo = `${import.meta.env.BASE_URL}images/clothing/item-${String(clothingPhotoIndices[i]).padStart(3, '0')}.webp`;
     item.image_status = 'user_cutout_local';
   });
 }
