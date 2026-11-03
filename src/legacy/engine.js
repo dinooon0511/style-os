@@ -515,7 +515,10 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
   function isKnitMidlayer(item){
     return ['knit','hoodie'].includes(item?.type);
   }
-  function generateLooks({occasion,weather,ownedOnly=false,limit=5,mix=false,anchorItem=null}){
+  function generateLooks({occasion,weather,ownedOnly=false,limit=5,mix=false,anchorItem=null,anchorItems=null}){
+    const fixed=(anchorItems||[anchorItem].filter(Boolean));
+    const fixedKeys=new Set(fixed.map(x=>x.ownedId||x.catalogId||x.id));
+    const fixedBySlot=new Map(fixed.map(x=>[anchorSlot(x),x]));
     const owned=ownItems(),catalog=state.catalog,preferred=getStyleMode();
     const occasionStyles={
       everyday:['casual','minimal','utility','dark_minimal','oldmoney','smart'],
@@ -536,34 +539,37 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
       const ids=new Set(own.map(x=>x.id));
       const suggestions=ownedOnly?[]:catalog.filter(x=>GROUP[x.type]===group&&!ids.has(x.id)&&allowed(x,group)).map(x=>({...x,missing:true}));
       pools[group]=[...own,...suggestions];
-      if(anchorItem&&GROUP[anchorItem.type]===group&&!pools[group].some(x=>(x.ownedId||x.id)===(anchorItem.ownedId||anchorItem.id)))pools[group].unshift({...anchorItem,missing:false});
+      for(const required of fixed.filter(x=>GROUP[x.type]===group)){
+        if(!pools[group].some(x=>keyOfAnchor(x)===keyOfAnchor(required)))pools[group].unshift({...required,missing:false});
+      }
     }
     // Every owned bottom is kept in consideration, irrespective of catalogue ranking.
     const candidates=[],seen=new Set();
     const key=x=>x.ownedId||x.catalogId||x.id;
     const pick=(group,style,limit,pool=pools[group])=>[...pool].sort((a,b)=>
-      (anchorItem?Number((b.ownedId||b.id)===(anchorItem.ownedId||anchorItem.id))-Number((a.ownedId||a.id)===(anchorItem.ownedId||anchorItem.id)):0)||
+      Number(fixedKeys.has(key(b)))-Number(fixedKeys.has(key(a)))||
       Number(a.missing)-Number(b.missing)||
       Number(STYLE_MODES[style].types.includes(b.type))-Number(STYLE_MODES[style].types.includes(a.type))||
       Number(STYLE_MODES[style].colors.includes(b.color))-Number(STYLE_MODES[style].colors.includes(a.color))
     ).slice(0,limit);
     for(const style of styles){
-      const tops=pick('top',style,ownedOnly?12:12),bottoms=pick('bottom',style,ownedOnly?100:24),shoes=pick('shoes',style,ownedOnly?10:6),layers=pick('layer',style,ownedOnly?12:9);
+      const tops=pick('top',style,12),bottoms=fixedBySlot.has('bottom')?[fixedBySlot.get('bottom')]:pick('bottom',style,ownedOnly?100:24),shoes=fixedBySlot.has('shoes')?[fixedBySlot.get('shoes')]:pick('shoes',style,ownedOnly?10:6),layers=pick('layer',style,12);
       // Select base layers and knitwear independently: a wardrobe rich in sweaters
       // must not push every tee or shirt out of the candidate pool.
-      const bases=pick('top',style,ownedOnly?10:9,pools.top.filter(isBaseUnderlayer));
-      const mids=pick('top',style,ownedOnly?10:9,pools.top.filter(isKnitMidlayer));
+      const bases=fixedBySlot.has('base')?[fixedBySlot.get('base')]:pick('top',style,9,pools.top.filter(isBaseUnderlayer));
+      const mids=fixedBySlot.has('mid')?[fixedBySlot.get('mid')]:pick('top',style,9,pools.top.filter(isKnitMidlayer));
       const shells=layers.filter(x=>['coat','jacket','blazer'].includes(x.type));
       const overs=layers.filter(x=>x.type==='overshirt');
       const variants=[];
-      for(const base of tops)if(!requiresBaseUnderlayer(base))variants.push([base]);
+      for(const base of tops)if(!requiresBaseUnderlayer(base)&&(!fixedBySlot.has('base')||key(base)===key(fixedBySlot.get('base')))&&!fixedBySlot.has('mid')&&!fixedBySlot.has('over'))variants.push([base]);
+      for(const mid of mids)if(!requiresBaseUnderlayer(mid)&&!fixedBySlot.has('base')&&!fixedBySlot.has('over'))variants.push([mid]);
       for(const base of bases)for(const mid of mids){
         if(key(base)===key(mid))continue;
         // A bulky high collar pairs best with a thin tee, not another shirt collar.
         if(base.type!=='tee'&&/водолазка|с горлом/i.test(mid.name||''))continue;
-        variants.push([base,mid]);
+        if(!fixedBySlot.has('over'))variants.push([base,mid]);
       }
-      for(const base of bases.slice(0,5))for(const mid of mids.slice(0,5))for(const over of overs.slice(0,2)){
+      for(const base of bases.slice(0,5))for(const mid of mids.slice(0,5))for(const over of (fixedBySlot.has('over')?[fixedBySlot.get('over')]:overs.slice(0,2))){
         if(base.type!=='tee'&&/водолазка|с горлом/i.test(mid.name||''))continue;
         variants.push([base,mid,over]);
       }
@@ -576,14 +582,15 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
       });
       // Keep both single-layer and layered outfits in the search, instead of
       // letting the much larger set of layered combinations hide all basics.
-      const consideredVariants=[...variants.filter(v=>v.length>1).slice(0,26),...variants.filter(v=>v.length===1).slice(0,12),...variants.filter(v=>v.length>1).slice(26,42)];
+      const consideredVariants=[...variants.filter(v=>fixed.filter(x=>['base','mid','over'].includes(anchorSlot(x))).every(x=>v.some(p=>key(p)===key(x)))&&(!fixedBySlot.has('over')||v.some(p=>key(p)===key(fixedBySlot.get('over')))))].slice(0,70);
       // Include coat over a shirt and knit layer; five pieces total including trousers and shoes.
-      const outerOptions=weather==='hot'?[null]:weather==='cold'?shells.filter(x=>['coat','jacket'].includes(x.type)):[null,...shells,...overs];
+      const outerOptions=fixedBySlot.has('outer')?[fixedBySlot.get('outer')]:weather==='hot'?[null]:weather==='cold'?shells.filter(x=>['coat','jacket'].includes(x.type)):[null,...shells,...overs.filter(x=>!fixedBySlot.has('over'))];
       if(weather==='cold'&&!outerOptions.length)continue;
       for(const base of consideredVariants)for(const bottom of bottoms)for(const shoe of shoes)for(const outer of outerOptions.slice(0,5)){
         const parts=[...base,bottom,shoe,...(outer?[outer]:[])];
         if(new Set(parts.map(key)).size!==parts.length)continue;
-        if(anchorItem&&!parts.some(p=>(p.ownedId||p.id)===(anchorItem.ownedId||anchorItem.id)))continue;
+        if(fixed.some(x=>!parts.some(p=>key(p)===key(x))))continue;
+        if(parts.filter(p=>anchorSlot(p)==='outer').length>1||parts.filter(p=>anchorSlot(p)==='over').length>1)continue;
         if(parts.length>6)continue;
         if(base.some(requiresBaseUnderlayer)&&!base.some(isBaseUnderlayer))continue;
         if(ownedOnly&&parts.some(p=>p.missing))continue;
@@ -614,7 +621,7 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
         }
         if(weather==='cold'&&base.some(p=>['knit','hoodie'].includes(p.type)))score+=8;
         if(['office','restaurant'].includes(occasion)&&['classic','smart','soft_tailoring'].includes(style))score+=5;
-        if(score<42)continue;
+        if(score<(fixed.length?25:42))continue;
         const explanations=[...ev.explanations];
         if(base.some(p=>p.type==='knit')&&base.some(isBaseUnderlayer))explanations.push('Футболка или рубашка под трикотажем делает комплект удобнее.');
         if(base.some(requiresBaseUnderlayer))explanations.push('Под расстёгивающейся вещью предусмотрен нижний слой.');
@@ -845,40 +852,55 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
     if(['knit','hoodie','jacket','blazer','overshirt'].includes(item.type)&&current==='hot')return 'mild';
     return current;
   }
-  function createAnchorLooks(item){
+  // Five functional clothing slots. A tee and a cardigan may coexist;
+  // two tees, two trousers or two coats may not.
+  function anchorSlot(item){
+    if(['tee','polo','shirt'].includes(item.type))return 'base';
+    if(['knit','hoodie'].includes(item.type))return 'mid';
+    if(item.type==='overshirt')return 'over';
+    if(['jacket','coat','blazer'].includes(item.type))return 'outer';
+    return GROUP[item.type]||item.type;
+  }
+  function keyOfAnchor(item){return item.ownedId||item.catalogId||item.id;}
+  function activeAnchorItems(){
+    const ids=state.anchorItemIds||[];
+    return ids.map(id=>store.wardrobe.find(item=>keyOfAnchor(item)===id)).filter(Boolean);
+  }
+  function createAnchorLooks(items){
+    if(!items.length||items.length>4||new Set(items.map(anchorSlot)).size!==items.length)return [];
     return generateLooks({
       occasion:state.filters.outfitOccasion,
       weather:state.filters.outfitWeather,
       ownedOnly:state.filters.ownedOnly,
-      anchorItem:item,
+      anchorItems:items,
       limit:10,
       mix:true
-    }).map((look,index)=>({...look,id:'anchored_'+(item.ownedId||item.id)+'_'+state.filters.outfitOccasion+'_'+state.filters.outfitWeather+'_'+index,anchorSource:true}));
+    }).map((look,index)=>({...look,id:'anchored_'+items.map(keyOfAnchor).sort().join('_')+'_'+state.filters.outfitOccasion+'_'+state.filters.outfitWeather+'_'+index,anchorSource:true}));
   }
-  function activeAnchorItem(){
-    return store.wardrobe.find(item=>(item.ownedId||item.id)===state.anchorItemId);
-  }
+  function activeAnchorItem(){return activeAnchorItems()[0]||null;}
   function refreshAnchorLooks(){
-    const item=activeAnchorItem();
-    state.anchorLooks=item?createAnchorLooks(item):[];
+    state.anchorItemIds=(state.anchorItemIds||[]).filter(id=>store.wardrobe.some(item=>keyOfAnchor(item)===id));
+    const items=activeAnchorItems();
+    state.anchorLooks=items.length?createAnchorLooks(items):[];
   }
   function filterAnchorPicker(){
     const list=document.getElementById('anchorPickerList');
     if(!list)return;
     const category=state.anchorCategory||'all',query=(state.anchorQuery||'').trim().toLowerCase();
-    const selected=state.anchorItemId;
-    const matches=store.wardrobe.filter(item=>
-      (category==='all'||GROUP[item.type]===category||item.type===category)&&
-      (!query||[item.name,item.brand,item.sku,itemTypeLabel(item),COLORS[item.color]?.[0]].join(' ').toLowerCase().includes(query))
-    );
+    const selected=new Set((state.anchorItemIds||[]));
+    const slots=new Set(activeAnchorItems().map(anchorSlot));
+    const matches=store.wardrobe.filter(item=>(category==='all'||GROUP[item.type]===category||item.type===category)&&(!query||[item.name,item.brand,item.sku,itemTypeLabel(item),COLORS[item.color]?.[0]].join(' ').toLowerCase().includes(query)));
     list.innerHTML=matches.map(item=>{
-      const id=item.ownedId||item.id;
-      const chosen=id===selected;
-      return `<button type='button' class='anchorPickerItem ${chosen?'selected':''}' aria-pressed='${chosen}' onclick='window.appAction("chooseAnchor",${JSON.stringify(id)})'><img src='${productImage(item)}' alt=''><span><strong>${escapeHtml(itemTypeLabel(item))}</strong><small>${escapeHtml(item.name)}</small></span><span aria-hidden='true' class='anchorPickerCheck'>${chosen?'✓':'○'}</span></button>`;
+      const id=keyOfAnchor(item),chosen=selected.has(id),blocked=!chosen&&(selected.size>=4||slots.has(anchorSlot(item)));
+      return `<button type='button' class='anchorPickerItem ${chosen?'selected':''}' aria-pressed='${chosen}' ${blocked?'disabled':''} onclick='window.appAction("chooseAnchor",${JSON.stringify(id)})'><img src='${productImage(item)}' alt=''><span><strong>${escapeHtml(itemTypeLabel(item))}</strong><small>${escapeHtml(item.name)}</small></span><span aria-hidden='true' class='anchorPickerCheck'>${chosen?'✓':blocked?'—':'○'}</span></button>`;
     }).join('')||'<p class="anchorPickerNoResults">По этому запросу вещей нет.</p>';
     document.querySelectorAll('#anchorPickerCategories button').forEach(button=>button.classList.toggle('selected',button.dataset.category===category));
     const submit=document.getElementById('anchorPickerSubmit');
-    if(submit)submit.disabled=!activeAnchorItem();
+    if(submit)submit.disabled=!selected.size;
+    const counter=document.getElementById('anchorPickerCounter');
+    if(counter)counter.textContent=`Выбрано ${selected.size} из 4 · не более одной вещи каждого типа`;
+    const chosenList=document.getElementById('anchorPickerChosen');
+    if(chosenList)chosenList.innerHTML=activeAnchorItems().map(item=>`<button type='button' class='anchorChosenChip' onclick='window.appAction("chooseAnchor",${JSON.stringify(keyOfAnchor(item))})'>${escapeHtml(itemTypeLabel(item))} ×</button>`).join('');
   }
   function dailyLooks(){return generateLooks({occasion:'everyday',weather:store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather,ownedOnly:true}).filter(l=>l.missing.length===0&&l.parts.every(p=>store.wardrobe.some(w=>(w.ownedId||w.id)===(p.ownedId||p.id))));}
   function lookPhoto(look,index=0){
@@ -969,14 +991,14 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
     }
 
     if(kind==='anchorPicker'){
-      const selected=activeAnchorItem();
+      const selected=activeAnchorItems();
       const categories=[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Верхняя одежда']];
-      html=`<div class='sheetHandle'></div><div class='anchorPickerSheet'><h2 class='sheetTitle'>Выбрать вещь</h2><p class='sheetSub'>Выбери одну вещь из гардероба — она будет в каждом из 10 образов.</p>
+      html=`<div class='sheetHandle'></div><div class='anchorPickerSheet'><h2 class='sheetTitle'>Выбрать вещь</h2><p class='sheetSub'>Выбери от 1 до 4 вещей из разных категорий. Каждая выбранная вещь обязательно войдёт в каждый образ.</p>
         <label class='anchorPickerSearch'><span aria-hidden='true'>⌕</span><input type='search' id='anchorPickerSearch' placeholder='Название, цвет или категория' value='${escapeHtml(state.anchorQuery||'')}' oninput='window.appAction("anchorQuery",this.value)' autocomplete='off' aria-label='Найти вещь'></label>
         <div class='anchorPickerCategories' id='anchorPickerCategories'>${categories.map(([key,label])=>`<button type='button' data-category='${key}' class='${(state.anchorCategory||'all')===key?'selected':''}' onclick='window.appAction("anchorCategory","${key}")'>${label}</button>`).join('')}</div>
-        <div class='anchorPickerList' id='anchorPickerList'></div>
+        <div id='anchorPickerCounter' class='anchorPickerCounter'></div><div id='anchorPickerChosen' class='anchorPickerChosen'></div><div class='anchorPickerList' id='anchorPickerList'></div>
         ${!store.wardrobe.length?`<div class='empty'>В гардеробе пока нет вещей. Сначала добавь вещь.</div>`:''}
-        <div class='sheetFooter'><button class='btn line' onclick='window.appAction("switchTab","wardrobe")'>Гардероб</button><button id='anchorPickerSubmit' class='btn dark' ${selected?'':'disabled'} onclick='window.appAction("generateAnchorLooks")'>Подобрать образы</button></div></div>`;
+        <div class='sheetFooter'><button class='btn line' onclick='window.appAction("switchTab","wardrobe")'>Гардероб</button><button id='anchorPickerSubmit' class='btn dark' ${selected.length?'':'disabled'} onclick='window.appAction("generateAnchorLooks")'>Подобрать образы</button></div></div>`;
     }
     if(kind==='anchorResults'){
       const looks=state.anchorLooks||[],chosen=store.wardrobe.find(x=>x.ownedId===state.anchorItemId);
@@ -1182,12 +1204,14 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
   }
   function renderOutfits(){
  const anchoredReact=state.outfitMode==='anchor',anchorReact=anchoredReact?activeAnchorItem():null;
+ const anchorsReact=anchoredReact?activeAnchorItems():[];
  const availableReact=outfitVisibleLooks(),countReact=availableReact.length;
  state.outfitIndex=Math.max(0,Math.min(state.outfitIndex||0,countReact-1));
  const activeReact=availableReact[state.outfitIndex];
  window.dispatchEvent(new CustomEvent('styleos:outfits',{detail:{
    anchored:anchoredReact,
    anchor:anchorReact?{label:itemTypeLabel(anchorReact),image:productImage(anchorReact)}:null,
+   anchors:anchorsReact.map(item=>({label:itemTypeLabel(item),image:productImage(item)})),
    index:state.outfitIndex,
    count:countReact,
    summary:[getOccLabel(state.filters.outfitOccasion),getWeatherLabel(state.filters.outfitWeather),state.filters.ownedOnly?'Только мои вещи':'С докупкой'],
@@ -1365,14 +1389,23 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
     }
     if(action==='openAnchorPicker'){
       state.anchorCategory='all';state.anchorQuery='';
+      state.anchorItemIds=(state.anchorItemIds||[]).filter(id=>store.wardrobe.some(x=>keyOfAnchor(x)===id));
       openSheet('anchorPicker');
     }
     if(action==='anchorQuery'){state.anchorQuery=payload;filterAnchorPicker();}
     if(action==='anchorCategory'){state.anchorCategory=payload;filterAnchorPicker();}
-    if(action==='chooseAnchor'){state.anchorItemId=payload;filterAnchorPicker();}
+    if(action==='chooseAnchor'){
+      const item=store.wardrobe.find(x=>keyOfAnchor(x)===payload);if(!item)return;
+      const ids=state.anchorItemIds||[];
+      if(ids.includes(payload))state.anchorItemIds=ids.filter(x=>x!==payload);
+      else if(ids.length>=4)toast('Можно выбрать не больше четырёх вещей');
+      else if(activeAnchorItems().some(x=>anchorSlot(x)===anchorSlot(item)))toast('Из этой категории уже выбрана вещь');
+      else state.anchorItemIds=[...ids,payload];
+      filterAnchorPicker();
+    }
     if(action==='generateAnchorLooks'){
-      const selected=activeAnchorItem();
-      if(!selected){toast('Сначала выбери вещь');return;}
+      const selected=activeAnchorItems();
+      if(!selected.length){toast('Выбери от одной до четырёх вещей');return;}
       const looks=createAnchorLooks(selected);
       if(!looks.length){toast('Не удалось подобрать образы с этой вещью. Попробуй изменить фильтры.');return;}
       state.anchorLooks=looks;state.outfitMode='anchor';state.outfitIndex=0;
@@ -1409,9 +1442,9 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
     if(action==='switchTab'){ state.screen=payload; closeSheet(); renderScreens(); }
     if(action==='setWardrobeFilter'){ state.filters.wardrobe=payload; renderWardrobe(); }
     if(action==='setCatalogFilter'){ state.filters.catalog=payload; renderCatalog(); }
-    if(action==='setOccasion'){ state.filters.outfitOccasion=payload; renderHome(); renderOutfits(); }
-    if(action==='setOwnedOnly'){state.filters.ownedOnly=payload==='true';renderOutfits();}
-    if(action==='setWeather'){ state.filters.outfitWeather=payload; renderHome(); renderOutfits(); }
+    if(action==='setOccasion'){ state.filters.outfitOccasion=payload;if(state.outfitMode==='anchor')refreshAnchorLooks();state.outfitIndex=0;renderHome(); renderOutfits(); }
+    if(action==='setOwnedOnly'){state.filters.ownedOnly=payload==='true';if(state.outfitMode==='anchor')refreshAnchorLooks();state.outfitIndex=0;renderOutfits();}
+    if(action==='setWeather'){ state.filters.outfitWeather=payload;if(state.outfitMode==='anchor')refreshAnchorLooks();state.outfitIndex=0;renderHome(); renderOutfits(); }
     if(action==='searchCatalog'){ state.filters.catalogSearch=payload; const input=document.activeElement; const at=input && input.selectionStart; renderCatalog(); const next=document.querySelector('#catalogScreen .search input'); if(next){next.focus(); if(at!==null) next.setSelectionRange(at,at); } }
     if(action==='openAdd'){ state.addQuery='';state.addCategory='all';openSheet('addItem'); }
     if(action==='addCategory'){state.addCategory=payload;openSheet('addItem');}
@@ -1466,7 +1499,11 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
       const owned=store.wardrobe.find(i=>i.ownedId===payload);
       if(owned){ store.wardrobe = store.wardrobe.filter(i=>i.ownedId!==payload); saveStore(); toast('Вещь удалена'); closeSheet(); renderScreens(); }
     }
-    if(action==='buildFromItem'){ state.screen='outfits'; closeSheet(); renderScreens(); }
+    if(action==='buildFromItem'){
+      const item=store.wardrobe.find(x=>keyOfAnchor(x)===payload);
+      if(item){state.anchorItemIds=[keyOfAnchor(item)];state.anchorCategory='all';state.anchorQuery='';openSheet('anchorPicker');}
+      else {state.screen='outfits';closeSheet();renderScreens();}
+    }
     if(action==='shuffle'){ const keys=['everyday','office','date','restaurant','travel'];state.filters.outfitOccasion=keys[(keys.indexOf(state.filters.outfitOccasion)+1)%keys.length];if(state.outfitMode==='anchor')refreshAnchorLooks();state.outfitIndex=0;renderHome();renderOutfits(); }
     if(action==='editProfile'){ openSheet('editProfile'); }
     if(action==='openSaved'){ openSheet('savedLooks'); }
