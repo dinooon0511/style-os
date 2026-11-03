@@ -515,6 +515,25 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
   function isKnitMidlayer(item){
     return ['knit','hoodie'].includes(item?.type);
   }
+  // Outfit composition rules v2: one knit/sweatshirt, one outerwear item,
+  // one pair of trousers and shoes. A tee/tank/shirt may sit under ONE knit.
+  function validLookLayers(parts){
+    if(!Array.isArray(parts)||!parts.length)return false;
+    const count=types=>parts.filter(p=>types.includes(p.type)).length;
+    const base=parts.filter(p=>['tee','polo','shirt'].includes(p.type));
+    const mids=parts.filter(p=>['knit','hoodie'].includes(p.type));
+    const outer=parts.filter(p=>['coat','jacket','blazer','overshirt'].includes(p.type));
+    if(base.length>1||mids.length>1||outer.length>1)return false;
+    if(count(['trousers','chinos','jeans','joggers','shorts'])>1)return false;
+    if(parts.filter(p=>GROUP[p.type]==='bottom').length!==1)return false;
+    if(parts.filter(p=>GROUP[p.type]==='shoes').length!==1)return false;
+    // A hoodie is an alternative to knitwear, not an extra knitwear layer.
+    // Overshirts and jackets are mutually exclusive outer layers.
+    if(mids.some(p=>p.type==='hoodie')&&base.some(p=>p.type==='shirt'))return false;
+    if(outer.some(p=>p.type==='overshirt')&&mids.length)return false;
+    if(mids.some(requiresBaseUnderlayer)&&!base.length)return false;
+    return true;
+  }
   function generateLooks({occasion,weather,ownedOnly=false,limit=5,mix=false,anchorItem=null,anchorItems=null}){
     const fixed=(anchorItems||[anchorItem].filter(Boolean));
     const fixedKeys=new Set(fixed.map(x=>x.ownedId||x.catalogId||x.id));
@@ -575,7 +594,9 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
       }
       for(const base of bases.slice(0,5))for(const mid of mids.slice(0,5))for(const over of (fixedBySlot.has('over')?[fixedBySlot.get('over')]:overs.slice(0,2))){
         if(base.type!=='tee'&&/водолазка|с горлом/i.test(mid.name||''))continue;
-        variants.push([base,mid,over]);
+        // Do not stack a cardigan/sweater/hoodie with an overshirt.
+        // An overshirt is already the single outer layer.
+        continue;
       }
       variants.sort((a,b)=>{
         const anchored=list=>anchorItem&&list.some(x=>(x.ownedId||x.id)===(anchorItem.ownedId||anchorItem.id));
@@ -588,13 +609,13 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
       // letting the much larger set of layered combinations hide all basics.
       const consideredVariants=[...variants.filter(v=>fixed.filter(x=>['base','mid','over'].includes(anchorSlot(x))).every(x=>v.some(p=>key(p)===key(x)))&&(!fixedBySlot.has('over')||v.some(p=>key(p)===key(fixedBySlot.get('over')))))].slice(0,70);
       // Include coat over a shirt and knit layer; five pieces total including trousers and shoes.
-      const outerOptions=fixedBySlot.has('outer')?[fixedBySlot.get('outer')]:weather==='hot'?[null]:weather==='cold'?shells.filter(x=>['coat','jacket'].includes(x.type)):[null,...shells,...overs.filter(x=>!fixedBySlot.has('over'))];
+      const outerOptions=fixedBySlot.has('outer')?[fixedBySlot.get('outer')]:weather==='hot'?[null]:weather==='cold'?shells.filter(x=>['coat','jacket'].includes(x.type)):[null,...shells];
       if(weather==='cold'&&!outerOptions.length)continue;
       for(const base of consideredVariants)for(const bottom of bottoms)for(const shoe of shoes)for(const outer of outerOptions.slice(0,5)){
         const parts=[...base,bottom,shoe,...(outer?[outer]:[])];
         if(new Set(parts.map(key)).size!==parts.length)continue;
         if(fixed.some(x=>!parts.some(p=>key(p)===key(x))))continue;
-        if(parts.filter(p=>anchorSlot(p)==='outer').length>1||parts.filter(p=>anchorSlot(p)==='over').length>1)continue;
+        if(!validLookLayers(parts))continue;
         if(parts.length>6)continue;
         if(base.some(requiresBaseUnderlayer)&&!base.some(isBaseUnderlayer))continue;
         if(ownedOnly&&parts.some(p=>p.missing))continue;
@@ -751,8 +772,8 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
   function dailyData(){
     const key=dayKey()+'-'+(store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather);
     const wardrobeSignature=store.wardrobe.map(x=>x.ownedId||x.id).sort().join('|');
-    if(!store.daily||store.daily.key!==key||store.daily.wardrobeSignature!==wardrobeSignature||!Array.isArray(store.daily.candidates)||store.daily.candidates.some(l=>l.missing?.length||!l.parts?.every(p=>store.wardrobe.some(w=>(w.ownedId||w.id)===(p.ownedId||p.id))))){
-      store.daily={key,wardrobeSignature,selected:null,index:0,votes:{},candidates:dailyLooks().map(l=>({...l}))};
+    if(!store.daily||store.daily.rulesVersion!==2||store.daily.key!==key||store.daily.wardrobeSignature!==wardrobeSignature||!Array.isArray(store.daily.candidates)||store.daily.candidates.some(l=>l.missing?.length||!validLookLayers(l.parts)||!l.parts?.every(p=>store.wardrobe.some(w=>(w.ownedId||w.id)===(p.ownedId||p.id))))){
+      store.daily={key,rulesVersion:2,wardrobeSignature,selected:null,index:0,votes:{},candidates:dailyLooks().filter(l=>validLookLayers(l.parts)).map(l=>({...l}))};
       saveStore();
     }
     return store.daily;
