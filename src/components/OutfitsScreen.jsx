@@ -59,14 +59,14 @@ export default function OutfitsScreen() {
   };
 
   if (!view) return null;
-  const { anchored, anchor, count, look, summary } = view;
+  const { anchored, anchor, anchors = [], count, look, summary } = view;
 
   return <div className="lookbookPage">
     <header className="lookbookHeader">
       <h1>Образы</h1>
       <div className="lookbookModes" role="group" aria-label="Способ подбора">
         <button type="button" className={!anchored ? 'active' : ''} aria-current={!anchored ? 'page' : undefined} onClick={() => action('showReadyOutfits')}>Готовые</button>
-        <button type="button" className={anchored ? 'active' : ''} aria-current={anchored ? 'page' : undefined} onClick={() => action('openAnchorPicker')}>По вещи</button>
+        <button type="button" className={anchored ? 'active' : ''} aria-current={anchored ? 'page' : undefined} onClick={() => action('openAnchorPicker')}>По вещам</button>
       </div>
     </header>
     <button className="lookbookFilters" onClick={() => action('openOutfitFilters')} aria-label={`Настроить подбор: ${summary.join(', ')}`}>
@@ -85,9 +85,9 @@ export default function OutfitsScreen() {
         <div className="lookbookPhotoCopy"><span className="lookbookKicker">STYLE OS / LOOK {number(view.index + 1)}</span><h2>{look.title}</h2><p>{look.occasion}</p></div>
       </div>
       <div className="lookbookPhotoControls">
-        {anchored && anchor && <button type="button" className="anchorHeroPick" onClick={() => action('openAnchorPicker')} aria-label="Изменить выбранную вещь">
-          <img src={anchor.image} alt={anchor.label} />
-          <span className="anchorHeroChange" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M20 11a8 8 0 1 0-2.5 5.8" /><path d="M20 4v7h-7" /></svg></span>
+        {anchored && anchors.length > 0 && <button type="button" className="anchorHeroPick anchorHeroMulti" onClick={() => action('openAnchorPicker')} aria-label="Изменить выбранные вещи">
+          {anchors.map((item, i) => <img key={i} src={item.image} alt={item.label} />)}
+          <span className="anchorHeroChange" aria-hidden="true">↻</span>
         </button>}
         <div className="lookbookPagination" aria-label={`Образ ${view.index + 1} из ${count}`}>
           <span>{number(view.index + 1)} / {number(count)}</span>
