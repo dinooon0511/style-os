@@ -769,3 +769,12 @@ html,body,button,input,select,textarea,body *{font-family:Helvetica,Arial,sans-s
   .lookDetailSheet .lookDetailProducts{gap:12px 7px}
   .lookDetailSheet .lookDetailProductPhoto{height:clamp(95px,29vw,115px)}
 }
+
+/* Multi-item outfit picker */
+.anchorPickerCounter{margin:13px 0 8px;color:#697268;font:500 12px/1.4 Helvetica,Arial,sans-serif}
+.anchorPickerChosen{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+.anchorChosenChip{border:1px solid #cbd6c9;border-radius:999px;background:#eaf0e8;color:#2d3e30;padding:7px 11px;font:500 12px Helvetica,Arial,sans-serif;cursor:pointer}
+.anchorPickerItem:disabled{opacity:.4;cursor:not-allowed}
+.anchorHeroMulti{display:flex!important;align-items:center;gap:5px;max-width:min(270px,72vw);padding:5px 27px 5px 6px!important;overflow:visible}
+.anchorHeroMulti img{width:clamp(30px,9vw,48px)!important;height:clamp(34px,10vw,52px)!important;object-fit:contain;flex:0 1 auto;min-width:0}
+.anchorHeroMulti .anchorHeroChange{right:-7px}
