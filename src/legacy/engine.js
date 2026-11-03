@@ -1407,6 +1407,21 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
       state.anchorCategory='all';state.anchorQuery='';
       openSheet('anchorPicker');
     }
+    if(action==='removeAnchor'){
+      const ids=state.anchorItemIds||[];
+      if(!ids.includes(payload))return;
+      const remaining=ids.filter(id=>id!==payload);
+      if(!remaining.length){
+        state.anchorItemIds=[];state.anchorLooks=[];state.outfitMode='ready';state.outfitIndex=0;
+        toast('Все обязательные вещи убраны');renderOutfits();return;
+      }
+      const previous=ids;
+      state.anchorItemIds=remaining;
+      const looks=createAnchorLooks(activeAnchorItems());
+      if(!looks.length){state.anchorItemIds=previous;toast('Не удалось обновить образы. Попробуй изменить фильтры.');return;}
+      state.anchorLooks=looks;state.outfitMode='anchor';state.outfitIndex=0;
+      renderOutfits();return;
+    }
     if(action==='replaceAnchor'){
       state.anchorAdding=false;
       const item=activeAnchorItems().find(x=>keyOfAnchor(x)===payload);
