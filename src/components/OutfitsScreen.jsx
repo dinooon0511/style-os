@@ -85,10 +85,12 @@ export default function OutfitsScreen() {
         <div className="lookbookPhotoCopy"><span className="lookbookKicker">STYLE OS / LOOK {number(view.index + 1)}</span><h2>{look.title}</h2><p>{look.occasion}</p></div>
       </div>
       <div className="lookbookPhotoControls">
-        {anchored && anchors.length > 0 && <button type="button" className="anchorHeroPick anchorHeroMulti" onClick={() => action('openAnchorPicker')} aria-label="Изменить выбранные вещи">
-          {anchors.map((item, i) => <img key={i} src={item.image} alt={item.label} />)}
-          <span className="anchorHeroChange" aria-hidden="true">↻</span>
-        </button>}
+        {anchored && anchors.length > 0 && <div className="anchorHeroGrid" aria-label="Обязательные вещи">
+          {anchors.map(item => <button key={item.id} type="button" className="anchorHeroTile" onClick={() => action('replaceAnchor', item.id)} aria-label={`Заменить: ${item.label}`}>
+            <img src={item.image} alt={item.label} />
+            <span className="anchorHeroChange" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M19.5 8a8 8 0 0 0-13.7-2.2L3.5 8" /><path d="M3.5 3.5V8H8" /><path d="M4.5 16a8 8 0 0 0 13.7 2.2l2.3-2.2" /><path d="M20.5 20.5V16H16" /></svg></span>
+          </button>)}
+        </div>}
         <div className="lookbookPagination" aria-label={`Образ ${view.index + 1} из ${count}`}>
           <span>{number(view.index + 1)} / {number(count)}</span>
           <div className="lookbookProgress">{Array.from({ length: count }, (_, i) => <button key={i} type="button" aria-label={`Образ ${i + 1}`} className={i === view.index ? 'selected' : ''} onClick={() => navigate(i > view.index ? 1 : -1, i)} />)}</div>
