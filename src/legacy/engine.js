@@ -778,11 +778,31 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
     const left=card.querySelector('.dailySwipeNo'),right=card.querySelector('.dailySwipeYes');
     if(left)left.style.opacity=direction<0?'1':'0';
     if(right)right.style.opacity=direction>0?'1':'0';
-    card.style.transition='transform 350ms cubic-bezier(.2,.76,.2,1),opacity 350ms ease';
-    card.style.transform='translate3d('+(direction*120)+'vw,0,0) rotate('+(direction*14)+'deg)';
-    card.style.opacity='0';
+    // Move beyond the entire viewport (including rotated corners), not just 120vw.
+    // Keep the next card hidden until the outgoing card has fully exited.
+    const rect=card.getBoundingClientRect();
+    const rotation=direction*14;
+    const rotatedReach=Math.abs(Math.sin(rotation*Math.PI/180))*rect.height/2;
+    const distance=direction>0
+      ?Math.max(window.innerWidth-rect.left+rotatedReach+80,window.innerWidth+rect.width+80)
+      :-Math.max(rect.right+rotatedReach+80,window.innerWidth+rect.width+80);
+    let completed=false;
+    const complete=()=>{
+      if(completed)return;
+      completed=true;
+      card.removeEventListener('transitionend',onEnd);
+      dailyVote(value);
+    };
+    const onEnd=e=>{if(e.target===card&&e.propertyName==='transform')complete();};
+    card.addEventListener('transitionend',onEnd);
     document.querySelectorAll('.dailyVoteActions button').forEach(b=>b.disabled=true);
-    window.setTimeout(()=>dailyVote(value),355);
+    // Two animation frames ensure Safari applies the outgoing transform after dragging.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      card.style.transition='transform 470ms cubic-bezier(.22,.7,.2,1),opacity 470ms ease-in';
+      card.style.transform='translate3d('+distance+'px,0,0) rotate('+rotation+'deg)';
+      card.style.opacity='0';
+    }));
+    window.setTimeout(complete,650);
   }
   function initDailySwipe(){
     const card=document.getElementById('dailySwipe');if(!card)return;
