@@ -1,12 +1,220 @@
-// Catalog-order mapping to 151 optimized local WebP assets.
-export const clothingPhotoIndices = [23,64,91,128,34,16,148,79,93,21,126,22,46,127,90,118,18,85,57,36,113,144,14,82,101,30,41,35,150,81,17,47,106,45,33,146,103,43,48,77,42,55,145,102,32,61,123,88,20,122,31,78,147,114,104,56,15,149,80,105,44,115,119,116,1,19,62,125,2,59,13,143,86,58,120,87,53,121,37,60,4,117,65,129,92,5,12,124,63,3,89,38,131,95,39,67,7,24,130,94,66,6,136,109,51,8,135,108,50,27,134,107,49,26,70,97,96,132,25,68,75,140,141,100,133,69,76,142,151,74,11,112,139,73,52,84,29,83,99,98,28,111,72,10,54,40,138,71,110,137,9];
-export function applyLocalClothingImages(catalog) {
-  if (catalog.length !== clothingPhotoIndices.length) {
-    console.warn('STYLE OS: catalog/image count mismatch; retaining original URLs');
-    return;
+// Stable SKU-to-image mapping. Reordering the catalog cannot change product photos.
+export const clothingPhotoBySku = {
+  "MP002XM00VAG": 23,
+  "MP002XM22OD9": 64,
+  "MP002XM22ODC": 91,
+  "MP002XM00VAF": 128,
+  "MP002XM02EXP": 34,
+  "MP002XM02HOD": 16,
+  "MP002XM02EXO": 148,
+  "MP002XM22TJ6": 79,
+  "MP002XM22TJ7": 93,
+  "MP002XM0NDWP": 21,
+  "MP002XM0NDWQ": 126,
+  "MP002XM0RVBS": 22,
+  "MP002XM0RVBO": 46,
+  "MP002XM00YAT": 127,
+  "MP002XM0X8K2": 90,
+  "MP002XM0WDSU": 118,
+  "MP002XM0WDSO": 18,
+  "MP002XM0WDSS": 85,
+  "MP002XM22QL9": 57,
+  "MP002XM012EP": 36,
+  "MP002XM00UL8": 113,
+  "MP002XM00UL7": 144,
+  "MP002XM00OCK": 14,
+  "MP002XM00OCN": 82,
+  "MP002XM00OCJ": 101,
+  "MP002XM0ST86": 30,
+  "MP002XM0WG7H": 41,
+  "MP002XM01XRC": 35,
+  "MP002XM01XRB": 150,
+  "XD001XM01HOY": 81,
+  "XD001XM01HPB": 17,
+  "XD001XM01HOV": 47,
+  "XD001XM01HP9": 106,
+  "XD001XM01HP8": 45,
+  "MP002XM22T37": 33,
+  "MP002XM22T38": 146,
+  "MP002XM22TSW": 103,
+  "MP002XM0RTDO": 43,
+  "MP002XM02BDK": 48,
+  "RTLAFI288601": 77,
+  "RTLAFI288701": 42,
+  "RTLAEJ818502": 55,
+  "MP002XM0RUM5": 145,
+  "MP002XM0RUM4": 102,
+  "MP002XM008MR": 32,
+  "RTLAFR791401": 61,
+  "MP002XM0X9UK": 123,
+  "MP002XM0X9UL": 88,
+  "MP002XM0RSJH": 20,
+  "MP002XM00OCO": 122,
+  "MP002XM0RO5D": 31,
+  "MP002XM22TEZ": 78,
+  "MP002XM0RT1E": 147,
+  "RTLAEN967601": 114,
+  "MP002XM0RT18": 104,
+  "RTLAEV815101": 56,
+  "RTLAFG953401": 15,
+  "MP002XM0RUGL": 149,
+  "MP002XM0RUGE": 80,
+  "MP002XM0RUGD": 105,
+  "MP002XM0RUGI": 44,
+  "MP002XM0RUG0": 115,
+  "MP002XM22RAO": 119,
+  "RTLAEV089502": 116,
+  "MP002XM05ZJF": 1,
+  "RTLAEZ590701": 19,
+  "RTLAEI323101": 62,
+  "MP002XM22N47": 125,
+  "RTLAFF876901": 2,
+  "MP002XM01QMB": 59,
+  "RTLAFG334201": 13,
+  "MP002XM0WEYS": 143,
+  "RTLAEW221701": 86,
+  "MP002XM0147C": 58,
+  "MP002XM0X97S": 120,
+  "RTLAEK292101": 87,
+  "RTLAFH497301": 53,
+  "RTLAFH497801": 121,
+  "RTLAFH497901": 37,
+  "RTLAEH523701": 60,
+  "RTLAFH336001": 4,
+  "MP002XM22R5J": 117,
+  "MP002XM05TXI": 65,
+  "MP002XM05XG6": 129,
+  "MP002XM05VYA": 92,
+  "MP002XM019M7": 5,
+  "XD001XM018J0": 12,
+  "RTLAFI437401": 124,
+  "RTLAFI437701": 63,
+  "RTLAFC974801": 3,
+  "RTLAFI437801": 89,
+  "MP002XM12HYR": 38,
+  "RTLAFF724901": 131,
+  "RTLAFJ635101": 95,
+  "RTLAFJ635001": 39,
+  "MP002XM22N43": 67,
+  "RTLAER059501": 7,
+  "MP002XM0X2GH": 24,
+  "RTLAEH380201": 130,
+  "MP002XM0RPMM": 94,
+  "MP002XM01P27": 66,
+  "MP002XM02APP": 6,
+  "MP002XM0RS68": 136,
+  "RTLAFF762101": 109,
+  "RTLADZ339701": 51,
+  "MP002XM0X9NT": 8,
+  "MP002XM0WEUR": 135,
+  "RTLAFG288301": 108,
+  "RTLAFD908701": 50,
+  "MP002XM1ZC7Y": 27,
+  "MP002XM0RRAJ": 134,
+  "RTLAEA037101": 107,
+  "RTLAET995501": 49,
+  "MP002XM0RLS9": 26,
+  "RTLAEX715801": 70,
+  "RTLAEX715901": 97,
+  "RTLAES932901": 96,
+  "RTLAEY812001": 132,
+  "MP002XM0RT1N": 25,
+  "MP002XM0X2GX": 68,
+  "RTLAFM122801": 75,
+  "RTLAEX329701": 140,
+  "MP002XM22TMO": 141,
+  "MP002XM22TMN": 100,
+  "RTLAFD828501": 133,
+  "RTLAFD828401": 69,
+  "RTLAFD947101": 76,
+  "RTLAFD947201": 142,
+  "RTLAFD947001": 151,
+  "RTLAFD946901": 74,
+  "XD001XM01FWJ": 11,
+  "RTLABL658301": 112,
+  "RTLAEF025803": 139,
+  "RTLAEW013902": 73,
+  "RTLAEF026001": 52,
+  "RTLAEN086001": 84,
+  "RTLAFR527301": 29,
+  "RTLAEF025903": 83,
+  "RTLAFN239301": 99,
+  "RTLAFM150601": 98,
+  "RTLAET549501": 28,
+  "RTLAFQ605401": 111,
+  "RTLAFO325201": 72,
+  "RTLAFN231701": 10,
+  "RTLAFO325601": 54,
+  "RTLAFK782601": 40,
+  "RTLAED937601": 138,
+  "XD001XM013DM": 71,
+  "MP002XM061E1": 110,
+  "MP002XM061DP": 137,
+  "XD001XM016HB": 9
+};
+
+// Correct the product metadata for the images verified against the catalog screenshots.
+const clothingCorrections = {
+  "MP002XM0WEYS": {
+    "name": "Чёрный лонгслив",
+    "type": "tee",
+    "subtype": "longsleeve",
+    "color": "black",
+    "season": "all"
+  },
+  "MP002XM0RT18": {
+    "name": "Чёрные спортивные брюки",
+    "type": "joggers",
+    "subtype": "joggers",
+    "color": "black"
+  },
+  "MP002XM0RT1E": {
+    "name": "Чёрные брюки",
+    "type": "trousers",
+    "subtype": "trousers",
+    "color": "black"
+  },
+  "MP002XM0RS68": {
+    "name": "Серое зип-худи",
+    "type": "hoodie",
+    "subtype": "ziphoodie",
+    "color": "gray"
+  },
+  "RTLAFF724901": {
+    "name": "Чёрный джемпер с воротником",
+    "type": "knit",
+    "subtype": "halfzip",
+    "color": "black"
+  },
+  "MP002XM0RO5D": {
+    "name": "Чёрная куртка с высоким воротником",
+    "type": "jacket",
+    "subtype": "jacket",
+    "color": "black",
+    "season": "cold"
+  },
+  "MP002XM02EXO": {
+    "name": "Чёрное худи",
+    "type": "hoodie",
+    "subtype": "hoodie",
+    "color": "black"
+  },
+  "RTLAFJ635101": {
+    "name": "Чёрные джинсы",
+    "type": "jeans",
+    "subtype": "jeans",
+    "color": "black"
   }
-  catalog.forEach((item, i) => {
-    item.photo = `${import.meta.env.BASE_URL}images/clothing/item-${String(clothingPhotoIndices[i]).padStart(3, '0')}.webp`;
-    item.image_status = 'user_cutout_local';
+};
+
+export function applyLocalClothingImages(catalog) {
+  catalog.forEach(item => {
+    const index = clothingPhotoBySku[item.sku];
+    if (index !== undefined) {
+      item.photo = `${import.meta.env.BASE_URL}images/clothing/item-${String(index).padStart(3, '0')}.webp`;
+      item.image_status = 'user_cutout_local';
+    }
+    const correction = clothingCorrections[item.sku];
+    if (correction) Object.assign(item, correction);
   });
 }
