@@ -74,7 +74,7 @@ export default function OutfitsScreen() {
       <span className="lookbookFilterSummary">{summary.map((part, i) => <React.Fragment key={part}>{i > 0 && <i>·</i>}{part}</React.Fragment>)}</span>
       <span aria-hidden="true" className="lookbookChevron">›</span>
     </button>
-    {look ? <div className="lookbookStory">
+    {look ? <div className={`lookbookStory ${anchored ? "lookbookStoryAnchored" : ""}`}>
       <div ref={photoRef} className="lookbookPhoto" style={{
         backgroundImage: `linear-gradient(90deg,rgba(12,16,12,.56),rgba(12,16,12,.04) 77%),url("${look.image}")`,
         transform: `translate3d(${offset}px,0,0)`,
