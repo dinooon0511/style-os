@@ -569,6 +569,10 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
         if(base.type!=='tee'&&/водолазка|с горлом/i.test(mid.name||''))continue;
         if(!fixedBySlot.has('over'))variants.push([base,mid]);
       }
+      // An overshirt can be worn over a tee without requiring a sweater.
+      for(const base of bases)for(const over of (fixedBySlot.has('over')?[fixedBySlot.get('over')]:overs.slice(0,2))){
+        if(key(base)!==key(over))variants.push([base,over]);
+      }
       for(const base of bases.slice(0,5))for(const mid of mids.slice(0,5))for(const over of (fixedBySlot.has('over')?[fixedBySlot.get('over')]:overs.slice(0,2))){
         if(base.type!=='tee'&&/водолазка|с горлом/i.test(mid.name||''))continue;
         variants.push([base,mid,over]);
