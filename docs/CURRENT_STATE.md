@@ -33,3 +33,10 @@ After each significant task, update:
 - Pending: unresolved issues, blockers, missing assets
 - Next: smallest next actionable step
 Never label untested functionality as verified.
+
+## 2026-11-03 — Image preparation checkpoint
+- User confirmed: `стиль бг.zip` is OLD and `шаблоны рабочие (1).zip` is NEW.
+- Compared 151 named old PNG images against 176 new PNG frames; new archive includes blank/duplicate frames.
+- Prepared 151 optimized WebP images (~5.5 MB total), mapping manifest and a local application script in a downloadable ZIP package in the chat.
+- **Not yet uploaded to GitHub:** the binary image assets and catalog code changes are pending installation and verification. The existing application remains unchanged.
+- Next: install prepared package into `react-migration`, resolve any name mismatches, run `npm run build`, review visual correctness, then commit. Editorial images are a separate set.
