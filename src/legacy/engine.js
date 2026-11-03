@@ -798,11 +798,12 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
     document.querySelectorAll('.dailyVoteActions button').forEach(b=>b.disabled=true);
     // Two animation frames ensure Safari applies the outgoing transform after dragging.
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      card.style.transition='transform 470ms cubic-bezier(.22,.7,.2,1),opacity 470ms ease-in';
+      // Never fade out mid-flight: the entire card must visibly travel offscreen.
+      card.style.transition='transform 520ms cubic-bezier(.32,.62,.36,1)';
+      card.style.opacity='1';
       card.style.transform='translate3d('+distance+'px,0,0) rotate('+rotation+'deg)';
-      card.style.opacity='0';
     }));
-    window.setTimeout(complete,650);
+    window.setTimeout(complete,750);
   }
   function initDailySwipe(){
     const card=document.getElementById('dailySwipe');if(!card)return;
