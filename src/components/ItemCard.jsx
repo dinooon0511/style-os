@@ -11,7 +11,7 @@ export default function ItemCard({ item, onOpen }) {
   return <article className="catalogEditorialItem" role="button" tabIndex={0}
     onClick={() => onOpen(item)} onKeyDown={openWithKeyboard}>
     <div className="catalogEditorialVisual">
-      <img alt={item.name} src={item.image} loading="lazy" decoding="async" />
+      <img alt="" src={item.image} loading="lazy" decoding="async" />
     </div>
     <div className="catalogEditorialDetails">
       <div className="catalogEditorialName">{item.name}</div>
