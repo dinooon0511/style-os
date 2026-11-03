@@ -40,3 +40,10 @@ Never label untested functionality as verified.
 - Prepared 151 optimized WebP images (~5.5 MB total), mapping manifest and a local application script in a downloadable ZIP package in the chat.
 - **Not yet uploaded to GitHub:** the binary image assets and catalog code changes are pending installation and verification. The existing application remains unchanged.
 - Next: install prepared package into `react-migration`, resolve any name mismatches, run `npm run build`, review visual correctness, then commit. Editorial images are a separate set.
+
+## 2026-11-03 — Local clothing images connected
+- Verified all `item-001.webp` through `item-151.webp` are present at `public/images/clothing/` on `react-migration`.
+- Added `src/data/localClothingImages.js`: a 151-entry, unique catalog-order mapping to local image paths.
+- Updated `src/legacy/engine.js` to call `applyLocalClothingImages(embeddedCatalog)` immediately after the curated catalog definition; each curated item's `photo` now points to `/images/clothing/item-NNN.webp` and `image_status` is `user_cutout_local` at runtime.
+- The original Google Drive strings remain in the embedded catalog as fallback source data but are overridden before use. Editorial/background photos still use Google Drive; they were not part of this clothing image migration.
+- No changes to `main` or Netlify. Build and visual QA still need to be run; do not claim verified deployment.
