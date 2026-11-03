@@ -1394,12 +1394,21 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
       state.outfitMode='ready';state.outfitIndex=0;closeSheet();renderOutfits();
     }
     if(action==='openAnchorPicker'){
+      state.anchorAdding=false;
       state.anchorReplaceId=null;
       state.anchorCategory='all';state.anchorQuery='';
       state.anchorItemIds=(state.anchorItemIds||[]).filter(id=>store.wardrobe.some(x=>keyOfAnchor(x)===id));
       openSheet('anchorPicker');
     }
+    if(action==='addAnchor'){
+      if(activeAnchorItems().length>=4)return;
+      state.anchorReplaceId=null;
+      state.anchorAdding=true;
+      state.anchorCategory='all';state.anchorQuery='';
+      openSheet('anchorPicker');
+    }
     if(action==='replaceAnchor'){
+      state.anchorAdding=false;
       const item=activeAnchorItems().find(x=>keyOfAnchor(x)===payload);
       if(!item)return;
       state.anchorReplaceId=payload;
@@ -1427,6 +1436,12 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
       else if(ids.length>=4)toast('Можно выбрать не больше четырёх вещей');
       else if(activeAnchorItems().some(x=>anchorSlot(x)===anchorSlot(item)))toast('Из этой категории уже выбрана вещь');
       else state.anchorItemIds=[...ids,payload];
+      if(state.anchorAdding&&state.anchorItemIds?.length>ids.length){
+        const looks=createAnchorLooks(activeAnchorItems());
+        if(!looks.length){state.anchorItemIds=ids;toast('С этой вещью нет подходящих образов. Попробуй другую.');filterAnchorPicker();return;}
+        state.anchorLooks=looks;state.outfitMode='anchor';state.outfitIndex=0;state.anchorAdding=false;
+        closeSheet();state.screen='outfits';renderScreens();return;
+      }
       filterAnchorPicker();
     }
     if(action==='generateAnchorLooks'){
