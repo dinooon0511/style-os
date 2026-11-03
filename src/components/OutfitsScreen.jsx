@@ -86,10 +86,10 @@ export default function OutfitsScreen() {
       </div>
       <div className="lookbookPhotoControls">
         {anchored && anchors.length > 0 && <div className="anchorHeroGrid" aria-label="Обязательные вещи">
-          {anchors.map(item => <button key={item.id} type="button" className="anchorHeroTile" onClick={() => action('replaceAnchor', item.id)} aria-label={`Заменить: ${item.label}`}>
+          {anchors.map(item => <div key={item.id} className="anchorHeroTile"><button type="button" className="anchorHeroReplace" onClick={() => action('replaceAnchor', item.id)} aria-label={`Заменить: ${item.label}`}>
             <img src={item.image} alt={item.label} />
             <span className="anchorHeroChange" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M19.5 8a8 8 0 0 0-13.7-2.2L3.5 8" /><path d="M3.5 3.5V8H8" /><path d="M4.5 16a8 8 0 0 0 13.7 2.2l2.3-2.2" /><path d="M20.5 20.5V16H16" /></svg></span>
-            <span className="anchorHeroRemove" role="button" tabIndex={0} aria-label={`Убрать из подбора: ${item.label}`} onClick={event => { event.stopPropagation(); action('removeAnchor', item.id); }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); action('removeAnchor', item.id); } }}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></span>
+            </button><button type="button" className="anchorHeroRemove" aria-label={`Убрать из подбора: ${item.label}`} onClick={() => action('removeAnchor', item.id)}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></span>
           </button>)}
           {anchors.length < 4 && <button type="button" className="anchorHeroAdd" onClick={() => action('addAnchor')} aria-label="Добавить обязательную вещь"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg></button>}
         </div>}
