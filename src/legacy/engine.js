@@ -892,19 +892,20 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
     if(!list)return;
     const category=state.anchorCategory||'all',query=(state.anchorQuery||'').trim().toLowerCase();
     const selected=new Set((state.anchorItemIds||[]));
+    const replacing=store.wardrobe.find(item=>keyOfAnchor(item)===state.anchorReplaceId);
     const slots=new Set(activeAnchorItems().map(anchorSlot));
-    const matches=store.wardrobe.filter(item=>(category==='all'||GROUP[item.type]===category||item.type===category)&&(!query||[item.name,item.brand,item.sku,itemTypeLabel(item),COLORS[item.color]?.[0]].join(' ').toLowerCase().includes(query)));
+    const matches=store.wardrobe.filter(item=>(!replacing||anchorSlot(item)===anchorSlot(replacing))&&(category==='all'||GROUP[item.type]===category||item.type===category)&&(!query||[item.name,item.brand,item.sku,itemTypeLabel(item),COLORS[item.color]?.[0]].join(' ').toLowerCase().includes(query)));
     list.innerHTML=matches.map(item=>{
-      const id=keyOfAnchor(item),chosen=selected.has(id),blocked=!chosen&&(selected.size>=4||slots.has(anchorSlot(item)));
+      const id=keyOfAnchor(item),chosen=selected.has(id),blocked=!!replacing?false:!chosen&&(selected.size>=4||slots.has(anchorSlot(item)));
       return `<button type='button' class='anchorPickerItem ${chosen?'selected':''}' aria-pressed='${chosen}' ${blocked?'disabled':''} onclick='window.appAction("chooseAnchor",${JSON.stringify(id)})'><img src='${productImage(item)}' alt=''><span><strong>${escapeHtml(itemTypeLabel(item))}</strong><small>${escapeHtml(item.name)}</small></span><span aria-hidden='true' class='anchorPickerCheck'>${chosen?'✓':blocked?'—':'○'}</span></button>`;
     }).join('')||'<p class="anchorPickerNoResults">По этому запросу вещей нет.</p>';
     document.querySelectorAll('#anchorPickerCategories button').forEach(button=>button.classList.toggle('selected',button.dataset.category===category));
     const submit=document.getElementById('anchorPickerSubmit');
     if(submit)submit.disabled=!selected.size;
     const counter=document.getElementById('anchorPickerCounter');
-    if(counter)counter.textContent=`Выбрано ${selected.size} из 4 · не более одной вещи каждого типа`;
+    if(counter)counter.textContent=replacing?`Замена: ${itemTypeLabel(replacing)} · выбери другую вещь этой категории`:`Выбрано ${selected.size} из 4 · не более одной вещи каждого типа`;
     const chosenList=document.getElementById('anchorPickerChosen');
-    if(chosenList)chosenList.innerHTML=activeAnchorItems().map(item=>`<button type='button' class='anchorChosenChip' onclick='window.appAction("chooseAnchor",${JSON.stringify(keyOfAnchor(item))})'>${escapeHtml(itemTypeLabel(item))} ×</button>`).join('');
+    if(chosenList)chosenList.innerHTML=replacing?'':activeAnchorItems().map(item=>`<button type='button' class='anchorChosenChip' onclick='window.appAction("chooseAnchor",${JSON.stringify(keyOfAnchor(item))})'>${escapeHtml(itemTypeLabel(item))} ×</button>`).join('');
   }
   function dailyLooks(){return generateLooks({occasion:'everyday',weather:store.forecast?.day===dayKey()?store.forecast.mode:state.filters.outfitWeather,ownedOnly:true}).filter(l=>l.missing.length===0&&l.parts.every(p=>store.wardrobe.some(w=>(w.ownedId||w.id)===(p.ownedId||p.id))));}
   function lookPhoto(look,index=0){
@@ -996,13 +997,14 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
 
     if(kind==='anchorPicker'){
       const selected=activeAnchorItems();
+      const replacing=store.wardrobe.find(x=>keyOfAnchor(x)===state.anchorReplaceId);
       const categories=[['all','Все'],['top','Верх'],['bottom','Низ'],['shoes','Обувь'],['layer','Верхняя одежда']];
-      html=`<div class='sheetHandle'></div><div class='anchorPickerSheet'><h2 class='sheetTitle'>Выбрать вещь</h2><p class='sheetSub'>Выбери от 1 до 4 вещей из разных категорий. Каждая выбранная вещь обязательно войдёт в каждый образ.</p>
+      html=`<div class='sheetHandle'></div><div class='anchorPickerSheet'><h2 class='sheetTitle'>${replacing?'Заменить вещь':'Выбрать вещи'}</h2><p class='sheetSub'>${replacing?'Выбери замену из той же категории. Остальные обязательные вещи останутся без изменений.':'Выбери от 1 до 4 вещей из разных категорий. Каждая выбранная вещь обязательно войдёт в каждый образ.'}</p>
         <label class='anchorPickerSearch'><span aria-hidden='true'>⌕</span><input type='search' id='anchorPickerSearch' placeholder='Название, цвет или категория' value='${escapeHtml(state.anchorQuery||'')}' oninput='window.appAction("anchorQuery",this.value)' autocomplete='off' aria-label='Найти вещь'></label>
-        <div class='anchorPickerCategories' id='anchorPickerCategories'>${categories.map(([key,label])=>`<button type='button' data-category='${key}' class='${(state.anchorCategory||'all')===key?'selected':''}' onclick='window.appAction("anchorCategory","${key}")'>${label}</button>`).join('')}</div>
+        <div class='anchorPickerCategories' id='anchorPickerCategories' ${replacing?'hidden':''}>${categories.map(([key,label])=>`<button type='button' data-category='${key}' class='${(state.anchorCategory||'all')===key?'selected':''}' onclick='window.appAction("anchorCategory","${key}")'>${label}</button>`).join('')}</div>
         <div id='anchorPickerCounter' class='anchorPickerCounter'></div><div id='anchorPickerChosen' class='anchorPickerChosen'></div><div class='anchorPickerList' id='anchorPickerList'></div>
         ${!store.wardrobe.length?`<div class='empty'>В гардеробе пока нет вещей. Сначала добавь вещь.</div>`:''}
-        <div class='sheetFooter'><button class='btn line' onclick='window.appAction("switchTab","wardrobe")'>Гардероб</button><button id='anchorPickerSubmit' class='btn dark' ${selected.length?'':'disabled'} onclick='window.appAction("generateAnchorLooks")'>Подобрать образы</button></div></div>`;
+        <div class='sheetFooter'><button class='btn line' onclick='window.appAction("switchTab","wardrobe")'>Гардероб</button>${replacing?`<button class='btn dark' onclick='window.appAction("cancelAnchorReplace")'>Отмена</button>`:`<button id='anchorPickerSubmit' class='btn dark' ${selected.length?'':'disabled'} onclick='window.appAction("generateAnchorLooks")'>Подобрать образы</button>`}</div></div>`;
     }
     if(kind==='anchorResults'){
       const looks=state.anchorLooks||[],chosen=store.wardrobe.find(x=>x.ownedId===state.anchorItemId);
@@ -1215,7 +1217,7 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
  window.dispatchEvent(new CustomEvent('styleos:outfits',{detail:{
    anchored:anchoredReact,
    anchor:anchorReact?{label:itemTypeLabel(anchorReact),image:productImage(anchorReact)}:null,
-   anchors:anchorsReact.map(item=>({label:itemTypeLabel(item),image:productImage(item)})),
+   anchors:anchorsReact.map(item=>({id:keyOfAnchor(item),label:itemTypeLabel(item),image:productImage(item)})),
    index:state.outfitIndex,
    count:countReact,
    summary:[getOccLabel(state.filters.outfitOccasion),getWeatherLabel(state.filters.outfitWeather),state.filters.ownedOnly?'Только мои вещи':'С докупкой'],
@@ -1392,14 +1394,34 @@ import { applyLocalClothingImages } from '../data/localClothingImages.js';
       state.outfitMode='ready';state.outfitIndex=0;closeSheet();renderOutfits();
     }
     if(action==='openAnchorPicker'){
+      state.anchorReplaceId=null;
       state.anchorCategory='all';state.anchorQuery='';
       state.anchorItemIds=(state.anchorItemIds||[]).filter(id=>store.wardrobe.some(x=>keyOfAnchor(x)===id));
       openSheet('anchorPicker');
     }
+    if(action==='replaceAnchor'){
+      const item=activeAnchorItems().find(x=>keyOfAnchor(x)===payload);
+      if(!item)return;
+      state.anchorReplaceId=payload;
+      state.anchorCategory='all';state.anchorQuery='';
+      openSheet('anchorPicker');
+    }
     if(action==='anchorQuery'){state.anchorQuery=payload;filterAnchorPicker();}
     if(action==='anchorCategory'){state.anchorCategory=payload;filterAnchorPicker();}
+    if(action==='cancelAnchorReplace'){state.anchorReplaceId=null;closeSheet();renderOutfits();}
     if(action==='chooseAnchor'){
       const item=store.wardrobe.find(x=>keyOfAnchor(x)===payload);if(!item)return;
+      if(state.anchorReplaceId){
+        const previous=store.wardrobe.find(x=>keyOfAnchor(x)===state.anchorReplaceId);
+        if(!previous||anchorSlot(previous)!==anchorSlot(item)){toast('Выбери вещь той же категории');return;}
+        if(keyOfAnchor(previous)===payload){state.anchorReplaceId=null;closeSheet();return;}
+        const original=[...(state.anchorItemIds||[])];
+        state.anchorItemIds=original.map(id=>id===state.anchorReplaceId?payload:id);
+        const looks=createAnchorLooks(activeAnchorItems());
+        if(!looks.length){state.anchorItemIds=original;toast('С этой вещью нет подходящих образов. Попробуй другую.');return;}
+        state.anchorLooks=looks;state.outfitMode='anchor';state.outfitIndex=0;state.anchorReplaceId=null;
+        closeSheet();state.screen='outfits';renderScreens();return;
+      }
       const ids=state.anchorItemIds||[];
       if(ids.includes(payload))state.anchorItemIds=ids.filter(x=>x!==payload);
       else if(ids.length>=4)toast('Можно выбрать не больше четырёх вещей');
