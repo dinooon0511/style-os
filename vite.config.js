@@ -36,8 +36,7 @@ function enforceOutfitRules() {
       `;
       // Neutral editorial photographs uploaded to the repository replace
       // outfit-model photos, so covers never imply a specific generated look.
-      const photo = (n) => '/style-os/images/outfit-editorial/IMG_' + String(n).padStart(4, '0') + '.JPG';
-      const editorialLookPhotos = `const lookPhotos={
+      const editorialLookPhotos = `const photo = (n) => '/style-os/images/outfit-editorial/IMG_' + String(n).padStart(4, '0') + '.JPG';\n      const lookPhotos={
         everyday:[photo(9301),photo(9305),photo(9313)],
         office:[photo(9306),photo(9307),photo(9310)],
         date:[photo(9302),photo(9308),photo(9312)],
