@@ -59,7 +59,7 @@ function enforceOutfitRules() {
         const offset = ((hash % allEditorial.length)+allEditorial.length)%allEditorial.length;
         return allEditorial[(offset + index) % allEditorial.length];
       }`;
-      const lookPhotoBlock = /function lookPhoto\\(look,index=0\\)\\{[\\s\\S]*?\\n  \\}/;
+      const lookPhotoBlock = /function lookPhoto\(look,index=0\)\{[\s\S]*?\n  \}/;
       if (!lookPhotoBlock.test(source)) throw new Error('Outfit cover selector not found');
       source = source.replace(lookPhotoBlock, diverseLookPhoto);
 
