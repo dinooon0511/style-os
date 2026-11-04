@@ -152,15 +152,16 @@ export const clothingPhotoBySku = {
 };
 
 export function applyLocalClothingImages(catalog) {
-  catalog.forEach(item => {
+  // Only publish items with a verified, explicitly matched local photo.
+  // Keep the catalog and outfit recommendations consistent at 148 items.
+  for (let i = catalog.length - 1; i >= 0; i--) {
+    const item = catalog[i];
     const filename = clothingPhotoBySku[item.sku];
     if (!filename) {
-      // Avoid showing a stale Google Drive photo for an unmatched catalog entry.
-      item.photo = '';
-      item.image_status = 'missing_local_photo';
-      return;
+      catalog.splice(i, 1);
+      continue;
     }
     item.photo = `${import.meta.env.BASE_URL}images/clothing/${encodeURIComponent(filename)}`;
     item.image_status = 'user_cutout_local';
-  });
+  }
 }
