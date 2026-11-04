@@ -7,7 +7,7 @@ const action = (name, payload) => window.appAction?.(name, payload);
 export default function HomeScreen() {
   const view = useLegacyView('home');
   if (!view) return null;
-  const { city, weather, avatar, hero, picked, suggestions, collections } = view;
+  const { city, weather, avatar, hero, picked, suggestions } = view;
 
   return <div className="homeEditorial">
     <header className="homeEditorialHeader">
@@ -32,16 +32,13 @@ export default function HomeScreen() {
     </section>
     <div className="homeEditorialQuick" aria-label="Быстрые действия">
       <button type="button" className="homeEditorialQuickItem" onClick={() => action('switchTab', 'outfits')}><span className="homeEditorialQuickIcon" aria-hidden="true">✦</span><span><strong>Собрать образ</strong><small>Для любого случая</small></span><i aria-hidden="true">›</i></button>
-      <button type="button" className="homeEditorialQuickItem" onClick={() => action('switchTab', 'catalog')}><span className="homeEditorialQuickIcon" aria-hidden="true">⌕</span><span><strong>Что докупить</strong><small>Подобрать вещи</small></span><i aria-hidden="true">›</i></button>
+      <button type="button" className="homeEditorialQuickItem" onClick={() => action('openSaved')}><span className="homeEditorialQuickIcon" aria-hidden="true">♡</span><span><strong>Сохранённые образы</strong><small>Твои избранные образы</small></span><i aria-hidden="true">›</i></button>
       <button type="button" className="homeEditorialQuickItem" onClick={() => action('openAdd')}><span className="homeEditorialQuickIcon" aria-hidden="true">＋</span><span><strong>Добавить вещь</strong><small>В свой гардероб</small></span><i aria-hidden="true">›</i></button>
     </div>
     {suggestions.length > 0 && <section className="homeEditorialSection">
       <div className="homeEditorialSectionHeading"><h2>Сегодня тебе подойдут</h2><button type="button" aria-label="Смотреть все образы" onClick={() => action('switchTab', 'outfits')}>›</button></div>
       <div className="homeEditorialSuggestions">{suggestions.map(look => <button key={look.id} type="button" className="homeEditorialSuggestion" onClick={() => action('openLook', look.id)} style={{ backgroundImage: `linear-gradient(180deg,transparent 35%,rgba(12,14,11,.68)),url("${look.image}")` }}><span>{look.title}</span><small>{look.subtitle}</small></button>)}</div>
     </section>}
-    <section className="homeEditorialSection">
-      <div className="homeEditorialSectionHeading"><h2>Коллекции стиля</h2></div>
-      <div className="homeEditorialCollections">{collections.map(item => <div key={item.title} className="homeEditorialCollection" style={{ backgroundImage: `linear-gradient(180deg,transparent 30%,rgba(12,14,11,.65)),url("${item.image}")` }}><span>{item.title}</span></div>)}</div>
-    </section>
+
   </div>;
 }
