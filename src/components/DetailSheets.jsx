@@ -59,7 +59,7 @@ function AddItemSheet({ data }) {
     <div className="chips" style={{ margin: '12px 0' }}>{addCategories.map(([key,label]) => <button type="button" key={key} className={`chip${category === key ? ' active' : ''}`} onClick={() => setCategory(key)}>{label}</button>)}</div>
     <div className="helper" style={{ marginBottom: 8 }}>Найдено: {matching.length}</div>
     <div className="grid2">{matching.map(item => <button type="button" key={item.id} className="itemCard catalogProductCard" onClick={() => action('addFromCatalog',item.id)}><div className="itemVisual catalogProductVisual"><img alt={item.name} src={item.image} loading="lazy" decoding="async" /></div><div className="itemBody catalogProductBody"><div className="catalogProductEyebrow">{item.brand || 'STYLE OS'}</div><div className="catalogProductName">{item.name}</div><div className="catalogProductFoot"><span className="catalogProductColor"><i style={{ background: item.colorHex }} />{item.color}</span></div></div></button>)}</div>
-    <div className="sheetFooter"><button className="btn line" onClick={() => action('manualForm')}>Добавить вручную</button><button className="btn dark" onClick={() => action('switchTab','catalog')}>Каталог</button></div>
+    
   </>;
 }
 
@@ -103,7 +103,7 @@ export default function DetailSheets() {
     {sheet?.kind === 'look' && <LookDetail data={sheet.data} />}
     {sheet?.kind === 'manualForm' && <ManualForm data={sheet.data} />}
     {sheet?.kind === 'savedLooks' && <SavedLooks data={sheet.data} />}
-    {sheet?.kind === 'addItem' && <div className="addItemSheetBody"><AddItemSheet key="addItem" data={sheet.data} /></div>}
+    {sheet?.kind === 'addItem' && <><div className="addItemSheetBody"><AddItemSheet key="addItem" data={sheet.data} /></div><div className="sheetFooter"><button className="btn line" onClick={() => action('manualForm')}>Добавить вручную</button><button className="btn dark" onClick={() => action('switchTab','catalog')}>Каталог</button></div></>}
     {sheet?.kind === 'daily' && <DailySheet key={`daily-${sheet.data.index}`} data={sheet.data} />}
     {sheet?.kind === 'dailyPreview' && <DailyPreview data={sheet.data} />}
     {sheet && <button type="button" className="sheetClose" aria-label="Закрыть" onClick={() => action('closeSheet')}><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 5L19 19M19 5L5 19" /></svg></button>}
