@@ -98,3 +98,30 @@
   flex: 1 1 0;
   min-width: 0;
 }
+
+/* Daily swipe buttons: square SVG icons, centered inside equal round targets. */
+#reactDetailSheet .dailyEditorialVoteActions button > span {
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  line-height: 0 !important;
+}
+#reactDetailSheet .dailyEditorialVoteActions button > span > svg {
+  display: block !important;
+  width: 29px !important;
+  height: 29px !important;
+  min-width: 29px;
+  min-height: 29px;
+  max-width: 29px;
+  max-height: 29px;
+  aspect-ratio: 1 / 1;
+  margin: 0 !important;
+  transform: none !important;
+  flex-shrink: 0;
+}
+#reactDetailSheet .dailySwipeYes.dailyEditorialReaction > svg {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
