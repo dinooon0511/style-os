@@ -1,6 +1,7 @@
 import React from 'react';
 import useLegacyView from '../hooks/useLegacyView.js';
 import Avatar from './Avatar.jsx';
+import UiIcons from './UiIcons.jsx';
 
 const action = (name, payload) => window.appAction?.(name, payload);
 
@@ -24,7 +25,7 @@ export default function ProfileScreen() {
     </section>
     <section className="profilePanel">
       <div className="sectionHead"><div><h2 className="sectionTitle">Моя коллекция</h2><div className="sectionHint">Всё, что делает стиль твоим</div></div></div>
-      <div className="listRow" role="button" tabIndex={0} onClick={() => action('openSaved')} onKeyDown={e => e.key === 'Enter' && action('openSaved')}><div><strong>♡ Сохранённые образы</strong><div className="helper">{savedCount} сохранено · открыть подборку</div></div><span>›</span></div>
+      <div className="listRow" role="button" tabIndex={0} onClick={() => action('openSaved')} onKeyDown={e => e.key === 'Enter' && action('openSaved')}><div><strong className="profileSavedTitle"><UiIcons name="heart" size={22} /> Сохранённые образы</strong><div className="helper">{savedCount} сохранено · открыть подборку</div></div><span>›</span></div>
       <div className="listRow" role="button" tabIndex={0} onClick={() => action('switchTab', 'wardrobe')} onKeyDown={e => e.key === 'Enter' && action('switchTab', 'wardrobe')}><div><strong>Мой гардероб</strong><div className="helper">{wardrobeCount} вещей</div></div><span>›</span></div>
     </section>
     <section className="profilePanel">
