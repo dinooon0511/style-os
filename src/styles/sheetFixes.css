@@ -1,17 +1,32 @@
-/* Keep add-item actions above the scrollable product grid on iOS. */
-#sheet:has(.sheetFooter) { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
-#sheet .sheetFooter {
-  position: sticky;
-  bottom: 0;
-  z-index: 30;
-  isolation: isolate;
-  margin: 18px -16px -24px;
+/* Add-item sheet: independent scroll region and persistent footer above cards. */
+#sheet.addItemLayout {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  max-height: min(86dvh, 900px);
+}
+#sheet.addItemLayout .addItemScroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 18px 16px 18px;
+}
+#sheet.addItemLayout > .sheetFooter {
+  flex: 0 0 auto;
+  position: relative;
+  bottom: auto;
+  z-index: 100;
+  margin: 0;
   padding: 14px 16px max(20px, env(safe-area-inset-bottom));
   background: #f8f7f3;
-  box-shadow: 0 -12px 24px rgba(248,247,243,.95);
+  box-shadow: 0 -8px 20px rgba(30,35,28,.08);
 }
-#sheet .sheetFooter .btn {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-}
+#sheet.addItemLayout > .sheetFooter .btn { flex: 1; min-width: 0; }
+.homeEditorialQuickIcon svg, .tab svg { display: block; margin: auto; flex-shrink: 0; }
+.homeEditorialQuickIcon { display: grid; place-items: center; }
+.floatBtn { display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; }
+.dailyEditorialVoteYes > span { display: flex; align-items: center; justify-content: center; width: 100%; }
+.dailyEditorialVoteYes > span svg { display: block; width: 52%; height: 52%; }
