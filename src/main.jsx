@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 import App from './App.jsx';
 import './styles/legacy.css';
+import './styles/sheetFixes.css';
 
 // Compatibility layer until each legacy screen becomes a React component.
 // A single Supabase client library is bundled instead of loaded from a CDN.
