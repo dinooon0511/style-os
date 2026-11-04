@@ -34,7 +34,11 @@ function enforceOutfitRules() {
           if (incompatible) continue;
         }
       `;
-      return source.replace(hook, hook + rules);
+      const heart = '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/></svg>';
+      return source.replace(hook, hook + rules)
+        .replace('<span>♡</span>', '<span>' + heart + '</span>')
+        .replace('>♡ НРАВИТСЯ</span>', '>' + heart + ' НРАВИТСЯ</span>');
+
     }
   };
 }
