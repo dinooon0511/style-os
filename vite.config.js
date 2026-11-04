@@ -48,6 +48,21 @@ function enforceOutfitRules() {
       const lookPhotosBlock = /const lookPhotos=\{[\s\S]*?\};(?=\s*const recipes=)/;
       if (!lookPhotosBlock.test(source)) throw new Error('Outfit cover photo mapping not found');
       source = source.replace(lookPhotosBlock, editorialLookPhotos);
+      // Rotate across all 13 images, not just the three for each occasion.
+      // Index differentiates cards in a list; identity keeps an individual
+      // outfit's cover deterministic between renders.
+      const diverseLookPhoto = `function lookPhoto(look,index=0){
+        const allEditorial = Array.from({length:13},(_,i)=>photo(9301+i));
+        const seed = String(look?.identity || look?.id || look?.title || look?.occasion || '');
+        let hash=0;
+        for(let i=0;i<seed.length;i++) hash=(Math.imul(hash,31)+seed.charCodeAt(i))|0;
+        const offset = ((hash % allEditorial.length)+allEditorial.length)%allEditorial.length;
+        return allEditorial[(offset + index) % allEditorial.length];
+      }`;
+      const lookPhotoBlock = /function lookPhoto\\(look,index=0\\)\\{[\\s\\S]*?\\n  \\}/;
+      if (!lookPhotoBlock.test(source)) throw new Error('Outfit cover selector not found');
+      source = source.replace(lookPhotoBlock, diverseLookPhoto);
+
       const heart = '<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-8.5-5.8-9.4-11.1C1.8 5.3 4.3 3 7.7 3c2 0 3.5 1 4.3 2.5C12.8 4 14.3 3 16.3 3c3.4 0 5.9 2.3 5.1 6.9C20.5 15.2 12 21 12 21Z"/></svg>';
       return source.replace(hook, hook + rules)
         .replace('<span>♡</span>', '<span>' + heart + '</span>')
