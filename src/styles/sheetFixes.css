@@ -62,3 +62,39 @@
   aspect-ratio: 1 / 1;
   transform: none !important;
 }
+
+/* Actual React add-item modal (#reactDetailSheet), not the unused legacy #sheet. */
+#reactDetailSheet.addItemSheetFixed {
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box;
+  overflow: hidden !important;
+  max-height: min(86dvh, 900px);
+  padding: 0 !important;
+}
+#reactDetailSheet.addItemSheetFixed > .addItemSheetBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 18px 16px 20px;
+}
+#reactDetailSheet.addItemSheetFixed > .sheetFooter {
+  flex: 0 0 auto;
+  position: relative !important;
+  inset: auto !important;
+  z-index: 20;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0 !important;
+  padding: 14px 16px max(18px, env(safe-area-inset-bottom)) !important;
+  background: #f8f7f3 !important;
+  border-top: 1px solid #e9e8e3;
+  box-shadow: 0 -8px 20px rgba(30,35,28,.07);
+}
+#reactDetailSheet.addItemSheetFixed > .sheetFooter .btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
