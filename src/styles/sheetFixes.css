@@ -30,3 +30,12 @@
 .floatBtn { display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; }
 .dailyEditorialVoteYes > span { display: flex; align-items: center; justify-content: center; width: 100%; }
 .dailyEditorialVoteYes > span svg { display: block; width: 52%; height: 52%; }
+
+/* Heart alignment: visual and geometric centering, independent of glyph metrics. */
+.homeEditorialQuickIcon svg { width: 20px; height: 20px; margin: 0; transform: translateY(0); }
+.homeEditorialQuickIcon { display: flex; align-items: center; justify-content: center; padding: 0; }
+.profileSavedTitle { display: inline-flex; align-items: center; gap: 9px; }
+.profileSavedTitle svg { display: block; flex: 0 0 22px; }
+.dailyEditorialVoteYes > span { display: grid !important; place-items: center; padding: 0 !important; line-height: 0 !important; }
+.dailyEditorialVoteYes > span svg { width: 36px !important; height: 36px !important; display: block; margin: 0; }
+.dailySwipeYes.dailyEditorialReaction svg { width: 14px; height: 14px; display: inline-block; vertical-align: -2px; }
