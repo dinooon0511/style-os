@@ -1,6 +1,7 @@
 import React from 'react';
 import useLegacyView from '../hooks/useLegacyView.js';
 import Avatar from './Avatar.jsx';
+import UiIcons from './UiIcons.jsx';
 
 const action = (name, payload) => window.appAction?.(name, payload);
 
@@ -32,8 +33,8 @@ export default function HomeScreen() {
     </section>
     <div className="homeEditorialQuick" aria-label="Быстрые действия">
       <button type="button" className="homeEditorialQuickItem" onClick={() => action('switchTab', 'outfits')}><span className="homeEditorialQuickIcon" aria-hidden="true">✦</span><span><strong>Собрать образ</strong><small>Для любого случая</small></span><i aria-hidden="true">›</i></button>
-      <button type="button" className="homeEditorialQuickItem" onClick={() => action('openSaved')}><span className="homeEditorialQuickIcon" aria-hidden="true">♡</span><span><strong>Сохранённые образы</strong><small>Твои избранные образы</small></span><i aria-hidden="true">›</i></button>
-      <button type="button" className="homeEditorialQuickItem" onClick={() => action('openAdd')}><span className="homeEditorialQuickIcon" aria-hidden="true">＋</span><span><strong>Добавить вещь</strong><small>В свой гардероб</small></span><i aria-hidden="true">›</i></button>
+      <button type="button" className="homeEditorialQuickItem" onClick={() => action('openSaved')}><span className="homeEditorialQuickIcon" aria-hidden="true"><UiIcons name="heart" size={23} /></span><span><strong>Сохранённые образы</strong><small>Твои избранные образы</small></span><i aria-hidden="true">›</i></button>
+      <button type="button" className="homeEditorialQuickItem" onClick={() => action('openAdd')}><span className="homeEditorialQuickIcon" aria-hidden="true"><UiIcons name="plus" size={24} /></span><span><strong>Добавить вещь</strong><small>В свой гардероб</small></span><i aria-hidden="true">›</i></button>
     </div>
     {suggestions.length > 0 && <section className="homeEditorialSection">
       <div className="homeEditorialSectionHeading"><h2>Сегодня тебе подойдут</h2><button type="button" aria-label="Смотреть все образы" onClick={() => action('switchTab', 'outfits')}>›</button></div>
