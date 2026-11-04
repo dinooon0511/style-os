@@ -146,6 +146,9 @@ export const clothingPhotoBySku = {
   "RTLAFN239301": "серые кроссовки.webp",
   "XD001XM013DM": "коричневые зимние бодинки.webp",
   "MP002XM061DP": "черные зимнии ботинки.webp"
+  "MP002XM0X9UL": "серый джемпер-кардиган.webp",
+  "MP002XM0RUG0": "синий свитер с горлом.webp",
+  "RTLAFF876901": "бежевая замшевая куртка.webp",
 };
 
 export function applyLocalClothingImages(catalog) {
