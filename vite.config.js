@@ -34,6 +34,21 @@ function enforceOutfitRules() {
           if (incompatible) continue;
         }
       `;
+      // Neutral editorial photographs uploaded to the repository replace
+      // outfit-model photos, so covers never imply a specific generated look.
+      const photo = (n) => '/style-os/images/outfit-editorial/IMG_' + String(n).padStart(4, '0') + '.JPG';
+      const editorialLookPhotos = `const lookPhotos={
+        everyday:[photo(9301),photo(9305),photo(9313)],
+        office:[photo(9306),photo(9307),photo(9310)],
+        date:[photo(9302),photo(9308),photo(9312)],
+        restaurant:[photo(9309),photo(9311),photo(9302)],
+        travel:[photo(9301),photo(9305),photo(9308)],
+        event:[photo(9307),photo(9304),photo(9310)],
+        university:[photo(9303),photo(9306),photo(9313)]
+      };`;
+      const lookPhotosBlock = /const lookPhotos=\{[\s\S]*?\};(?=\s*const recipes=)/;
+      if (!lookPhotosBlock.test(source)) throw new Error('Outfit cover photo mapping not found');
+      source = source.replace(lookPhotosBlock, editorialLookPhotos);
       const heart = '<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-8.5-5.8-9.4-11.1C1.8 5.3 4.3 3 7.7 3c2 0 3.5 1 4.3 2.5C12.8 4 14.3 3 16.3 3c3.4 0 5.9 2.3 5.1 6.9C20.5 15.2 12 21 12 21Z"/></svg>';
       return source.replace(hook, hook + rules)
         .replace('<span>♡</span>', '<span>' + heart + '</span>')
