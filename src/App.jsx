@@ -57,7 +57,7 @@ export default function App() {
           {id === 'profile' && <ProfileScreen />}
           {id === 'outfits' && <OutfitsScreen />}
         </main>)}
-        <button id="floatingAdd" className="floatBtn hidden" aria-label="Добавить вещь">+</button>
+        <button id="floatingAdd" className="floatBtn hidden" aria-label="Добавить вещь"><UiIcons name="plus" size={29} /></button>
         <nav className="tabbar" aria-label="Основная навигация">
           {tabs.map(([id, icon, name]) => <button key={id} className={`tab${id === 'home' ? ' active' : ''}`} data-screen={id}><span>{icon === 'person' ? <UiIcons name="person" /> : icon}</span><span>{name}</span></button>)}
         </nav>
