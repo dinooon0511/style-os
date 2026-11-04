@@ -98,12 +98,12 @@ export default function DetailSheets() {
     window.addEventListener('styleos:detail-sheet', onChange);
     return () => window.removeEventListener('styleos:detail-sheet', onChange);
   }, []);
-  return <div id="reactDetailSheet" className={`sheet${sheet ? ' show' : ''}${sheet?.kind === 'look' ? ' lookDetailSheet' : ''}${['item','product'].includes(sheet?.kind) ? ' itemDetailSheet' : ''}${sheet?.kind==='daily'?' dailyPickerSheet':''}`} role={sheet ? 'dialog' : undefined} aria-modal={sheet ? true : undefined} aria-label={sheet?.kind === 'look' ? 'Состав образа' : 'Детали'}>
+  return <div id="reactDetailSheet" className={`sheet${sheet ? ' show' : ''}${sheet?.kind === 'addItem' ? ' addItemSheetFixed' : ''}${sheet?.kind === 'look' ? ' lookDetailSheet' : ''}${['item','product'].includes(sheet?.kind) ? ' itemDetailSheet' : ''}${sheet?.kind==='daily'?' dailyPickerSheet':''}`} role={sheet ? 'dialog' : undefined} aria-modal={sheet ? true : undefined} aria-label={sheet?.kind === 'look' ? 'Состав образа' : 'Детали'}>
     {['item','product'].includes(sheet?.kind) && <ProductDetail kind={sheet.kind} data={sheet.data} />}
     {sheet?.kind === 'look' && <LookDetail data={sheet.data} />}
     {sheet?.kind === 'manualForm' && <ManualForm data={sheet.data} />}
     {sheet?.kind === 'savedLooks' && <SavedLooks data={sheet.data} />}
-    {sheet?.kind === 'addItem' && <AddItemSheet key="addItem" data={sheet.data} />}
+    {sheet?.kind === 'addItem' && <div className="addItemSheetBody"><AddItemSheet key="addItem" data={sheet.data} /></div>}
     {sheet?.kind === 'daily' && <DailySheet key={`daily-${sheet.data.index}`} data={sheet.data} />}
     {sheet?.kind === 'dailyPreview' && <DailyPreview data={sheet.data} />}
     {sheet && <button type="button" className="sheetClose" aria-label="Закрыть" onClick={() => action('closeSheet')}><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 5L19 19M19 5L5 19" /></svg></button>}
