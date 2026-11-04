@@ -39,3 +39,26 @@
 .dailyEditorialVoteYes > span { display: grid !important; place-items: center; padding: 0 !important; line-height: 0 !important; }
 .dailyEditorialVoteYes > span svg { width: 36px !important; height: 36px !important; display: block; margin: 0; }
 .dailySwipeYes.dailyEditorialReaction svg { width: 14px; height: 14px; display: inline-block; vertical-align: -2px; }
+
+/* Daily-look vote: preserve the same 1:1 heart geometry as home and profile. */
+.dailyEditorialVoteActions .dailyEditorialVoteYes > span {
+  width: 57px !important;
+  height: 57px !important;
+  aspect-ratio: 1 / 1;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 57px;
+  padding: 0 !important;
+  line-height: 0 !important;
+}
+.dailyEditorialVoteActions .dailyEditorialVoteYes > span > svg {
+  display: block !important;
+  width: 29px !important;
+  height: 29px !important;
+  min-width: 29px;
+  min-height: 29px;
+  flex: none;
+  aspect-ratio: 1 / 1;
+  transform: none !important;
+}
