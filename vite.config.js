@@ -63,6 +63,9 @@ function enforceOutfitRules() {
       if (!lookPhotoBlock.test(source)) throw new Error('Outfit cover selector not found');
       source = source.replace(lookPhotoBlock, diverseLookPhoto);
 
+      // Rename only visible brand copy in the legacy renderer.
+      // Keep internal storage keys, event names, RPC names and repository URLs stable.
+      source = source.replace(/STYLE OS/g, 'PELCLO').replace(/Style OS/g, 'Pelclo');
       const heart = '<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-8.5-5.8-9.4-11.1C1.8 5.3 4.3 3 7.7 3c2 0 3.5 1 4.3 2.5C12.8 4 14.3 3 16.3 3c3.4 0 5.9 2.3 5.1 6.9C20.5 15.2 12 21 12 21Z"/></svg>';
       return source.replace(hook, hook + rules)
         .replace('<span>♡</span>', '<span>' + heart + '</span>')
