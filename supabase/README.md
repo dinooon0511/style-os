@@ -1,4 +1,4 @@
-# STYLE OS — подключение Supabase (только test)
+# PELCLO — подключение Supabase (только test)
 
 ## Обязательное действие владельца проекта
 1. Открой Supabase Dashboard проекта `maqhxkhltckttfwhyoqn` → **SQL Editor**.
