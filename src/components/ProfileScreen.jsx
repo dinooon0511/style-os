@@ -11,7 +11,7 @@ export default function ProfileScreen() {
   const { profile, wardrobeCount, savedCount } = view;
 
   return <>
-    <div className="topbar"><div><div className="subtle">STYLE OS / ACCOUNT</div><div className="brand">Мой профиль</div></div><button className="btn line small" onClick={() => window.styleAuth?.logout()}>Выйти</button></div>
+    <div className="topbar"><div><div className="subtle">PELCLO / ACCOUNT</div><div className="brand">Мой профиль</div></div><button className="btn line small" onClick={() => window.styleAuth?.logout()}>Выйти</button></div>
     <section className="profileHero profileHeroBlack">
       <div className="profilePortraitRow">
         <div className="profilePortraitMetric"><strong>{wardrobeCount}</strong><small>вещей в гардеробе</small></div>
