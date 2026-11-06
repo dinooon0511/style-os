@@ -17,7 +17,7 @@ export default function WardrobeScreen() {
 
   return <div className="wardrobeEditorial catalogEditorial">
     <header className="catalogEditorialHeader">
-      <div><div className="catalogEditorialKicker">STYLE OS / MY WARDROBE</div><h1>Гардероб</h1></div>
+      <div><div className="catalogEditorialKicker">PELCLO / MY WARDROBE</div><h1>Гардероб</h1></div>
       <span className="catalogEditorialCount">{total} вещей</span>
     </header>
     <CategoryChips active={category} onSelect={value => action('setWardrobeFilter', value)}
