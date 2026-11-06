@@ -1,6 +1,6 @@
-# STYLE OS: React migration
+# PELCLO: React migration
 
-This branch is the **first, intentionally non-production stage** of migrating STYLE OS
+This branch is the **first, intentionally non-production stage** of migrating PELCLO
 from a single HTML file to React + Vite.
 
 ## What is already migrated
