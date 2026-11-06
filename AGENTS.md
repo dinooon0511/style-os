@@ -1,6 +1,6 @@
-# STYLE OS — AI working instructions
+# PELCLO — AI working instructions
 
-This file is the entry point for AI coding assistants working on STYLE OS.
+This file is the entry point for AI coding assistants working on PELCLO.
 
 ## First read
 1. Read docs/CURRENT_STATE.md for the current branch and pending tasks.
