@@ -1,4 +1,4 @@
-# STYLE OS — Decision log
+# PELCLO — Decision log
 
 Record durable decisions here with date, rationale, and implementation status. Confirm implementation in code separately.
 
