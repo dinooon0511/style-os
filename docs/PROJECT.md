@@ -1,7 +1,7 @@
-# STYLE OS — Product context
+# PELCLO — Product context
 
 ## Purpose
-STYLE OS is a mobile-first Russian-language men's styling assistant. Its initial audience is men approximately 25–35. The app aims to simplify wardrobe organization, outfit creation, and shopping decisions.
+PELCLO is a mobile-first Russian-language men's styling assistant. Its initial audience is men approximately 25–35. The app aims to simplify wardrobe organization, outfit creation, and shopping decisions.
 
 ## Core user experiences
 - Home: daily recommendations and entry points to styling actions.
