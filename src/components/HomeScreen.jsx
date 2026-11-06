@@ -12,7 +12,7 @@ export default function HomeScreen() {
 
   return <div className="homeEditorial">
     <header className="homeEditorialHeader">
-      <div><div className="homeEditorialKicker">PERSONAL STYLE SYSTEM</div><h1>STYLE OS</h1></div>
+      <div><div className="homeEditorialKicker">PERSONAL STYLE SYSTEM</div><h1>PELCLO</h1></div>
       <div className="homeEditorialHeaderRight">
         <button type="button" className="homeEditorialWeather" onClick={() => action('openCity')} aria-label="Выбрать город">
           <span>{city}</span><small>{weather || 'Указать погоду'}</small>
