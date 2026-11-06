@@ -14,7 +14,7 @@ function OutfitFilters({ values }) {
   const [temperature, setTemperature] = useState(values.weather);
   const [ownedOnly, setOwnedOnly] = useState(values.ownedOnly);
   return <><div className="sheetHandle" /><div className="lookbookFilterSheet">
-    <div className="lookbookOverline">STYLE OS / НАСТРОЙКИ</div><h2>Подбор образов</h2><p>Укажи повод и погоду — образы подстроятся под твой день.</p>
+    <div className="lookbookOverline">PELCLO / НАСТРОЙКИ</div><h2>Подбор образов</h2><p>Укажи повод и погоду — образы подстроятся под твой день.</p>
     <div className="lookbookFilterGroup"><strong>Повод</strong><div className="lookbookFilterChoices">{occasions.map(([key, label]) => <button type="button" key={key} className={occasion === key ? 'selected' : ''} aria-pressed={occasion === key} onClick={() => { setOccasion(key); action('outfitFilterOccasion', key); }}>{label}</button>)}</div></div>
     <div className="lookbookFilterGroup"><strong>Погода</strong><div className="lookbookFilterChoices">{weather.map(([key, label]) => <button type="button" key={key} className={temperature === key ? 'selected' : ''} aria-pressed={temperature === key} onClick={() => { setTemperature(key); action('outfitFilterWeather', key); }}>{label}</button>)}</div></div>
     <label className="lookbookFilterOwned"><span><strong>Только мой гардероб</strong><small>Без вещей, которые нужно докупить</small></span><input type="checkbox" checked={ownedOnly} onChange={e => { setOwnedOnly(e.target.checked); action('outfitFilterOwned', String(e.target.checked)); }} /></label>
