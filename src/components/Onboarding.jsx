@@ -22,7 +22,7 @@ export default function Onboarding() {
   return <div id="onboarding" className="onboarding show">
     <section className={`onbSlide${step === 0 ? ' active' : ''}`} data-step="0">
       <div className="onbHero" style={{ '--onb-img': `url("${photos.oldmoney || ''}")` }}>
-        <span className="glassTag">STYLE OS</span>
+        <span className="glassTag">PELCLO</span>
         <h2>Твой личный стиль — без перегруза и хаоса.</h2>
         <p>Добавь вещи, получай готовые комплекты и рекомендации покупок под свой гардероб.</p>
       </div>
