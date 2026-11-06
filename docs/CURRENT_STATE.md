@@ -1,4 +1,4 @@
-# STYLE OS — Current state / handoff
+# PELCLO — Current state / handoff
 
 Last documentation update: 2026-11-03
 Working branch: react-migration
