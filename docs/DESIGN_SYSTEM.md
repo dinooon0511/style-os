@@ -1,4 +1,4 @@
-# STYLE OS — Design system
+# PELCLO — Design system
 
 ## Established design direction
 - Beta 6 Pastel is the preferred baseline. Do not switch to Beta 7 Color without user approval.
