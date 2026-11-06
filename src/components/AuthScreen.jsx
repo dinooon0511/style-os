@@ -6,10 +6,10 @@ export default function AuthScreen() {
   return <div id="styleAuth" className="visible" role="dialog" aria-modal="true" aria-labelledby="authHeading">
     <div className="authEditorial" aria-hidden="true" />
     <div className="authCanvas">
-      <div className="authIdentity">STYLE OS</div>
+      <div className="authIdentity">PELCLO</div>
       <div className="authPanel">
         <div className="authEyebrow">PERSONAL WARDROBE</div>
-        <h1 id="authHeading">Войти в STYLE OS</h1>
+        <h1 id="authHeading">Войти в PELCLO</h1>
         <p id="authDescription">Твой гардероб и образы всегда под рукой.</p>
         <form onSubmit={event => auth()?.submit(event)}>
           <label htmlFor="authEmail">Электронная почта</label>
