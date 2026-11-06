@@ -1,4 +1,4 @@
-# STYLE OS — Architecture and repository map
+# PELCLO — Architecture and repository map
 
 ## Confirmed in react-migration branch (2026-11-03)
 - React frontend built with Vite.
