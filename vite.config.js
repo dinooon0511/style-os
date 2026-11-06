@@ -76,7 +76,7 @@ function enforceOutfitRules() {
 }
 
 export default defineConfig({
-  // GitHub project pages are served under /style-os/, not at domain root.
-  base: '/style-os/',
+  // GitHub Pages uses /style-os/; Netlify serves the app at the domain root.
+  base: process.env.NETLIFY === 'true' ? '/' : '/style-os/',
   plugins: [enforceOutfitRules()],
 });
