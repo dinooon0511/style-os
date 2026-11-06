@@ -82,7 +82,7 @@ export default function OutfitsScreen() {
         transition: gesture.current?.active ? 'none' : 'transform 190ms ease-out,opacity 190ms ease-out',
         touchAction: 'pan-y'
       }} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={() => { gesture.current = null; setOffset(0); }}>
-        <div className="lookbookPhotoCopy"><span className="lookbookKicker">STYLE OS / LOOK {number(view.index + 1)}</span><h2>{look.title}</h2><p>{look.occasion}</p></div>
+        <div className="lookbookPhotoCopy"><span className="lookbookKicker">PELCLO / LOOK {number(view.index + 1)}</span><h2>{look.title}</h2><p>{look.occasion}</p></div>
       </div>
       <div className="lookbookPhotoControls">
         {anchored && anchors.length > 0 && <div className="anchorHeroGrid" aria-label="Обязательные вещи">
