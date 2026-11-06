@@ -59,7 +59,7 @@ function AddItemSheet({ data }) {
     <div className="search"><span>⌕</span><input id="addSearch" value={query} placeholder="Найти вещь" onChange={e => setQuery(e.target.value)} /></div>
     <div className="chips" style={{ margin: '12px 0' }}>{addCategories.map(([key,label]) => <button type="button" key={key} className={`chip${category === key ? ' active' : ''}`} onClick={() => setCategory(key)}>{label}</button>)}</div>
     <div className="helper" style={{ marginBottom: 8 }}>Найдено: {matching.length}</div>
-    <div className="grid2">{matching.map(item => <button type="button" key={item.id} className="itemCard catalogProductCard" onClick={() => action('addFromCatalog',item.id)}><div className="itemVisual catalogProductVisual"><img alt={item.name} src={item.image} loading="lazy" decoding="async" /></div><div className="itemBody catalogProductBody"><div className="catalogProductEyebrow">{item.brand || 'STYLE OS'}</div><div className="catalogProductName">{item.name}</div><div className="catalogProductFoot"><span className="catalogProductColor"><i style={{ background: item.colorHex }} />{item.color}</span></div></div></button>)}</div>
+    <div className="grid2">{matching.map(item => <button type="button" key={item.id} className="itemCard catalogProductCard" onClick={() => action('addFromCatalog',item.id)}><div className="itemVisual catalogProductVisual"><img alt={item.name} src={item.image} loading="lazy" decoding="async" /></div><div className="itemBody catalogProductBody"><div className="catalogProductEyebrow">{item.brand || 'PELCLO'}</div><div className="catalogProductName">{item.name}</div><div className="catalogProductFoot"><span className="catalogProductColor"><i style={{ background: item.colorHex }} />{item.color}</span></div></div></button>)}</div>
     
   </>;
 }
@@ -77,7 +77,7 @@ function DailySheet({ data }) {
   };
   const onUp = event => {const start=pointer.current;if(!start)return;pointer.current=null;const dx=event.clientX-start.x;if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(event.clientY-start.y)*1.3)vote(dx>0?'like':'dislike');else setDrag(0);};
   return <div className="dailyEditorialScreen">
-    <header className="dailyEditorialHeader"><div className="dailyEditorialOverline">STYLE OS / DAILY</div><h2>{current?'Твой образ на сегодня':'Твой выбор на сегодня'}</h2><div className="dailyEditorialProgress"><span>{current?String(data.index+1).padStart(2,'0'):'✓'} <em>из {String(data.count).padStart(2,'0')}</em></span><div className="dailyEditorialBars">{Array.from({length:data.count},(_,i)=><i key={i} className={i<=data.index?'filled':''} />)}</div></div></header>
+    <header className="dailyEditorialHeader"><div className="dailyEditorialOverline">PELCLO / DAILY</div><h2>{current?'Твой образ на сегодня':'Твой выбор на сегодня'}</h2><div className="dailyEditorialProgress"><span>{current?String(data.index+1).padStart(2,'0'):'✓'} <em>из {String(data.count).padStart(2,'0')}</em></span><div className="dailyEditorialBars">{Array.from({length:data.count},(_,i)=><i key={i} className={i<=data.index?'filled':''} />)}</div></div></header>
     {current ? <><div className="dailySwipeStage">
       {data.next && <div className="dailySwipeUnder" aria-hidden="true"><div className="dailyEditorialPicture" style={{backgroundImage:`linear-gradient(180deg,transparent 67%,rgba(16,18,16,.15)),url("${data.next.image}")`}} /><div className="dailyEditorialUnderText">{data.next.title}</div></div>}
       <div id="dailySwipe" className="dailySwipeCard dailyEditorialCard" style={{transform:`translate3d(${drag}px,0,0) rotate(${drag/18}deg)`,touchAction:'pan-y',transition:pointer.current?'none':'transform 180ms ease-out'}} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={()=>{pointer.current=null;setDrag(0);}}>
@@ -90,7 +90,7 @@ function DailySheet({ data }) {
   </div>;
 }
 
-function DailyPreview({ data }) {return <><div className="sheetHandle" /><div className="sheetSection"><div className="subtle">STYLE OS / ПРЕДПРОСМОТР</div><h2 className="sheetTitle">{data.title}</h2><p className="helper">{data.reason}</p></div><div className="dailyPieces dailyPreviewPieces">{data.parts.map((part,i)=><div key={i}><img src={part.image} alt={part.label} /><small>{part.label}{part.missing?' · докупить':''}</small></div>)}</div><div className="sheetSection" style={{display:'flex',gap:8}}><button className="btn line" onClick={()=>action('dailyBack')}>Назад</button><button className="btn dark" onClick={()=>action('dailyChoose',data.identity)}>Выбрать этот образ</button></div></>;}
+function DailyPreview({ data }) {return <><div className="sheetHandle" /><div className="sheetSection"><div className="subtle">PELCLO / ПРЕДПРОСМОТР</div><h2 className="sheetTitle">{data.title}</h2><p className="helper">{data.reason}</p></div><div className="dailyPieces dailyPreviewPieces">{data.parts.map((part,i)=><div key={i}><img src={part.image} alt={part.label} /><small>{part.label}{part.missing?' · докупить':''}</small></div>)}</div><div className="sheetSection" style={{display:'flex',gap:8}}><button className="btn line" onClick={()=>action('dailyBack')}>Назад</button><button className="btn dark" onClick={()=>action('dailyChoose',data.identity)}>Выбрать этот образ</button></div></>;}
 
 export default function DetailSheets() {
   const [sheet, setSheet] = useState(null);
