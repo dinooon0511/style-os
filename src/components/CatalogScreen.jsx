@@ -17,7 +17,7 @@ export default function CatalogScreen() {
 
   return <div className="catalogEditorial">
     <header className="catalogEditorialHeader">
-      <div><div className="catalogEditorialKicker">STYLE OS / EDITED SELECTION</div><h1>Каталог</h1></div>
+      <div><div className="catalogEditorialKicker">PELCLO / EDITED SELECTION</div><h1>Каталог</h1></div>
       <span className="catalogEditorialCount">{total} вещей</span>
     </header>
     <div className="catalogEditorialHero" style={{ backgroundImage: `linear-gradient(90deg,rgba(16,19,16,.45),rgba(16,19,16,.03) 80%),url("${hero}")` }}>
